@@ -1,0 +1,11 @@
+#!/bin/bash
+
+choice="$(printf "%s\n%s\n%s" "screen" "select" "focused" | dmenu -i -p "screenshot menu:  ")"
+
+if [ "$choice" = "screen" ]; then
+    scrot -d 1 -e 'mv $f ~/photos/screenshots'
+elif [ "$choice" = "select" ]; then
+    scrot --select -e 'mv $f ~/photos/screenshots/'
+elif [ "$choice" = "focused" ]; then
+    scrot --focused -e 'mv $f ~/photos/screenshots/'
+fi

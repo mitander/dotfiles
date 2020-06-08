@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Set default directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export CUSTOM_SOURCE_HOME="$HOME/.local/src"
+
+# Set path of programs
+export ANDROID_HOME="$CUSTOM_SOURCE_HOME/android-sdk"
+export FLUTTER_HOME="$CUSTOM_SOURCE_HOME/flutter"
+export DART_SDK="$FLUTTER_HOME/bin/cache/dart-sdk"
+
+# Set path of scripts
+export SCRIPTS="$HOME/scripts"
+
+# Set path of pipes for xob
+export XOBPIPES="/tmp/xobpipes"
+
+# Set default programs
+export EDITOR="nvim-nightly"
+export TERMINAL="alacritty"
+export BROWSER="firefox"
+export PAGER="nvim +Man!"
+
+# Add directories to PATH
+export PATH="$PATH:$HOME/.local/bin"
+export PATH="$PATH:$HOME/.cargo/bin"
+export PATH="$PATH:$FLUTTER_HOME/bin"
+export PATH="$PATH:$DART_SDK/bin"
+
+# Set colors for man pages
+export LESS_TERMCAP_mb=$'\e[1;34m'
+export LESS_TERMCAP_md=$'\e[1;34m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[4;32m'
+
+# Set variables for man
+export MANPAGER="$PAGER"
+export MANWIDTH="999"
+
+# Disable history file for less
+export LESSHISTFILE="-"
+
+# Set title color of pfetch
+export PF_COL3="4"
+
+# Set default options for fzf
+export FZF_DEFAULT_OPTS="--layout=reverse --info=inline --height 10 --color=16,hl:12,hl+:12,bg+:8,fg+:15,gutter:0,pointer:15"
+
+# Source private .profile
+# shellcheck source=/dev/null
+source "$HOME/.profile.private"

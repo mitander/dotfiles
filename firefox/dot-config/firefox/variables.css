@@ -1,0 +1,11 @@
+:root {
+	--custom-accent-color: #81a1c1;
+	--custom-foreground: #a8aeb9;
+	--custom-background: #000;
+	--custom-background-alt: #1a1c1f;
+	--custom-toolbar-background: #000;
+	--custom-tab-background-active: #242730;
+	--custom-tab-background-hover: #171a20;
+	--custom-tab-border-radius: 0 0 4px 4px;
+	--custom-border: 1px solid #2A2C2D;
+}

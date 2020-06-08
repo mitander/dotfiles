@@ -1,0 +1,11 @@
+#!/bin/bash
+
+declare -A arr
+arr=(
+[play local media]="$SCRIPTS/menu/play-local-media"
+[play remote movie]="$SCRIPTS/menu/play-remote-movie"
+[play remote series]="$SCRIPTS/menu/play-remote-series"
+)
+
+choice="$(printf "%s\n" "${!arr[@]}" | dmenu -i -p "misc menu:")"
+[ "$choice" ] && ${arr[$choice]}

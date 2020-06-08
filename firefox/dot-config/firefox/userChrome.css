@@ -1,0 +1,193 @@
+@import "variables.css";
+
+/* TOOLBAR */
+
+/* Set background color of navbar */
+#nav-bar, #nav-bar-customization-target {
+	background-color: var(--custom-toolbar-background) !important;
+}
+
+/* Set background color of tabs-toolbar and titlebar */
+#TabsToolbar, #titlebar {
+	background-color: var(--custom-toolbar-background) !important;
+}
+
+/* Set colors, border, and font-weight of urlbar */
+#urlbar {
+	background: none !important;
+	color: var(--custom-foreground) !important;
+	border: none !important;
+	font-weight: 500 !important;
+}
+#urlbar-background {
+	background-color: var(--custom-toolbar-background) !important;
+	border-color: transparent !important;
+}
+#urlbar[focused] #urlbar-background {
+	background-color: var(--custom-background-alt) !important;
+	border: var(--custom-border) !important;
+}
+
+/* Remove border in urlbar */
+#identity-box, #urlbar-label-box {
+	border: none !important;
+}
+
+/* Hide seperator in toolbar next to menu button */
+:root:not([chromehidden~="toolbar"]) #PanelUI-button {
+	margin: 0 !important;
+	padding: 0 !important;
+	border: none !important;
+}
+
+/* Remove border under navbar */
+#navigator-toolbox::after {
+	border-bottom: none !important;
+}
+
+/* Set colors of toolbar buttons */
+.toolbarbutton-1 {
+	fill: var(--custom-foreground) !important;
+	background: none !important;
+}
+
+/* Remove border and shadow from back-button */
+:root:not([uidensity="compact"]) #back-button > .toolbarbutton-icon {
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Remove background from new-tab-button and alltabs-button */
+#new-tab-button, #alltabs-button {
+    background: none !important;
+}
+
+/* Remove background of toolbar buttons */
+.urlbar-icon,
+.urlbar-icon-wrapper,
+#tabbrowser-tabs toolbarbutton,
+toolbar toolbarbutton > .toolbarbutton-icon,
+toolbar toolbarbutton > .toolbarbutton-badge-stack,
+.titlebar-button,
+#identity-box,
+#tracking-protection-icon-container,
+.findbar-textbox~toolbarbutton,
+toolbarbutton.scrollbutton-up,
+toolbarbutton.scrollbutton-down {
+	background-color: transparent !important;
+}
+
+/* Set color of toolbar icons to grayscale */
+.webextension-browser-action > .toolbarbutton-badge-stack > .toolbarbutton-icon {
+	filter: grayscale(100%) !important;
+}
+.toolbarbutton-badge {
+	background-color: #444 !important;
+}
+
+/* Hide tracking protection button */
+#tracking-protection-icon-container {
+	display: none !important;
+}
+
+
+/* TABS */
+
+/* Set background color of tabbar */
+#tabbrowser-tabs {
+	background-color: var(--custom-toolbar-background) !important;
+}
+
+/* Set tab colors */
+tab {
+	color: var(--custom-foreground) !important;
+}
+
+/* Set opacity of tabs */
+.tabbrowser-tab { opacity: 0.65; }
+.tabbrowser-tab:hover { opacity: 1; }
+.tabbrowser-tab[selected] { opacity: 1; }
+
+/* Remove background of tabs when hovering */
+.tabbrowser-tab:hover > .tab-stack > .tab-background:not([selected="true"]):not([multiselected]) {
+	background-color: var(--custom-tab-background-hover) !important;
+	border-radius: var(--custom-tab-border-radius) !important;
+}
+
+#tabbrowser-tabs > #tabbrowser-arrowscrollbox > .tabbrowser-tab > .tab-stack > .tab-background[multiselected="true"]:-moz-lwtheme,
+#tabbrowser-tabs > #tabbrowser-arrowscrollbox > .tabbrowser-tab > .tab-stack > .tab-background[selected="true"]:-moz-lwtheme {
+	background: var(--custom-tab-background-active) !important;
+	border-radius: var(--custom-tab-border-radius) !important;
+}
+
+/* Reduce fade size in tabs with text overflow */
+.tab-label-container[textoverflow][labeldirection="ltr"]:not([pinned]),
+.tab-label-container[textoverflow]:not([labeldirection]):not([pinned]):-moz-locale-dir(ltr) {
+	mask-image: linear-gradient(to left, transparent, black 1em) !important;
+}
+
+/* Set color of loading indicator */
+#tabbrowser-tabs {
+	--tab-loading-fill: var(--custom-accent-color) !important;
+}
+
+/* Remove borders from tabs */
+.tabbrowser-tab::before, .tabbrowser-tab::after {
+	display: none !important;
+}
+
+/* Remove line over tabs */
+.tab-line {
+	display: none !important;
+}
+
+
+/* POPUP & DROPDOWN MENUS */
+
+/* Set color and z-index of urlbar dropdown */
+.urlbarView:not(.megabar) {
+	background-color: var(--custom-background-alt) !important;
+	z-index: 10 !important;
+}
+
+/* Set colors in urlbar dropdown */
+:root {
+	--autocomplete-popup-highlight-background: var(--custom-accent-color) !important;
+	--autocomplete-popup-highlight-color: var(--custom-background) !important;
+	--urlbar-popup-url-color: var(--custom-accent-color) !important;
+	--urlbar-popup-action-color: var(--custom-accent-color) !important;
+}
+
+/* Set color of popup menus */
+panelview {
+	background: var(--custom-background-alt) !important;
+}
+
+/* Set border and margin of popup menus */
+box.panel-arrowcontent {
+	border: var(--custom-border) !important;
+	margin: 0 !important;
+	margin-top: 10px !important;
+}
+
+/* Remove arrow from popup menus */
+box.panel-arrowbox {
+	display: none !important;
+}
+
+/* Fix background of extension buttons in overflow menu */
+panel .toolbarbutton-1.webextension-browser-action {
+	background-color: transparent !important;
+}
+
+
+/* OTHER */
+
+/* Set content background */
+#browser vbox#appcontent tabbrowser,
+#content,
+#tabbrowser-tabpanels,
+browser[type=content-primary],
+browser[type=content] > html {
+	background: var(--custom-background) !important;
+}

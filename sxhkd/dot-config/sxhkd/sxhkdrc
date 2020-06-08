@@ -1,0 +1,102 @@
+#----------------------------- ~bspwmrc~ ------------------------------#
+# ~terminal~ (super-return)
+super + Return
+	$TERMINAL
+
+# ~dmenu~ (super-space)
+super + @space
+    dmenu_run
+# ~sxhkd|reload~ (super-escape)
+super + Escape
+	pkill -USR1 -x sxhkd
+
+# ~.zshrc|reload~ (super-shift-z)
+super + shift + z
+	source $HOME/.config/zsh/.zshrc
+
+# ~bspwm|reload~ (super-alt-r)
+super + alt + r
+	bspc wm -r
+
+# ~logout~ (super-shift-x)
+super + shift + x
+    bspc quit
+
+# ~lockscreen~ (super-x)
+super + x
+    betterlockscreen --lock -blur
+
+# ~close|kill~ (super-q:quit, super-shift-q:kill)
+super + {_,shift +}q
+    bspc node -{c,k}
+
+# ~window|state~ (super-t:tiling, super-shift-t:padding, super-f:fullscreen)
+super + {t,p,g,f}
+	bspc node -t {tiled,pseudo_tiled,floating,fullscreen}
+# ~node|focus~ (
+super + {_,shift + }{h,j,k,l}
+	bspc node -{f,s} {west,south,north,east}
+
+# ~node|tab~ (super-tab: next, super-shift-tab:previous)
+super + {_,shift + }Tab
+	bspc node -f {next,prev}.local
+
+# ~spotify~
+super + shift + m
+	pgrep spotifyd || spotifyd && $TERMINAL -e spotify-tui
+
+# ~desktop|change~
+# Focus or send to the given desktop
+super + {_,shift + }{1-9,0}
+	bspc {desktop -f,node -d} '^{1-9,10}'
+
+# ~preselect|destination~ (super-ctrl-h/j/k/l)
+super + ctrl + {h,j,k,l}
+	bspc node -p {west,south,north,east}
+
+# ~preselect|ratio~
+super + ctrl + {1-9}
+	bspc node -o 0.{1-9}
+
+# ~preselect|cancel~ (super-ctrl-space)
+super + ctrl + space
+	bspc node -p cancel
+
+# ~window|expand~ (super-alt-h/j/k/l)
+super + alt + {h,j,k,l}
+	bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
+
+# ~firefox~ (super-w)
+super + w
+	firefox
+
+# ~firefox|private~ (super + shift + p)
+super + shift + p
+    firefox --private-window
+
+# ~lockscreen~ (super-x)
+super + x
+    sudo betterlockscreen -l -blur
+
+# ~alsamixer~ (super-shift-a)
+super + shift + a
+    termite -e alsamixer
+
+# ~imgur-screenshot~ (super-shift-i)
+super + shift + i
+    imgur-screenshot
+
+# ~xclip~ (super-ctrl-i)
+super + ctrl + i
+    maim -s | xclip -selection clipboard -t image/png
+
+# ~volume~
+XF86Audio{Lower,Raise}Volume
+	pamixer --{decrease,increase} 5 && \
+	pamixer --get-volume > $XOBPIPES/vol
+XF86AudioMute
+	pamixer --toggle-mute
+
+# ~music~
+XF86Audio{Prev,Play,Next}
+	spotifyctl {prev,play-pause,next}

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+declare -A arr
+arr=(
+[restart iwd]="doas sv restart iwd"
+[restart dhcpcd]="doas sv restart dhcpcd"
+[iwctl]="$TERMINAL -e iwctl"
+)
+
+choice="$(printf "%s\n" "${!arr[@]}" | dmenu -i -p "network menu:")"
+[ "$choice" ] && ${arr[$choice]}

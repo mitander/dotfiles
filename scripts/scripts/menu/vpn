@@ -1,0 +1,12 @@
+#!/bin/bash
+
+declare -A arr
+arr=(
+[connect]="doas sv restart openvpn"
+[disconnect]="doas sv stop openvpn"
+[status]="$SCRIPTS/notify/vpn"
+[reset vpnfailsafe]="doas /usr/share/vpnfailsafe/extras/vpnfailsafe_reset.sh"
+)
+
+choice="$(printf "%s\n" "${!arr[@]}" | dmenu -i -p "vpn menu:")"
+[ "$choice" ] && ${arr[$choice]}

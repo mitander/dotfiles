@@ -1,0 +1,5 @@
+#!/bin/sh
+
+dunstify -r 11 "Checking VPN status..."
+doas sv-status openvpn && status="on" || status="off"
+dunstify -r 11 "VPN is $status" "IP Address: $(curl -s ifconfig.co)\nLocation: $(curl -s ifconfig.co/country), $(curl -s ifconfig.co/city)"

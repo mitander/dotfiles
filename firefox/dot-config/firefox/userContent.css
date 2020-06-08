@@ -1,0 +1,53 @@
+@import "variables.css";
+
+:root {
+	--in-content-border-active: var(--custom-foreground) !important;
+	--in-content-border-active-shadow: none !important;
+	--in-content-page-background: var(--custom-background) !important;
+}
+
+@-moz-document url("about:home"), url(about:preferences), url("about:blank"), url("about:newtab"), url("about:privatebrowsing") {
+	body {
+		background-color: var(--custom-background) !important;
+		--newtab-search-icon: transparent !important;
+		--newtab-textbox-background-color: var(--custom-background);
+	}
+	#newtab-search-text {
+		background-color: var(--custom-background) !important;
+		font-size: 18px !important;
+		color: var(--custom-foreground) !important;
+		box-shadow: none !important;
+		text-align: center !important;
+		border: none !important;
+		font-weight: bold !important;
+	}
+	.search-wrapper input {
+		--newtab-textbox-focus-boxshadow: none !important;
+		padding-left: 20px !important;
+		padding-inline-end: 13px !important;
+	}
+	.search-wrapper .logo-and-wordmark {
+		margin-bottom: 40px !important;
+		padding-top: 60px !important;
+		opacity: 0.5 !important;
+	}
+	.search-wrapper .logo-and-wordmark .logo {
+		background-size: 50px !important;
+		height: 50px !important;
+		width: 50px !important;
+	}
+	.search-wrapper .logo-and-wordmark .wordmark {
+		background-size: 108px !important;
+		height: 62px !important;
+		width: 108px !important;
+	}
+	.search-button {
+		display: none !important;
+	}
+	.prefs-button button {
+		display: none !important;
+	}
+	.contentSearchSuggestionTable {
+		display: none !important;
+	}
+}

@@ -1,0 +1,65 @@
+#! /bin/sh
+#----------------------------- ~bspwmrc~ ------------------------------#
+
+xsetroot -cursor_name left_ptr
+setroot --blank-color "#2E3440"
+
+#----------------------------- ~monitor~ ------------------------------#
+
+# ~wmname|LG3D~ (fixes screentearing with gui apps)
+wmname LG3D
+
+# ~set desktops~
+bspc monitor -d 1 2 3 4 5 6 7 8 9 10
+
+# ~set xrandr~
+mainmonitor="$(bspc query --monitors --names)"
+if ! echo "$mainmonitor" | grep DVI-0 >/dev/null 2>&1; then
+	xrandr --output "$mainmonitor" --auto
+fi
+
+#----------------------------- ~window~ -------------------------------#
+
+bspc config border_width         3
+bspc config window_gap           12
+bspc config split_ratio          0.52
+bspc config borderless_monocle   true
+bspc config gapless_monocle      true
+bspc config focused_border_color  "#7c6f64"
+
+#----------------------------- ~startup~ ------------------------------#
+
+# ~sxhkd~ (hotkey manager)
+killall sxhkd; sxhkd &
+
+# ~picom~ (compositor)
+killall picom; picom -daemon &
+
+# ~dunst~ (notification manager)
+killall dunst; dunst &
+
+# ~polybar~ (status bar)
+killall polybar; polybar -c "$HOME/.config/polybar/config.ini" main &
+
+# ~.xresources~ (load)
+xrdb -load ~/.Xresources
+
+# ~feh~ (wallpaper manager)
+feh --bg-fill ~/Documents/Wallpapers/bg1.jpg
+
+# ~betterlockscreen~ (fetch background image)
+sudo betterlockscreen -u ~/Documents/Wallpapers/bg1.jpg
+
+# ~xset~ (key-repeat speed)
+xset r rate 250 40
+
+# ~setxkbmap~ (us/sv layout - toggle with alt+shift)
+setxkbmap -layout us,se -option grp:alt_shift_toggle
+
+# ~zathura~
+bspc rule -a Zathura state=tiled
+
+killall xob; mkdir "$XOBPIPES"
+  1 mkfifo "$XOBPIPES/bkl"; pkill -f "tail -f $XOBPIPES/bkl"; tail -f "$XOBPIPES/bkl" | xob &
+  2 mkfifo "$XOBPIPES/kbd"; pkill -f "tail -f $XOBPIPES/kbd"; tail -f "$XOBPIPES/kbd" | xob &
+  3 mkfifo "$XOBPIPES/vol"; pkill -f "tail -f $XOBPIPES/vol"; tail -f "$XOBPIPES/vol" | xob &

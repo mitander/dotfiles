@@ -1,0 +1,7 @@
+#!/bin/sh
+
+battery=$(acpi --battery | grep 'Battery 0:.*' | grep -o '[0-9]*%')
+acpi --battery | grep 'Battery 0:.*' | grep -o -q 'Charging' || is_charging=false
+if [ "${battery%%%}" -lt 12 ] && [ "$is_charging" = "false" ]; then
+	dunstify -r 10 "Battery at $battery" "Please charge now"
+fi

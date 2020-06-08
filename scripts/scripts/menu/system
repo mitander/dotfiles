@@ -1,0 +1,12 @@
+#!/bin/bash
+
+declare -A arr
+arr=(
+[logout]="$SCRIPTS/menu/prompt logout? bspc quit"
+[reboot]="$SCRIPTS/menu/prompt reboot? doas reboot"
+[shutdown]="$SCRIPTS/menu/prompt shutdown? doas poweroff"
+[suspend]="doas zzz"
+)
+
+choice="$(printf "%s\n" "${!arr[@]}" | dmenu -i -p "system menu:")"
+[ "$choice" ] && ${arr[$choice]}
