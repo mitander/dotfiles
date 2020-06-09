@@ -1,5 +1,7 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhistcnt =0
+let g:netrw_dirhistcnt =2
+let g:netrw_dirhist_2='/home/carl/.config'
+let g:netrw_dirhist_1='/home/carl/.config/polybar'
 let g:netrw_dirhist_0='/home/carl/dotfiles/polybar/dot-config/polybar'
 let g:netrw_dirhist_9='/home/carl/.config'
 let g:netrw_dirhist_8='/home/carl/.config/polybar'
@@ -8,5 +10,3 @@ let g:netrw_dirhist_6='/var/service'
 let g:netrw_dirhist_5='/etc/sv/spotifyd/supervise'
 let g:netrw_dirhist_4='/etc/sv/sshd/supervise'
 let g:netrw_dirhist_3='/home/carl/dotfiles/profile'
-let g:netrw_dirhist_2='/home/carl/dotfiles/nvim/dot-config/nvim'
-let g:netrw_dirhist_1='/home/carl/dotfiles/xorg'

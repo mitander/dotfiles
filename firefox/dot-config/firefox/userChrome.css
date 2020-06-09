@@ -17,7 +17,7 @@
 	background: none !important;
 	color: var(--custom-foreground) !important;
 	border: none !important;
-	font-weight: 500 !important;
+	font-weight: 300 !important;
 }
 #urlbar-background {
 	background-color: var(--custom-toolbar-background) !important;
