@@ -40,7 +40,6 @@ Plug 'edkolev/tmuxline.vim'
 
 call plug#end()
 
-
 colorscheme gruvbox
 set background=dark
 highlight ColorColumn ctermbg=0 guibg=lightgrey

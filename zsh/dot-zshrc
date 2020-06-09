@@ -1,13 +1,10 @@
 #------------------------------ ~.zshrc~ ------------------------------#
-#----------------------------------------------------------------------#
-#--------------------- author:github.com/mitander ---------------------#
-#----------------------------------------------------------------------#
 path+=/opt/intellij-idea-ultimate/bin
 typeset -U path
 
 #--------------------------- ~alias|config~ ---------------------------#
 # config shortcut
-alias zshrc="vim ${XDG_CONFIG_HOME:-$HOME}/.zshrc"
+alias zshrc="vim $HOME/.zshrc"
 alias vimrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/nvim/init.vim"
 alias tmuxconf="vim ${XDG_CONFIG_HOME:-$HOME/.config}/tmux/tmux.conf"
 alias wmrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/bspwm/bspwmrc"
