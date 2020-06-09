@@ -20,11 +20,11 @@ super + alt + r
 
 # ~logout~ (super-shift-x)
 super + shift + x
-    bspc quit
+    exec $HOME/scripts/menu/system
 
 # ~lockscreen~ (super-x)
 super + x
-    betterlockscreen --lock -blur
+    betterlockscreen -s dim
 
 # ~close|kill~ (super-q:quit, super-shift-q:kill)
 super + {_,shift +}q
