@@ -43,7 +43,7 @@ super + {_,shift + }Tab
 
 # ~spotify~
 super + shift + m
-	pgrep spotifyd || spotifyd && $TERMINAL -e spotify-tui
+	pgrep spotifyd || spotifyd--no-daemon && $TERMINAL -e spotify-tui
 
 # ~desktop|change~
 # Focus or send to the given desktop
@@ -80,7 +80,11 @@ super + x
 
 # ~alsamixer~ (super-shift-a)
 super + shift + a
-    termite -e alsamixer
+    $TERMINAL -e alsamixer
+
+# ~ranger~ (super-r)
+super + r
+    $TERMINAL -e ranger
 
 # ~imgur-screenshot~ (super-shift-i)
 super + shift + i

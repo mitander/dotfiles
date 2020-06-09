@@ -31,7 +31,7 @@ autoload -Uz vcs_info
 precmd() { vcs_info }
 
 # Format the vcs_info_msg_0_ variable
-zstyle ':vcs_info:git:*' formats ' (%b)'
+zstyle ':vcs_info:git:*' formats ' [%b]'
 
 # Set up the prompt (with git branch name)
 setopt PROMPT_SUBST
@@ -39,7 +39,7 @@ setopt PROMPT_SUBST
 autoload -U colors && colors
 setopt autocd
 
-PROMPT='%B%{$fg[yellow]%}%n %{$fg[green]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
+PROMPT='%B%{$fg[yellow]%}%n@%m %{$fg[green]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
 
 stty stop undef
 #--------------------------- ~alias|commands~ ---------------------------#

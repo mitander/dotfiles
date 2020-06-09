@@ -42,7 +42,6 @@ call plug#end()
 
 colorscheme gruvbox
 set background=dark
-highlight ColorColumn ctermbg=0 guibg=lightgrey
 
 let loaded_matchparen = 1
 let g:vrfr_rg = 'true'
