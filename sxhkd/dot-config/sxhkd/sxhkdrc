@@ -1,7 +1,7 @@
 #----------------------------- ~bspwmrc~ ------------------------------#
 # ~terminal~ (super-return)
 super + Return
-	$TERMINAL
+	alacritty
 
 # ~dmenu~ (super-space)
 super + @space
