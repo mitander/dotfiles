@@ -43,7 +43,7 @@ super + {_,shift + }Tab
 
 # ~spotify~
 super + shift + m
-	pgrep spotifyd || spotifyd--no-daemon && $TERMINAL -e spotify-tui
+	pgrep spotifyd || spotifyd --no-daemon & $TERMINAL -e  spotify-tui
 
 # ~desktop|change~
 # Focus or send to the given desktop
