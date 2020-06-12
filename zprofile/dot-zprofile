@@ -10,6 +10,7 @@ export CUSTOM_SOURCE_HOME="$HOME/.local/src"
 export ANDROID_HOME="$CUSTOM_SOURCE_HOME/android-sdk"
 export FLUTTER_HOME="$CUSTOM_SOURCE_HOME/flutter"
 export DART_SDK="$FLUTTER_HOME/bin/cache/dart-sdk"
+export OPT="/opt"
 
 # Set path of scripts
 export SCRIPTS="$HOME/scripts"

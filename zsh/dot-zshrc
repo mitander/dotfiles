@@ -1,5 +1,5 @@
 #------------------------------ ~.zshrc~ ------------------------------#
-path+=/opt/intellij-idea-ultimate/bin
+path+=/opt
 typeset -U path
 
 #--------------------------- ~alias|config~ ---------------------------#
@@ -15,8 +15,8 @@ alias tm="tmux attach-session"
 alias zs="source ~/.zshrc"
 
 # xbps shortcuts
-alias xi="sudo xbps-install -S"
-alias xu="sudo xbps-remove -Ro"
+alias xin="sudo xbps-install -S"
+alias xrm="sudo xbps-remove -Ro"
 alias xup="sudo xbps-install -Suv"
 alias xl="xbps-query -l"
 alias xs="xbps-query -Rs"
@@ -39,7 +39,7 @@ setopt PROMPT_SUBST
 autoload -U colors && colors
 setopt autocd
 
-PROMPT='%B%{$fg[yellow]%}%n@%m %{$fg[green]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
+PROMPT='%B%{$fg[yellow]%}%m %{$fg[green]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
 
 stty stop undef
 #--------------------------- ~alias|commands~ ---------------------------#

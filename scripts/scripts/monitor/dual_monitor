@@ -1,10 +1,8 @@
 #!/bin/bash
 
 # set up the two monitors for bspwm
-# NOTE This is a simplistic approach because I already know the settings I
-# want to apply.
 
 second_monitor=$(xrandr --query | grep 'HDMI-1')
 if [[ $second_monitor = *connected* ]]; then
-    xrandr --output DVI-D-1 --primary --mode 1920x1080 --rate 144 --rotate normal --output HDMI-1 --mode 1920x1080 --rotate left --right-of DVI-D-1
+    xrandr --output DVI-D-1 --primary --mode 1920x1080 --rotate normal --output HDMI-1 --mode 1920x1080 --rotate left --right-of DVI-D-1 --pos 420x0
 fi
