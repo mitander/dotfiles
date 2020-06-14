@@ -5,4 +5,5 @@ xrandr; xrdb "${HOME}"/.Xresources
 export MOZ_USE_XINPUT2=1
 
 # Start bspwm
-exec bspwm
+#exec bspwm
+exec dbus-launch --autolaunch=$(cat /var/lib/dbus/machine-id) bspwm

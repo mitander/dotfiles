@@ -82,7 +82,7 @@ super + x
     sudo betterlockscreen -l -blur
 
 # ~alsamixer~ (super-shift-a)
-super + shift + a
+#super + shift + a
     $TERMINAL -e alsamixer
 
 # ~ranger~ (super-r)
@@ -105,5 +105,11 @@ XF86AudioMute
 	pamixer --toggle-mute
 
 # ~music~
-XF86Audio{Prev,Play,Next}
-	spotifyctl {prev,play-pause,next}
+super + control + a
+    dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous
+
+super + control + s
+    dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next
+
+super + control + d
+    dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause

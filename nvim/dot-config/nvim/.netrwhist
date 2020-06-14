@@ -1,5 +1,6 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhistcnt =3
+let g:netrw_dirhistcnt =4
+let g:netrw_dirhist_4='/home/carl/.config/dunst'
 let g:netrw_dirhist_3='/home/carl/.config/coc'
 let g:netrw_dirhist_2='/home/carl/.config'
 let g:netrw_dirhist_1='/home/carl/.config/picom'
@@ -9,4 +10,3 @@ let g:netrw_dirhist_8='/home/carl/.config/picom'
 let g:netrw_dirhist_7='/home/carl/.config/gtk-3.0'
 let g:netrw_dirhist_6='/home/carl/.npm'
 let g:netrw_dirhist_5='/home/carl/.gnome/apps'
-let g:netrw_dirhist_4='/home/carl/.gnome'
