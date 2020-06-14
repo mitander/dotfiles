@@ -3,6 +3,9 @@
 super + Return
 	alacritty
 
+super + shift  + Return
+    tdrop -ma -w 50% -h 40% -y 30% -x 25% -s dropdown alacritty
+
 # ~dmenu~ (super-space)
 super + @space
     dmenu_run
@@ -43,7 +46,7 @@ super + {_,shift + }Tab
 
 # ~spotify~
 super + shift + m
-	pgrep spotifyd || spotifyd --no-daemon & $TERMINAL -e  spotify-tui
+    exec spotify
 
 # ~desktop|change~
 # Focus or send to the given desktop
@@ -88,7 +91,7 @@ super + r
 
 # ~imgur-screenshot~ (super-shift-i)
 super + shift + i
-    imgur-screenshot
+    maim -s ~/Documents/Screenshots/$(date +%s).jpg
 
 # ~xclip~ (super-ctrl-i)
 super + ctrl + i
