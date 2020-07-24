@@ -1,8 +1,7 @@
 #------------------------------ ~.zshrc~ ------------------------------#
 path+=/opt
 typeset -U path
-
-export TERM=xterm-256color
+export TERM="screen-256color"
 
 #--------------------------- ~alias|config~ ---------------------------#
 # config shortcut
@@ -41,7 +40,7 @@ setopt PROMPT_SUBST
 autoload -U colors && colors
 setopt autocd
 
-PROMPT='%B%{$fg[yellow]%}%m %{$fg[green]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
+PROMPT='%B%{$fg[green]%}%m %{$fg[yellow]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
 
 stty stop undef
 #--------------------------- ~alias|commands~ ---------------------------#

@@ -20,8 +20,8 @@ bspc monitor HDMI-0 -d 6 7 8 9 0
 
 #----------------------------- ~window~ -------------------------------#
 
-bspc config border_width         2
-bspc config window_gap           20
+bspc config border_width         1
+bspc config window_gap           15
 bspc config split_ratio          0.50
 bspc config borderless_monocle   true
 bspc config gapless_monocle      true
@@ -39,7 +39,7 @@ killall picom; picom &
 killall dunst; dunst &
 
 # ~polybar~ (status bar)
-killall -q polybar; $HOME/.config/polybar/launch.sh
+killall -q polybar; $HOME/.config/polybar/launch.sh &
 
 killall xob; xob &
 

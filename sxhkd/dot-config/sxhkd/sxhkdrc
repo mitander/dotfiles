@@ -4,7 +4,7 @@ super + Return
 	alacritty
 
 super + shift  + Return
-    tdrop -ma -w 50% -h 40% -y 30% -x 25% -s dropdown alacritty
+    tdrop -ma -w 50% -h 40% -y 25% -x 25% -s dropdown alacritty
 
 # ~dmenu~ (super-space)
 super + @space
@@ -12,10 +12,6 @@ super + @space
 # ~sxhkd|reload~ (super-escape)
 super + Escape
 	pkill -USR1 -x sxhkd
-
-# ~.zshrc|reload~ (super-shift-z)
-super + shift + z
-	source $HOME/.config/zsh/.zshrc
 
 # ~bspwm|reload~ (super-alt-r)
 super + alt + r
@@ -103,6 +99,12 @@ XF86Audio{Lower,Raise}Volume
 	pamixer --get-volume > $XOBPIPES/vol
 XF86AudioMute
 	pamixer --toggle-mute
+
+super + shift + z
+  bspc config window_gap 0
+
+super + z
+  bspc config window_gap 15
 
 # ~music~
 super + control + a

@@ -67,9 +67,9 @@ def truncate(name, trunclen):
 
 
 # Default parameters
-output = fix_string(u'{play_pause} {artist}: {song}')
+output = fix_string(u'{play_pause} {artist} ~ {song}')
 trunclen = 35
-play_pause = fix_string(u',\uf04b') # first character is play, second is paused
+play_pause = fix_string(u'阮,') # first character is play, second is paused
 
 label_with_font = '%{{T{font}}}{label}%{{T-}}'
 font = args.font
