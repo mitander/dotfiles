@@ -12,7 +12,7 @@ alias wmrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/bspwm/bspwmrc"
 alias kbrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/sxhkd/sxhkdrc"
 alias alarc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/alacritty/alacritty.yml"
 alias vim="nvim"
-alias tm="tmux attach-session"
+alias tm="tmux attach || tmux new"
 alias zs="source ~/.zshrc"
 
 # xbps shortcuts
