@@ -4,10 +4,11 @@ typeset -U path
 export TERM="screen-256color"
 
 #--------------------------- ~alias|config~ ---------------------------#
+
 # config shortcut
 alias zshrc="vim $HOME/.zshrc"
+alias tmuxconf="vim $HOME/.tmux.conf"
 alias vimrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/nvim/init.vim"
-alias tmuxconf="vim ${XDG_CONFIG_HOME:-$HOME/.config}/tmux/tmux.conf"
 alias wmrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/bspwm/bspwmrc"
 alias kbrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/sxhkd/sxhkdrc"
 alias alarc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/alacritty/alacritty.yml"
@@ -22,27 +23,6 @@ alias xup="sudo xbps-install -Suv"
 alias xl="xbps-query -l"
 alias xs="xbps-query -Rs"
 
-#---------------------------- ~prompt color~ ----------------------------#
-# Load version control information
-autoload -Uz vcs_info
-precmd() { vcs_info }
-
-# Load version control information
-autoload -Uz vcs_info
-precmd() { vcs_info }
-
-# Format the vcs_info_msg_0_ variable
-zstyle ':vcs_info:git:*' formats ' [%b]'
-
-# Set up the prompt (with git branch name)
-setopt PROMPT_SUBST
-
-autoload -U colors && colors
-setopt autocd
-
-PROMPT='%B%{$fg[green]%}%m %{$fg[yellow]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
-
-stty stop undef
 #--------------------------- ~alias|commands~ ---------------------------#
 alias cp="cp -iv"
 alias mv="mv -iv"
@@ -53,12 +33,29 @@ alias grep="grep --color=auto"
 alias diff="diff --color=auto"
 alias cat="highlight --out-format=ansi"
 
+#---------------------------- ~prompt color~ ----------------------------#
+# Load version control information
+autoload -Uz vcs_info
+precmd() { vcs_info }
+
+# Format the vcs_info_msg_0_ variable
+zstyle ':vcs_info:git:*' formats ' [%b]'
+
+# Set up the prompt (with git branch name)
+setopt PROMPT_SUBST
+setopt autocd
+autoload -U colors && colors
+
+PROMPT='%B%{$fg[green]%}%m %{$fg[yellow]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
+
+stty stop undef
 
 #------------------------------ ~settings~ ------------------------------#
 # History in cache directory:
 HISTSIZE=10000
 SAVEHIST=10000
 HISTFILE="$XDG_CACHE_HOME/zsh/history"
+
 setopt hist_expire_dups_first
 setopt hist_find_no_dups
 setopt hist_ignore_dups
@@ -70,10 +67,6 @@ zstyle ':completion:*' menu select
 zmodload zsh/complist
 compinit
 _comp_options+=(globdots)		# Include hidden files.
-
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh 2>/dev/null
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Vi mode
 bindkey -v

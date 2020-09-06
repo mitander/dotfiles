@@ -1,26 +1,25 @@
-" Plug
 call plug#begin()
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
   Plug 'mbbill/undotree'
   Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
   Plug 'junegunn/fzf.vim'
   Plug 'morhetz/gruvbox'
-  Plug 'jiangmiao/auto-pairs'
 call plug#end()
 
-" Settings
+if (has("termguicolors"))
+  set termguicolors
+endif
+
 syntax on
-set t_Co=256
-set guicursor=
 set mouse=a
 set number
-set noerrorbells
-set tabstop=2
-set shiftwidth=2
+set ruler
+set tabstop=4
+set shiftwidth=4
 set expandtab
 set smartindent
-set nowrap
 set smartcase
+set ignorecase
 set noswapfile
 set nobackup
 set nowritebackup
@@ -30,26 +29,11 @@ set scrolloff=8
 set updatetime=50
 set shortmess+=c
 set colorcolumn=80
-set laststatus=1
+set laststatus=2
 set statusline=%t
-set ruler
-
-colorscheme gruvbox
 set background=dark
+colorscheme gruvbox
 
-" Splits
-let g:fzf_action = {
-  \ 'ctrl-t': 'tab split',
-  \ 'ctrl-s': 'split',
-  \ 'ctrl-v': 'vsplit'
-  \}
-
-" RG
-if executable('Rg')
-    let g:rg_derive_root='true'
-endif
-
-" Leader (Space)
 let mapleader = " "
 
 nnoremap <C-h> :wincmd h<CR>
@@ -66,6 +50,7 @@ nnoremap <leader>rc :so ~/.config/nvim/init.vim<CR>
 nnoremap <leader>+ :vertical resize +5<CR>
 nnoremap <Leader>- :vertical resize -5<CR>
 nnoremap <leader>cr :CocRestart<CR>
+nnoremap <leader>/ :noh<CR>
 
 nmap <silent> K :call <SID>show_documentation()<CR>
 nmap <silent>gd <Plug>(coc-definition)
@@ -76,7 +61,6 @@ nmap <leader>gp <Plug>(coc-diagnostic-prev-error)
 nmap <leader>gn <Plug>(coc-diagnostic-next-error)
 nmap <leader>rr <Plug>(coc-rename)
 
-" Functions
 fun! TrimWhitespace()
     let l:save = winsaveview()
     keeppatterns %s/\s\+$//e
@@ -93,6 +77,12 @@ function! s:show_documentation()
   endif
 endfunction
 
-if (has("termguicolors"))
-  set termguicolors
+let g:fzf_action = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-s': 'split',
+  \ 'ctrl-v': 'vsplit'
+  \}
+
+if executable('Rg')
+    let g:rg_derive_root='true'
 endif
