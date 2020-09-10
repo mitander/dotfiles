@@ -64,7 +64,7 @@ setopt hist_reduce_blanks
 # Basic auto/tab complete:
 autoload -U compinit
 zstyle ':completion:*' menu select
-zmodload zsh/complist
+zmodload -i zsh/complist
 compinit
 _comp_options+=(globdots)		# Include hidden files.
 
