@@ -1,84 +1,49 @@
-#------------------------------ ~.zshrc~ ------------------------------#
-path+=/opt
-typeset -U path
-export TERM="screen-256color"
-
-#--------------------------- ~alias|config~ ---------------------------#
-
-# config shortcut
 alias zshrc="vim $HOME/.zshrc"
-alias tmuxconf="vim $HOME/.tmux.conf"
 alias vimrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/nvim/init.vim"
-alias wmrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/bspwm/bspwmrc"
-alias kbrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/sxhkd/sxhkdrc"
-alias alarc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/alacritty/alacritty.yml"
 alias vim="nvim"
 alias tm="tmux attach || tmux new"
-alias zs="source ~/.zshrc"
+alias tn="tmux new-session -s"
+alias ta="tmux attach -t"
+alias tls="tmux ls"
+#alias ls="ls -G"
+alias ls="ls --color=auto"
 
-# xbps shortcuts
-alias xin="sudo xbps-install -S"
-alias xrm="sudo xbps-remove -Ro"
-alias xup="sudo xbps-install -Suv"
-alias xl="xbps-query -l"
-alias xs="xbps-query -Rs"
-
-#--------------------------- ~alias|commands~ ---------------------------#
-alias cp="cp -iv"
-alias mv="mv -iv"
-alias rm="rm -vI"
-alias mkd="mkdir -pv"
-alias ls="ls -hN --color=auto --group-directories-first"
-alias grep="grep --color=auto"
-alias diff="diff --color=auto"
-alias cat="highlight --out-format=ansi"
-
-#---------------------------- ~prompt color~ ----------------------------#
-# Load version control information
+# prompt
 autoload -Uz vcs_info
 precmd() { vcs_info }
-
-# Format the vcs_info_msg_0_ variable
 zstyle ':vcs_info:git:*' formats ' [%b]'
-
-# Set up the prompt (with git branch name)
 setopt PROMPT_SUBST
 setopt autocd
 autoload -U colors && colors
-
-PROMPT='%B%{$fg[green]%}%m %{$fg[yellow]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%}$ %b'
-
+PROMPT='%B%{$fg[yellow]%}carlos: %{$fg[green]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%} $ %b'
 stty stop undef
 
-#------------------------------ ~settings~ ------------------------------#
-# History in cache directory:
+# settings
 HISTSIZE=10000
 SAVEHIST=10000
-HISTFILE="$XDG_CACHE_HOME/zsh/history"
+bindkey -v
+bindkey '^R' history-incremental-search-backward
 
-setopt hist_expire_dups_first
-setopt hist_find_no_dups
-setopt hist_ignore_dups
-setopt hist_reduce_blanks
-
-# Basic auto/tab complete:
+# auto/tab complete
 autoload -U compinit
 zstyle ':completion:*' menu select
-zmodload -i zsh/complist
+zmodload zsh/complist
 compinit
-_comp_options+=(globdots)		# Include hidden files.
+_comp_options+=(globdots)		# include hidden files.
 
-# Vi mode
+# vim keys
 bindkey -v
 export KEYTIMEOUT=1
-
-# Use vim keys in tab complete menu:
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
 
-# Edit line in vim with ctrl-e:
-autoload edit-command-line; zle -N edit-command-line
-bindkey '^e' edit-command-line
+# autojump
+[ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
+
+# paths
+export PATH="/usr/local/sbin:$PATH"
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=$HOME/go

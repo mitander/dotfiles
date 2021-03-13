@@ -5,6 +5,7 @@ call plug#begin()
   Plug 'junegunn/fzf.vim'
   Plug 'morhetz/gruvbox'
   Plug 'tpope/vim-fugitive'
+  Plug 'fatih/vim-go'
 call plug#end()
 
 set mouse=a
@@ -24,7 +25,7 @@ set undofile
 set scrolloff=8
 set updatetime=50
 set shortmess+=c
-set laststatus=1
+set laststatus=2
 set statusline=%t
 set background=dark
 
@@ -62,8 +63,11 @@ nmap <silent>gr <Plug>(coc-references)
 nmap <leader>gp <Plug>(coc-diagnostic-prev-error)
 nmap <leader>gn <Plug>(coc-diagnostic-next-error)
 nmap <leader>rr <Plug>(coc-rename)
-inoremap <silent><expr> <c-space> coc#refresh()
-
+" go specific
+nmap <F1> :GoRun<CR>
+nmap <F2> :GoTest<CR>
+nmap <F3> :!go test<CR>
+nmap <silent>cr coc#refresh
 
 " removes whitespace on save
 autocmd BufWritePre * :call TrimWhitespace()
