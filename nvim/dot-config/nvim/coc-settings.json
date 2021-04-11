@@ -1,6 +1,4 @@
 {
-    "suggest.autoTrigger": "trigger",
-    "suggest.noselect": false,
     "coc.preferences.formatOnSaveFiletypes": [
         "javascript",
         "typescript",

@@ -3,9 +3,13 @@ call plug#begin()
   Plug 'mbbill/undotree'
   Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
   Plug 'junegunn/fzf.vim'
-  Plug 'morhetz/gruvbox'
   Plug 'tpope/vim-fugitive'
   Plug 'fatih/vim-go'
+  Plug 'peitalin/vim-jsx-typescript'
+  Plug 'leafgarland/typescript-vim'
+  Plug 'nanotech/jellybeans.vim'
+  Plug 'tpope/vim-vinegar'
+  Plug 'SirVer/ultisnips'
 call plug#end()
 
 set mouse=a
@@ -28,17 +32,20 @@ set shortmess+=c
 set laststatus=2
 set statusline=%t
 set background=dark
+set noshowmode
 
 "set colorcolumn=80
 
 syntax on
-colorscheme gruvbox
+colorscheme jellybeans
 
 " colors
-hi Comment ctermfg=green
-hi StatusLine ctermbg=223 ctermfg=239
-hi StatusLineNC ctermbg=223 ctermfg=237
-hi VertSplit ctermbg=235 ctermfg=240
+hi CocErrorFloat ctermfg=red
+hi CocWarningSign ctermfg=red
+hi CocHintFloat ctermfg=red
+hi SignColumn ctermbg=NONE
+hi StatusLine ctermbg=236 ctermfg=253
+hi StatusLineNC ctermbg=236 ctermfg=243
 
 " binds
 let mapleader = " "
@@ -48,11 +55,12 @@ nnoremap <silent> <C-k> :wincmd k<CR>
 nnoremap <silent> <C-l> :wincmd l<CR>
 nnoremap <silent> <C-f> :Rg!<CR>
 nnoremap <silent> <C-p> :Files<CR>
-nnoremap <silent> <C-n> :Buffer<CR>
+nnoremap <silent> <C-b> :Buffer<CR>
 nnoremap <silent> <leader>u :UndotreeShow<CR>
 nnoremap <silent> <leader>/ :noh<CR>
 nnoremap <silent> <leader>. :CocDisable<CR>
 nnoremap <silent> <leader> p "_dP
+nnoremap <silent> <C-n> :Lexplore<CR>
 
 " coc binds
 nmap <silent> K :call <SID>show_documentation()<CR>
@@ -63,11 +71,11 @@ nmap <silent>gr <Plug>(coc-references)
 nmap <leader>gp <Plug>(coc-diagnostic-prev-error)
 nmap <leader>gn <Plug>(coc-diagnostic-next-error)
 nmap <leader>rr <Plug>(coc-rename)
+
 " go specific
-nmap <F1> :GoRun<CR>
+nmap <F1> :GoRun main.go
 nmap <F2> :GoTest<CR>
 nmap <F3> :!go test<CR>
-nmap <silent>cr coc#refresh
 
 " removes whitespace on save
 autocmd BufWritePre * :call TrimWhitespace()
@@ -97,3 +105,6 @@ if executable('Rg')
     let g:rg_derive_root='true'
 endif
 
+let g:netrw_winsize = 15
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescriptreact
