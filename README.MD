@@ -1,9 +1,0 @@
-OS: Void
-Shell: Zsh
-Status-bar: Polybar
-Terminal: Alacritty
-Compositor: Picom
-WM: Bspwm
-Keys: Sxhkd
-Volume: Xob
-Editor: Nvim
