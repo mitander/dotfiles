@@ -9,6 +9,7 @@ call plug#begin()
   Plug 'nanotech/jellybeans.vim'
 call plug#end()
 
+" settings
 set mouse=a
 set number
 set ruler
@@ -29,8 +30,7 @@ set shortmess+=c
 set laststatus=2
 set background=dark
 
-" set colorcolumn=80
-
+" colorscheme
 syntax on
 colorscheme jellybeans
 

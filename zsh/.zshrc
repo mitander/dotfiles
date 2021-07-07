@@ -5,17 +5,12 @@ alias vim="nvim"
 alias ls="ls --color=auto" # for ubuntu
 alias la="ls -A --color=auto"
 alias gl="git log --oneline --graph"
-
-# tmux alias
 alias tn="tmux new-session -s "
 alias ta="tmux attach-session -t "
+alias tm= "tmux attach -t coffee || tmux new -s coffee"
 alias tls="tmux ls"
-function tm () {
-    # attach to session with name of current dir, else create one
-    tmux attach -t $(basename $(pwd)) || tmux new -s $(basename $(pwd))
-}
 
-# prompt settings
+# prompt
 autoload -Uz vcs_info
 autoload -U colors && colors
 setopt PROMPT_SUBST
@@ -30,7 +25,7 @@ HISTSIZE=999999999
 SAVEHIST=$HISTSIZE
 HISTFILE=$HOME/.zsh_history
 
-# auto/tab complete
+# autocomplete
 autoload -U compinit
 zstyle ':completion:*' menu select
 zmodload zsh/complist
@@ -48,6 +43,9 @@ bindkey -v '^?' backward-delete-char
 # backwards search
 bindkey -v '^R' history-incremental-search-backward
 
+# z autojump
+[ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
+
 # paths
 export PATH=$PATH:/usr/local/sbin
 export PATH=$PATH:/usr/local/go/bin
@@ -58,6 +56,3 @@ export PATH=$PATH:$HOME/.local/bin
 export GOPATH=$HOME/go
 export GOPRIVATE=gitlab.com/SensysGatso
 export GONOSUMDB=gitlab.com/SensysGatso
-
-# z autojump
-[ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
