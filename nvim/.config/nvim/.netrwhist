@@ -1,0 +1,12 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =1
+let g:netrw_dirhist_1='/home/c.mitander/Downloads'
+let g:netrw_dirhist_0='/home/c.mitander/code/eventArchive/deployments/integration/redis.conf'
+let g:netrw_dirhist_9='/home/c.mitander/code/eventArchive/deployments/integration'
+let g:netrw_dirhist_8='/home/c.mitander/code/eventArchive/deployments/integration/redis.conf'
+let g:netrw_dirhist_7='/home/c.mitander/code/eventArchive'
+let g:netrw_dirhist_6='/home/c.mitander/code/eventArchive/deployments/integration/redis.conf'
+let g:netrw_dirhist_5='/home/c.mitander/code/eventArchive/deployments/integration'
+let g:netrw_dirhist_4='/home/c.mitander/code/detection-device-simulator'
+let g:netrw_dirhist_3='/home/c.mitander/code/detection-device-simulator/cmd'
+let g:netrw_dirhist_2='/home/c.mitander'

@@ -30,7 +30,7 @@ set scrolloff=8
 set updatetime=50
 set shortmess+=c
 set laststatus=2
-set statusline=%t
+set statusline=%F
 set background=dark
 set noshowmode
 
@@ -60,7 +60,7 @@ nnoremap <silent> <leader>u :UndotreeShow<CR>
 nnoremap <silent> <leader>/ :noh<CR>
 nnoremap <silent> <leader>. :CocDisable<CR>
 nnoremap <silent> <leader> p "_dP
-nnoremap <silent> <C-n> :Lexplore<CR>
+nnoremap <silent> <C-n> :CocCommand explorer<CR>
 
 " coc binds
 nmap <silent> K :call <SID>show_documentation()<CR>
@@ -75,7 +75,7 @@ nmap <leader>rr <Plug>(coc-rename)
 " go specific
 nmap <F1> :GoRun main.go
 nmap <F2> :GoTest<CR>
-nmap <F3> :!go test<CR>
+nmap <F3> :!go test ./...
 
 " removes whitespace on save
 autocmd BufWritePre * :call TrimWhitespace()
