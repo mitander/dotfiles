@@ -7,7 +7,7 @@ alias la="ls -A --color=auto"
 alias gl="git log --oneline --graph"
 alias tn="tmux new-session -s "
 alias ta="tmux attach-session -t "
-alias tm= "tmux attach -t coffee || tmux new -s coffee"
+alias tm="tmux attach -t coffee || tmux new -s coffee"
 alias tls="tmux ls"
 
 # prompt
@@ -51,6 +51,7 @@ export PATH=$PATH:/usr/local/sbin
 export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:$HOME/go/bin
 export PATH=$PATH:$HOME/.local/bin
+export PATH=$PATH:$HOME/.cargo/env
 
 # go paths
 export GOPATH=$HOME/go
