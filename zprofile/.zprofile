@@ -10,7 +10,6 @@ export CUSTOM_SOURCE_HOME="$HOME/.local/src"
 export JAVA_HOME="$CUSTOM_SOURCE_HOME/java"
 export NODE_HOME="$CUSTOM_SOURCE_HOME/node/node-v14.4.0"
 export OPT="/opt"
-export ML_PATH="$HOME/ml"
 
 # Set path of scripts
 export SCRIPTS="$HOME/scripts"
@@ -51,9 +50,5 @@ export PF_COL3="4"
 # Set default options for fzf
 export FZF_DEFAULT_OPTS="--layout=reverse --info=inline --height 10 --color=16,hl:12,hl+:12,bg+:8,fg+:15,gutter:0,pointer:15"
 
-# Source private .profile
-# shellcheck source=/dev/null
-source "$HOME/.zprofile.private"
-
-# start bspwm
-startx
+# set keyboard rate
+xset r rate 275 35

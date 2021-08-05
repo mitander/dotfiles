@@ -57,3 +57,5 @@ export PATH=$PATH:$HOME/.cargo/env
 export GOPATH=$HOME/go
 export GOPRIVATE=gitlab.com/SensysGatso
 export GONOSUMDB=gitlab.com/SensysGatso
+
+source ~/.zprofile
