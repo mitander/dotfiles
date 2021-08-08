@@ -2,11 +2,11 @@ env:
   TERM: xterm-256color
 
 window:
+  title: Alacritty
+
   padding:
     x: 5
-    y: 5
-
-  title: Alacritty
+    y: 3
 
   class:
     instance: Alacritty
@@ -17,26 +17,22 @@ scrolling:
 
 font:
   normal:
-    family: Roboto Mono
-    style: Regular
+    family: SF Mono
+    style: Medium
 
   bold:
-    family: Roboto Mono
+    family: SF Mono
     style: Bold
 
   italic:
-    family: Roboto Mono
+    family: SF Mono
     style: Italic
 
   bold_italic:
-    family: Roboto Mono
+    family: SF Mono
     style: Bold Italic
 
-  size: 11
-
-  offset:
-    x: 1
-    y: 1
+  size: 12
 
 colors:
   primary:
@@ -63,7 +59,7 @@ colors:
     cyan:    '#8fbfdc'
     white:   '#ebdbb2'
 
-background_opacity: 1.0
+background_opacity: 0.95
 
 key_bindings:
   - { key: V,        mods: Control|Shift, action: Paste            }

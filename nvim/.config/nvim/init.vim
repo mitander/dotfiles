@@ -42,6 +42,13 @@ hi SignColumn ctermbg=NONE
 hi StatusLine ctermbg=236 ctermfg=253
 hi StatusLineNC ctermbg=236 ctermfg=243
 
+" transparent background
+hi Normal ctermbg=NONE
+hi Normal ctermbg=NONE
+hi NonText ctermbg=NONE
+hi LineNr ctermbg=NONE ctermfg=NONE
+
+
 " binds
 let mapleader = " "
 nnoremap <silent> <C-h> :wincmd h<CR>

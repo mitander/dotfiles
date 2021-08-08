@@ -51,4 +51,4 @@ export PF_COL3="4"
 export FZF_DEFAULT_OPTS="--layout=reverse --info=inline --height 10 --color=16,hl:12,hl+:12,bg+:8,fg+:15,gutter:0,pointer:15"
 
 # set keyboard rate
-xset r rate 275 35
+xset r rate 275 40
