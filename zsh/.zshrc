@@ -2,7 +2,7 @@
 alias zshrc="vim $HOME/.zshrc"
 alias vimrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/nvim/init.vim"
 alias vim="nvim"
-alias ls="ls --color=auto" # for ubuntu
+alias ls="ls --color=auto"
 alias la="ls -A --color=auto"
 alias gl="git log --oneline --graph"
 alias tn="tmux new-session -s "
