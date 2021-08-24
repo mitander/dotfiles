@@ -43,6 +43,9 @@ bindkey -v '^?' backward-delete-char
 # backwards search
 bindkey -v '^R' history-incremental-search-backward
 
+# fzf hidden files
+export FZF_DEFAULT_COMMAND="find -L"
+
 # z autojump
 [ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
 
