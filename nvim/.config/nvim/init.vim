@@ -66,7 +66,7 @@ nnoremap <silent> <C-n> :CocCommand explorer<CR>
 nnoremap <silent> gb :Git blame<CR>
 
 " coc binds
-nmap <silent> K :call <SID>show_documentation()<CR>
+nmap <silent>K :call <SID>show_documentation()<CR>
 nmap <silent>gd <Plug>(coc-definition)
 nmap <silent>gy <Plug>(coc-type-definition)
 nmap <silent>gi <Plug>(coc-implementation)
@@ -79,10 +79,10 @@ nmap <leader>rr <Plug>(coc-rename)
 " move line
 nnoremap <A-j> :m .+1<CR>==
 nnoremap <A-k> :m .-2<CR>==
-inoremap <A-j> <Esc>:m .+1<CR>==gi
-inoremap <A-k> <Esc>:m .-2<CR>==gi
 vnoremap <A-j> :m '>+1<CR>gv=gv
 vnoremap <A-k> :m '<-2<CR>gv=gv
+inoremap <A-j> <Esc>:m .+1<CR>==gi
+inoremap <A-k> <Esc>:m .-2<CR>==gi
 
 
 " vim-go
@@ -108,12 +108,10 @@ function! s:show_documentation()
   endif
 endfunction
 
-" fzf and rg splits
-let g:fzf_action = {
-  \ 'ctrl-t': 'tab split',
-  \ 'ctrl-s': 'split',
-  \ 'ctrl-v': 'vsplit'
-  \}
+" fzf settings
+let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%' --preview 'batcat --color=always --style=header,grid --line-range :300 {}'"
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.9 } }
+let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit' }
 
 " rg derives from project root
 if executable('Rg')

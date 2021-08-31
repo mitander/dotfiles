@@ -44,12 +44,16 @@ bindkey -v '^?' backward-delete-char
 bindkey -v '^R' history-incremental-search-backward
 
 # fzf hidden files
-export FZF_DEFAULT_COMMAND="find -L"
+export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab}/*'"
+
+" TODO SET THEME
+"export BAT_THEME=""
 
 # z autojump
 [ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
 
 # paths
+export PATH=$PATH:/snap/bin
 export PATH=$PATH:/usr/local/sbin
 export PATH=$PATH:/usr/local/go/bin
 export PATH=$PATH:$HOME/go/bin
