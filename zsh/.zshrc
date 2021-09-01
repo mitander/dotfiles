@@ -45,9 +45,7 @@ bindkey -v '^R' history-incremental-search-backward
 
 # fzf hidden files
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab}/*'"
-
-# TODO SET THEME
-#export BAT_THEME=""
+export BAT_THEME="base16"
 
 # z autojump
 [ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
