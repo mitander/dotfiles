@@ -38,7 +38,6 @@ colors:
   primary:
     background: '#121212'
     foreground: '#c7c7c7'
-
   normal:
     black:   '#1c1c1c'
     red:     '#d75f5f'
@@ -48,7 +47,6 @@ colors:
     magenta: '#8787af'
     cyan:    '#4a8382'
     white:   '#e8e8de'
-
   bright:
     black:   '#3b3b3b'
     red:     '#ffb964'
@@ -62,15 +60,15 @@ colors:
 background_opacity: 1
 
 key_bindings:
-  - { key: V,        mods: Control|Shift, action: Paste            }
-  - { key: C,        mods: Control|Shift, action: Copy             }
-  - { key: Insert,   mods: Shift,         action: PasteSelection   }
-  - { key: Key0,     mods: Control,       action: ResetFontSize    }
-  - { key: Equals,   mods: Control,       action: IncreaseFontSize }
-  - { key: Minus,    mods: Control,       action: DecreaseFontSize }
-  - { key: Paste,                    action: Paste                            }
-  - { key: Copy,                     action: Copy                             }
-  - { key: L,         mods: Control, action: ClearLogNotice                   }
-  - { key: L,         mods: Control, chars: "\x0c"                            }
-  - { key: U,         mods: Control,   action: ScrollPageUp,   mode: ~Alt     }
-  - { key: D,         mods: Control,   action: ScrollPageDown, mode: ~Alt     }
+  - { key: V,      mods: Control|Shift, action: Paste                      }
+  - { key: C,      mods: Control|Shift, action: Copy                       }
+  - { key: Insert, mods: Shift,         action: PasteSelection             }
+  - { key: Key0,   mods: Control,       action: ResetFontSize              }
+  - { key: Equals, mods: Control,       action: IncreaseFontSize           }
+  - { key: Minus,  mods: Control,       action: DecreaseFontSize           }
+  - { key: Paste,                       action: Paste                      }
+  - { key: Copy,                        action: Copy                       }
+  - { key: L,      mods: Control,       action: ClearLogNotice             }
+  - { key: U,      mods: Control,       action: ScrollPageUp,   mode: ~Alt }
+  - { key: D,      mods: Control,       action: ScrollPageDown, mode: ~Alt }
+  - { key: L,      mods: Control,       chars: "\x0c"                      }

@@ -22,6 +22,10 @@
                 "snippetSupport": true
                 }
             }
-        }
+        },
+		"zls" : {
+           "command": "zls",
+           "filetypes": ["zig"]
+       }
     }
 }

@@ -1,3 +1,4 @@
+" plugins
 call plug#begin()
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
   Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
@@ -7,6 +8,10 @@ call plug#begin()
   Plug 'SirVer/ultisnips'
   Plug 'mbbill/undotree'
   Plug 'nanotech/jellybeans.vim'
+  Plug 'ziglang/zig.vim'
+  Plug 'airblade/vim-gitgutter'
+  Plug 'kevinhwang91/nvim-bqf'
+  Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 call plug#end()
 
 " settings
@@ -29,6 +34,7 @@ set updatetime=50
 set shortmess+=c
 set laststatus=2
 set background=dark
+set autoindent noexpandtab
 
 " colorscheme
 syntax on
