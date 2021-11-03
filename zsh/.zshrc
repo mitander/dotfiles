@@ -1,6 +1,6 @@
 # alias
 alias zshrc="vim $HOME/.zshrc"
-alias vimrc="vim ${XDG_CONFIG_HOME:-$HOME/.config}/nvim/init.vim"
+alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
 alias vim="nvim"
 alias ls="ls --color=auto"
 alias la="ls -A --color=auto"
@@ -43,24 +43,30 @@ bindkey -v '^?' backward-delete-char
 # backwards search
 bindkey -v '^R' history-incremental-search-backward
 
-# fzf hidden files
-export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab}/*'"
-export BAT_THEME="base16"
-
 # z autojump
 [ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
 
-# paths
-export PATH=$PATH:/snap/bin
-export PATH=$PATH:/usr/local/sbin
-export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:$HOME/go/bin
-export PATH=$PATH:$HOME/.local/bin
-export PATH=$PATH:$HOME/.cargo/env
+# keyboard repeat settings
+xset r rate 250 40
 
-# go paths
+# fzf variables
+export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab}/*'"
+export BAT_THEME="base16"
+
+# go variables
 export GOPATH=$HOME/go
 export GOPRIVATE=gitlab.com/SensysGatso
 export GONOSUMDB=gitlab.com/SensysGatso
 
-source ~/.zprofile
+# XGD variables
+export XDG_CONFIG_HOME=$HOME/.config
+export XDG_CACHE_HOME=$HOME/.cache
+export XDG_DOWNLOAD_DIR=$HOME/Downloads
+
+# paths
+export PATH=$PATH:/snap/bin
+export PATH=$PATH:/usr/local/sbin
+export PATH=$PATH:/usr/local/zig/bin
+export PATH=$PATH:/usr/local/zls/bin
+export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:$HOME/go/bin

@@ -40,20 +40,19 @@ set autoindent noexpandtab
 syntax on
 colorscheme jellybeans
 
-" colors
+" coc colors
 hi CocErrorFloat ctermfg=red
 hi CocWarningSign ctermfg=red
 hi CocHintFloat ctermfg=red
-hi SignColumn ctermbg=NONE
-hi StatusLine ctermbg=236 ctermfg=253
+
+" vim colors
 hi StatusLineNC ctermbg=236 ctermfg=243
-
-" transparent background
-hi Normal ctermbg=NONE
-hi Normal ctermbg=NONE
+hi StatusLine ctermbg=236 ctermfg=253
+hi SignColumn ctermbg=NONE
 hi NonText ctermbg=NONE
+hi Normal ctermbg=NONE
+hi Normal ctermbg=NONE
 hi LineNr ctermbg=NONE ctermfg=NONE
-
 
 " binds
 let mapleader = " "
@@ -80,7 +79,6 @@ nmap <silent>gr <Plug>(coc-references)
 nmap <leader>gp <Plug>(coc-diagnostic-prev-error)
 nmap <leader>gn <Plug>(coc-diagnostic-next-error)
 nmap <leader>rr <Plug>(coc-rename)
-
 
 " move line
 nnoremap <A-j> :m .+1<CR>==
