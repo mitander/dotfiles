@@ -17,7 +17,7 @@ setopt PROMPT_SUBST
 setopt autocd
 zstyle ':vcs_info:git:*' formats ' [%b]'
 precmd() { vcs_info }
-PROMPT='%Bcarl: %{$fg[green]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%} $ %b'
+PROMPT='%B[$(hostname -f)] %{$fg[green]%}${PWD/#$HOME/~}%{$fg[magenta]%}${vcs_info_msg_0_}%{$reset_color%} $ %b'
 stty stop undef
 
 # history
