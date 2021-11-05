@@ -1,22 +1,23 @@
 -- packages
-local paq = require('paq-nvim').paq
-paq {'savq/paq-nvim', opt = true}
-paq {'junegunn/fzf', run = vim.fn['fzf#install']}
-paq {'junegunn/fzf.vim'}
-paq {'nvim-treesitter/nvim-treesitter'}
-paq {'neovim/nvim-lspconfig'}
-paq {'kevinhwang91/nvim-bqf'}
-paq {'ziglang/zig.vim'}
-paq {'fatih/vim-go'}
-paq {'tpope/vim-fugitive'}
-paq {'SirVer/ultisnips'}
-paq {'mbbill/undotree'}
-paq {'nanotech/jellybeans.vim'}
-paq {'neovim/nvim-lspconfig'}
-paq {'lewis6991/gitsigns.nvim'}
-paq {'hrsh7th/nvim-cmp'}
-paq {'hrsh7th/cmp-nvim-lsp'}
-paq {'dstein64/nvim-scrollview'}
+require "paq" {
+	'savq/paq-nvim';
+	'junegunn/fzf';
+	'junegunn/fzf.vim';
+	'nvim-treesitter/nvim-treesitter';
+	'neovim/nvim-lspconfig';
+	'kevinhwang91/nvim-bqf';
+	'ziglang/zig.vim';
+	'fatih/vim-go';
+	'tpope/vim-fugitive';
+	'SirVer/ultisnips';
+	'mbbill/undotree';
+	'nanotech/jellybeans.vim';
+	'neovim/nvim-lspconfig';
+	'lewis6991/gitsigns.nvim';
+	'hrsh7th/nvim-cmp';
+	'hrsh7th/cmp-nvim-lsp';
+	'dstein64/nvim-scrollview';
+}
 
 -- settings
 vim.opt.mouse = 'a'
@@ -39,7 +40,6 @@ vim.opt.laststatus = 2
 vim.opt.background = 'dark'
 vim.opt.shortmess:append {c = true}
 
-
 -- colors
 local cmd = vim.cmd
 cmd('colorscheme jellybeans')
@@ -52,11 +52,6 @@ cmd('hi Normal ctermbg=NONE')
 cmd('hi Normal ctermbg=NONE')
 cmd('hi LineNr ctermbg=NONE ctermfg=NONE')
 cmd('hi Comment ctermfg=gray')
-
---- commands
-cmd 'au TextYankPost * lua vim.highlight.on_yank {on_visual = true}'
-cmd 'au FileType qf :nnoremap <buffer><esc> :q<CR>'
--- TODO: fix whitespace removal on save
 
 -- keybinds
 vim.g.mapleader = " "
@@ -118,3 +113,8 @@ lsp.zls.setup {capabilities = cap}
 lsp.ccls.setup {capabilities = cap} 
 lsp.gopls.setup {capabilities = cap} 
 lsp.tsserver.setup {capabilities = cap} 
+
+--- commands
+cmd 'au TextYankPost * lua vim.highlight.on_yank {on_visual = true}'
+cmd 'au FileType qf :nnoremap <buffer><esc> :q<CR>'
+-- TODO: fix whitespace removal on save
