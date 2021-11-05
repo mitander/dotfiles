@@ -24,7 +24,6 @@ set expandtab
 set smartindent
 set smartcase
 set ignorecase
-set noswapfile
 set nobackup
 set nowritebackup
 set undodir=~/.vim/undodir
@@ -53,6 +52,7 @@ hi NonText ctermbg=NONE
 hi Normal ctermbg=NONE
 hi Normal ctermbg=NONE
 hi LineNr ctermbg=NONE ctermfg=NONE
+hi Comment ctermfg=gray
 
 " binds
 let mapleader = " "
@@ -88,16 +88,9 @@ vnoremap <A-k> :m '<-2<CR>gv=gv
 inoremap <A-j> <Esc>:m .+1<CR>==gi
 inoremap <A-k> <Esc>:m .-2<CR>==gi
 
-
-" vim-go
-nmap <F1> :GoRun main.go
-nmap <F2> :GoTest<CR>
-nmap <F3> :!go test ./...
-nmap <F3> :GoTestFunc<CR>
-
 " trim whitespace on save
 autocmd BufWritePre * :call TrimWhitespace()
-fun! TrimWhitespace()
+fun! TrimWhitespace() 
     let l:save = winsaveview()
     keeppatterns %s/\s\+$//e
     call winrestview(l:save)
