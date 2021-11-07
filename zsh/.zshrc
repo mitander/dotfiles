@@ -53,20 +53,36 @@ xset r rate 250 40
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab}/*'"
 export BAT_THEME="base16"
 
-# go variables
+# variables
 export GOPATH=$HOME/go
 export GOPRIVATE=gitlab.com/SensysGatso
 export GONOSUMDB=gitlab.com/SensysGatso
 
-# XGD variables
+export ZIGPATH=/usr/local/zig
+export ZLSPATH=/usr/local/zls
+
 export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache
 export XDG_DOWNLOAD_DIR=$HOME/Downloads
 
-# paths
-export PATH=$PATH:/snap/bin
-export PATH=$PATH:/usr/local/sbin
-export PATH=$PATH:/usr/local/zig/bin
-export PATH=$PATH:/usr/local/zls/bin
-export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:$HOME/go/bin
+export EDITOR="nvim"
+export TERMINAL="alacritty"
+export BROWSER="firefox"
+export PAGER="nvim +Man!"
+export MANPAGER="$PAGER"
+export MANWIDTH="999"
+
+# path
+export PATH="$PATH:/snap/bin"
+export PATH="$PATH:$ZIGPATH/bin"
+export PATH="$PATH:$ZLSPATH/bin"
+export PATH="$PATH:$GOPATH/bin"
+
+# man page color
+export LESS_TERMCAP_mb=$'\e[1;34m'
+export LESS_TERMCAP_md=$'\e[1;34m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[4;32m'
+
