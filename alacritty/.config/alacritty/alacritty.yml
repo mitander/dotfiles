@@ -14,22 +14,23 @@ scrolling:
 
 font:
   normal:
-    family: Roboto Mono
+    family: SF Mono
     style: Medium
 
   bold:
-    family: Roboto Mono
+    family: SF Mono
     style: Bold
 
   italic:
-    family: Roboto Mono
+    family: SF Mono
     style: Italic
 
   bold_italic:
-    family: Roboto Mono
+    family: SF Mono
     style: Bold Italic
 
   size: 12
+
 
 colors:
   #primary:
@@ -53,8 +54,12 @@ colors:
     magenta: '#d7afff'
     cyan:    '#8fbfdc'
     white:   '#ebdbb2'
+  cursor:
+    text: '0x000000'
+    cursor: '0xffffff'
 
 background_opacity: 0.99
+
 
 key_bindings:
   - { key: V,      mods: Control|Shift, action: Paste                      }
