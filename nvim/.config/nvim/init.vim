@@ -48,6 +48,7 @@ hi GitSignsChange ctermfg=yellow ctermbg=NONE
 hi StatusLineNC ctermbg=236 ctermfg=243
 hi StatusLine ctermbg=236 ctermfg=253
 hi SignColumn ctermbg=NONE
+hi VertSplit ctermbg=NONE ctermfg=236
 hi NonText ctermbg=NONE
 hi Normal ctermbg=NONE
 hi LineNr ctermbg=NONE ctermfg=NONE
@@ -62,7 +63,7 @@ nnoremap <silent> <C-p> :CtrlP<CR>
 nnoremap <silent> <C-f> :Rg<CR>
 nnoremap <silent> <C-b> :Buffer<CR>
 nnoremap <silent> <C-n> :Lexplore<CR>
-nnoremap <silent> gb :Git<CR>
+nnoremap <silent> gs :Git<CR>
 nnoremap <silent> gb :Git blame<CR>
 nnoremap <silent> gl :Commits<CR>
 nnoremap <silent> gp :Gitsigns preview_hunk<CR>
@@ -80,7 +81,6 @@ nnoremap <silent> gD :lua vim.lsp.buf.declaration()<CR>
 nnoremap <silent> gd :lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> gi :lua vim.lsp.buf.implementation()<CR>
 nnoremap <silent> gr :lua vim.lsp.buf.references()<CR>
-nnoremap <silent> gl :lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
 nnoremap <silent> <C-]> :lua vim.lsp.diagnostic.goto_next()<CR>
 nnoremap <silent> <C-[> :lua vim.lsp.diagnostic.goto_prev()<CR>
 nnoremap <silent> <leader>rn :lua vim.lsp.buf.rename()<CR>
