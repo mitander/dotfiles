@@ -1,6 +1,7 @@
 # alias
 alias zshrc="vim $HOME/.zshrc"
 alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
+alias alarc="vim $XDG_CONFIG_HOME/alacritty/alacritty.yml"
 alias vim="nvim"
 alias ls="ls --color=auto"
 alias la="ls -A --color=auto"
@@ -50,8 +51,7 @@ bindkey -v '^R' history-incremental-search-backward
 xset r rate 250 40
 
 # fzf variables
-export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab}/*'"
-export BAT_THEME="base16"
+export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
 # variables
 export GOPATH=$HOME/go

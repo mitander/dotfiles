@@ -1,24 +1,24 @@
-" plugins
 call plug#begin('~/.vim/plugged')
-	Plug 'neoclide/coc.nvim', {'branch': 'release'}
 	Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 	Plug 'junegunn/fzf.vim'
 	Plug 'tpope/vim-fugitive'
 	Plug 'fatih/vim-go'
+	Plug 'ziglang/zig.vim'
 	Plug 'SirVer/ultisnips'
 	Plug 'mbbill/undotree'
 	Plug 'nanotech/jellybeans.vim'
-	Plug 'ziglang/zig.vim'
 	Plug 'kevinhwang91/nvim-bqf'
 	Plug 'nvim-treesitter/nvim-treesitter'
-	Plug 'ziglang/zig.vim'
-	Plug 'neovim/nvim-lspconfig'
 	Plug 'lewis6991/gitsigns.nvim'
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'hrsh7th/nvim-cmp'
 	Plug 'hrsh7th/cmp-nvim-lsp'
+	Plug 'neovim/nvim-lspconfig'
 	Plug 'dstein64/nvim-scrollview'
 call plug#end()
+
+" setup lua plugins
+lua require('setup')
 
 " settings
 set mouse=a
@@ -55,23 +55,26 @@ hi Comment ctermfg=gray
 
 " binds
 let mapleader = " "
+nnoremap <silent> <leader>u :UndotreeShow<CR>
+nnoremap <silent> <leader>/ :noh<CR>
+nnoremap <silent> <leader> p "_dP
+nnoremap <silent> <C-p> :CtrlP<CR>
+nnoremap <silent> <C-f> :Rg<CR>
+nnoremap <silent> <C-b> :Buffer<CR>
+nnoremap <silent> <C-n> :Lexplore<CR>
+nnoremap <silent> gb :Git<CR>
+nnoremap <silent> gb :Git blame<CR>
+nnoremap <silent> gl :Commits<CR>
+nnoremap <silent> gp :Gitsigns preview_hunk<CR>
+nnoremap <silent> g. :Gitsigns toggle_signs<CR>
+
+" window
 nnoremap <silent> <C-h> :wincmd h<CR>
 nnoremap <silent> <C-j> :wincmd j<CR>
 nnoremap <silent> <C-k> :wincmd k<CR>
 nnoremap <silent> <C-l> :wincmd l<CR>
-nnoremap <silent> <C-f> :Rg<CR>
-nnoremap <silent> <C-p> :Files<CR>
-nnoremap <silent> <C-b> :Buffer<CR>
-nnoremap <silent> <C-n> :Lexplore<CR>
-nnoremap <silent> <leader>u :UndotreeShow<CR>
-nnoremap <silent> <leader>/ :noh<CR>
-nnoremap <silent> <leader> p "_dP
-nnoremap <silent> gb :Git blame<CR>
-nnoremap <silent> gc :Commits<CR>
-nnoremap <silent> gp :Gitsigns preview_hunk<CR>
-nnoremap <silent> gp :Gitsigns toggle_signs<CR>
 
-" lsp binds
+" lsp
 nnoremap <silent> K :lua vim.lsp.buf.hover()<CR>
 nnoremap <silent> gD :lua vim.lsp.buf.declaration()<CR>
 nnoremap <silent> gd :lua vim.lsp.buf.definition()<CR>
@@ -82,7 +85,7 @@ nnoremap <silent> <C-]> :lua vim.lsp.diagnostic.goto_next()<CR>
 nnoremap <silent> <C-[> :lua vim.lsp.diagnostic.goto_prev()<CR>
 nnoremap <silent> <leader>rn :lua vim.lsp.buf.rename()<CR>
 
-" move line
+" move lines
 nnoremap <silent> <A-j> :m .+1<CR>==
 nnoremap <silent> <A-k> :m .-2<CR>==
 vnoremap <silent> <A-j> :m '>+1<CR>gv=gv
@@ -108,27 +111,15 @@ let g:netrw_liststyle=3
 let g:netrw_banner = 0
 
 " commands
-augroup highlight_yank
-    autocmd!
-	autocmd TextYankPost * silent! lua vim.highlight.on_yank({timeout = 100})
-augroup END
-
-augroup q_buffer_quit
-    autocmd!
-	autocmd FileType qf :nnoremap <silent> <buffer>q :q<CR>
-augroup END
-
-augroup netrw_mapping
-    autocmd!
-    autocmd FileType netrw :nnoremap <buffer> <C-l> :wincmd l<CR>
-augroup END
-
+autocmd TextYankPost * silent! lua vim.highlight.on_yank({timeout = 100})
+autocmd FileType qf :nnoremap <silent> <buffer>q :q<CR>
+autocmd FileType netrw :nnoremap <buffer> <C-l> :wincmd l<CR>
 autocmd BufWritePre * :call TrimWhitespace()
+
+command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles'
+
 fun! TrimWhitespace()
     let l:save = winsaveview()
     keeppatterns %s/\s\+$//e
     call winrestview(l:save)
 endfun
-
-" setup lua plugins
-lua require('setup')
