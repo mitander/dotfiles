@@ -24,13 +24,6 @@ cmp.setup {
 	}
 }
 
--- treesitter
-local ts = require('nvim-treesitter.configs')
-ts.setup {
-	ensure_installed = 'maintained',
-	highlight = {enable = true}
-}
-
 -- gitsigns
 local gs = require('gitsigns')
 gs.setup({

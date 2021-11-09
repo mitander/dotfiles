@@ -8,7 +8,6 @@ call plug#begin('~/.vim/plugged')
 	Plug 'mbbill/undotree'
 	Plug 'nanotech/jellybeans.vim'
 	Plug 'kevinhwang91/nvim-bqf'
-	Plug 'nvim-treesitter/nvim-treesitter'
 	Plug 'lewis6991/gitsigns.nvim'
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'hrsh7th/nvim-cmp'
@@ -113,6 +112,7 @@ let g:netrw_banner = 0
 " commands
 autocmd TextYankPost * silent! lua vim.highlight.on_yank({timeout = 100})
 autocmd FileType qf :nnoremap <silent> <buffer>q :q<CR>
+autocmd FileType qf :nnoremap <buffer> <CR> <CR>:cclose<CR>
 autocmd FileType netrw :nnoremap <buffer> <C-l> :wincmd l<CR>
 autocmd BufWritePre * :call TrimWhitespace()
 
