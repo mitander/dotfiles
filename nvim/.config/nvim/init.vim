@@ -111,7 +111,7 @@ let g:netrw_banner = 0
 
 " commands
 autocmd TextYankPost * silent! lua vim.highlight.on_yank({timeout = 100})
-autocmd FileType qf :nnoremap <silent> <buffer>q :q<CR>
+autocmd FileType qf :nnoremap <silent> <buffer><esc> :q<CR>
 autocmd FileType qf :nnoremap <buffer> <CR> <CR>:cclose<CR>
 autocmd FileType netrw :nnoremap <buffer> <C-l> :wincmd l<CR>
 autocmd BufWritePre * :call TrimWhitespace()

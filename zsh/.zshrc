@@ -48,16 +48,17 @@ bindkey -v '^R' history-incremental-search-backward
 [ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
 
 # keyboard repeat settings
-xset r rate 250 40
+xset r rate 275 40
 
 # fzf variables
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
 # variables
-export GOPATH=$HOME/go
+export GOBINPATH=$HOME/go
 export GOPRIVATE=gitlab.com/SensysGatso
 export GONOSUMDB=gitlab.com/SensysGatso
 
+export GOPATH=/usr/local/go
 export ZIGPATH=/usr/local/zig
 export ZLSPATH=/usr/local/zls
 
@@ -77,6 +78,7 @@ export PATH="$PATH:/snap/bin"
 export PATH="$PATH:$ZIGPATH/bin"
 export PATH="$PATH:$ZLSPATH/bin"
 export PATH="$PATH:$GOPATH/bin"
+export PATH="$PATH:$GOBINPATH/bin"
 
 # man page color
 export LESS_TERMCAP_mb=$'\e[1;34m'
@@ -85,4 +87,3 @@ export LESS_TERMCAP_me=$'\e[0m'
 export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[4;32m'
-
