@@ -54,11 +54,12 @@ hi NonText        ctermbg=NONE   ctermfg=NONE
 hi Comment        ctermbg=NONE   ctermfg=gray
 
 " binds
-map <space> <leader>
+let mapleader=" "
+map <space> <nop>
 
 nnoremap <silent> <leader>u :UndotreeShow<CR>
 nnoremap <silent> <leader>/ :noh<CR>
-nnoremap <silent> <leader> p "_dP
+nnoremap <silent> <leader>p "_dP
 nnoremap <silent> <C-p> :CtrlP<CR>
 nnoremap <silent> <C-f> :Rg<CR>
 nnoremap <silent> <C-b> :Buffer<CR>
@@ -81,8 +82,8 @@ nnoremap <silent> gD :lua vim.lsp.buf.declaration()<CR>
 nnoremap <silent> gd :lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> gi :lua vim.lsp.buf.implementation()<CR>
 nnoremap <silent> gr :lua vim.lsp.buf.references()<CR>
-nnoremap <silent> <C-]> :lua vim.lsp.diagnostic.goto_next()<CR>
-nnoremap <silent> <C-[> :lua vim.lsp.diagnostic.goto_prev()<CR>
+nnoremap <silent> g] :lua vim.lsp.diagnostic.goto_next()<CR>
+nnoremap <silent> g[ :lua vim.lsp.diagnostic.goto_prev()<CR>
 nnoremap <silent> <leader>rn :lua vim.lsp.buf.rename()<CR>
 
 " move lines
