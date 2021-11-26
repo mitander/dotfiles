@@ -1,13 +1,13 @@
 call plug#begin('~/.vim/plugged')
-	Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-	Plug 'junegunn/fzf.vim'
-	Plug 'tpope/vim-fugitive'
-	Plug 'fatih/vim-go'
-	Plug 'ziglang/zig.vim'
-	Plug 'SirVer/ultisnips'
-	Plug 'mbbill/undotree'
-	Plug 'nanotech/jellybeans.vim'
-	Plug 'kevinhwang91/nvim-bqf'
+    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+    Plug 'junegunn/fzf.vim'
+    Plug 'tpope/vim-fugitive'
+    Plug 'fatih/vim-go'
+    Plug 'ziglang/zig.vim'
+    Plug 'SirVer/ultisnips'
+    Plug 'mbbill/undotree'
+    Plug 'nanotech/jellybeans.vim'
+    Plug 'kevinhwang91/nvim-bqf'
 	Plug 'lewis6991/gitsigns.nvim'
 	Plug 'nvim-lua/plenary.nvim'
 	Plug 'hrsh7th/nvim-cmp'
@@ -27,6 +27,7 @@ set tabstop=4
 set shiftwidth=4
 set smartcase
 set ignorecase
+set noswapfile
 set nobackup
 set nowritebackup
 set undodir=~/.vim/undodir
@@ -75,6 +76,10 @@ nnoremap <silent> <C-h> :wincmd h<CR>
 nnoremap <silent> <C-j> :wincmd j<CR>
 nnoremap <silent> <C-k> :wincmd k<CR>
 nnoremap <silent> <C-l> :wincmd l<CR>
+nnoremap <silent> <Up> :resize +2<CR>
+nnoremap <silent> <Down> :resize -2<CR>
+nnoremap <silent> <Left> :vertical resize +2<CR>
+nnoremap <silent> <Right> :vertical resize -2<CR>
 
 " lsp
 nnoremap <silent> K :lua vim.lsp.buf.hover()<CR>
@@ -95,10 +100,19 @@ vnoremap <silent> <A-j> :m '>+1<CR>gv=gv
 vnoremap <silent> <A-k> :m '<-2<CR>gv=gv
 inoremap <silent> <A-j> <Esc>:m .+1<CR>==gi
 inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
+vnoremap <silent> < <gv
+vnoremap <silent> > >gv
+
+" save/quit helpers
+cab W  w
+cab Wq wq
+cab wQ wq
+cab WQ wq
+cab Q  q
 
 " fzf settings
-let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%' --preview 'batcat --color=always --style=header,grid --line-range :300 {}'"
-let g:fzf_layout = { 'window': { 'width': 0.6, 'height': 0.6 } }
+let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%'"
+let g:fzf_layout = { 'window': { 'width': 0.7, 'height': 0.6 } }
 let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit' }
 
 " rg settings
