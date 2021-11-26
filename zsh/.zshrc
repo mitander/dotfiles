@@ -14,6 +14,9 @@ alias gl="git log --oneline --graph --color=always --abbrev-commit --date=short 
 alias gc="git commit"
 alias ga="git add"
 alias gaa="git add ."
+alias gp="git push"
+alias gr="git rebase -i"
+alias ge="git commit --amend --no-edit"
 alias so="source ~/.zshrc"
 
 # prompt
