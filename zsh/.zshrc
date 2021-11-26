@@ -54,11 +54,11 @@ xset r rate 275 40
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
 # variables
-export GOBINPATH=$HOME/go
 export GOPRIVATE=gitlab.com/SensysGatso
 export GONOSUMDB=gitlab.com/SensysGatso
+export GOROOT=/usr/local/go
 
-export GOPATH=/usr/local/go
+export GOPATH=$HOME/go
 export ZIGPATH=/usr/local/zig
 export ZLSPATH=/usr/local/zls
 
@@ -78,7 +78,7 @@ export PATH="$PATH:/snap/bin"
 export PATH="$PATH:$ZIGPATH/bin"
 export PATH="$PATH:$ZLSPATH/bin"
 export PATH="$PATH:$GOPATH/bin"
-export PATH="$PATH:$GOBINPATH/bin"
+export PATH="$PATH:$GOROOT/bin"
 
 # man page color
 export LESS_TERMCAP_mb=$'\e[1;34m'
