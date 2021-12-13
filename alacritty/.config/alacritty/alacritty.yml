@@ -14,19 +14,19 @@ scrolling:
 
 font:
   normal:
-    family: SF Mono
+    family: Fira Mono Nerd Font
     style: Medium
 
   bold:
-    family: SF Mono
+    family: Fira Mono Nerd Font
     style: Bold
 
   italic:
-    family: SF Mono
+    family: Fira Mono Nerd Font
     style: Italic
 
   bold_italic:
-    family: SF Mono
+    family: Fira Mono Nerd Font
     style: Bold Italic
 
   size: 12

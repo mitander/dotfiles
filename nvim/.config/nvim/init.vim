@@ -14,6 +14,8 @@ call plug#begin('~/.vim/plugged')
 	Plug 'hrsh7th/cmp-nvim-lsp'
 	Plug 'neovim/nvim-lspconfig'
 	Plug 'dstein64/nvim-scrollview'
+    Plug 'kyazdani42/nvim-web-devicons'
+    Plug 'kyazdani42/nvim-tree.lua'
 call plug#end()
 
 " setup lua plugins
@@ -64,7 +66,7 @@ nnoremap <silent> <leader>p "_dP
 nnoremap <silent> <C-p> :CtrlP<CR>
 nnoremap <silent> <C-f> :Rg<CR>
 nnoremap <silent> <C-b> :Buffer<CR>
-nnoremap <silent> <C-n> :Lexplore<CR>
+nnoremap <silent> <C-n> :NvimTreeToggle<CR>
 nnoremap <silent> gs :Git<CR>
 nnoremap <silent> gb :Git blame<CR>
 nnoremap <silent> gl :Commits<CR>
@@ -119,13 +121,6 @@ let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit
 if executable('Rg')
     let g:rg_derive_root = 1
 endif
-
-" netrw settings
-let g:netrw_chgwin=3
-let g:netrw_browse_split=1
-let g:netrw_winsize=20
-let g:netrw_liststyle=3
-let g:netrw_banner = 0
 
 " commands
 autocmd TextYankPost * silent! lua vim.highlight.on_yank({timeout = 100})
