@@ -129,4 +129,4 @@ autocmd FileType qf :nnoremap <silent> <buffer><esc> :q<CR>
 autocmd FileType qf :nnoremap <silent> <buffer><CR> <CR>:cclose<CR>
 autocmd FileType * :nnoremap <silent> <buffer> <C-l> :wincmd l<CR>
 
-command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles'
+command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles --exclude-standard --others --cached'
