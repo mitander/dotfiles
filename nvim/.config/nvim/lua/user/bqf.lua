@@ -1,6 +1,5 @@
 local status_ok, bqf = pcall(require, "bqf")
 if not status_ok then
-  print("failed to load bqf")
   return
 end
 
