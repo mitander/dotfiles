@@ -1,6 +1,5 @@
 local status_ok, lsp_installer = pcall(require, "nvim-lsp-installer")
 if not status_ok then
-    print("failed to load nvim-lsp-installer")
 	return
 end
 

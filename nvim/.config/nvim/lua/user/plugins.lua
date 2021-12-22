@@ -25,7 +25,6 @@ vim.cmd [[
 -- Use a protected call so we don't error out on first use
 local status_ok, packer = pcall(require, "packer")
 if not status_ok then
-  print("failed to load packer")
   return
 end
 
@@ -35,7 +34,7 @@ packer.init {
     open_fn = function()
       return require("packer.util").float { border = "rounded" }
     end,
-  },
+  }
 }
 
 return packer.startup(function(use)
@@ -61,11 +60,12 @@ return packer.startup(function(use)
   use "williamboman/nvim-lsp-installer"
   use "jose-elias-alvarez/null-ls.nvim"
   use "nvim-telescope/telescope.nvim"
+  use "honza/vim-snippets"
+  use 'L3MON4D3/LuaSnip'
+  use { 'saadparwaiz1/cmp_luasnip' }
   use {'kevinhwang91/nvim-bqf', ft = 'qf'}
-  use {
-    "nvim-treesitter/nvim-treesitter",
-    run = ":TSUpdate",
-  }
+  use {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'}
+
 
   if PACKER_BOOTSTRAP then
     require("packer").sync()
