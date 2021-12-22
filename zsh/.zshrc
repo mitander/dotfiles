@@ -1,7 +1,6 @@
 # alias
 alias zshrc="vim $HOME/.zshrc"
-alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
-alias vimlua="vim $XDG_CONFIG_HOME/nvim/lua/setup.lua"
+alias vimrc="vim $XDG_CONFIG_HOME/nvim"
 alias alarc="vim $XDG_CONFIG_HOME/alacritty/alacritty.yml"
 alias vim="nvim"
 alias ls="ls --color=auto"
@@ -87,7 +86,7 @@ export PATH="$PATH:/snap/bin"
 export PATH="$PATH:$ZIG/bin"
 export PATH="$PATH:$ZLS/bin"
 export PATH="$PATH:$GO/bin"
-export PATH="$PATH:/bin"
+export PATH="$PATH:/usr/local/go/bin"
 
 # man page color
 export LESS_TERMCAP_mb=$'\e[1;34m'
