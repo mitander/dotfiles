@@ -66,3 +66,6 @@ keymap("n", "<C-n>", "<cmd>lua require 'nvim-tree'.toggle()<cr>", opts)
 
 -- UndoTree
 keymap("n", "<leader>u", ":UndoTreeToggle<CR>", opts)
+
+-- Quickfix
+keymap("n", "<C-q>", ":lua vim.lsp.diagnostic.set_loclist()<cr>", opts)
