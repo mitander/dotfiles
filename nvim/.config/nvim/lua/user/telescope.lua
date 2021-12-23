@@ -1,12 +1,10 @@
 local ts_status_ok, telescope = pcall(require, "telescope")
 if not ts_status_ok then
-  print("failed to load telescope")
   return
 end
 
 local tsa_status_ok, actions = pcall(require, "telescope.actions")
 if not tsa_status_ok then
-  print("failed to load telescope")
   return
 end
 

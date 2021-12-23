@@ -48,21 +48,16 @@ return packer.startup(function(use)
   use "kyazdani42/nvim-tree.lua"
   use "nvim-lua/plenary.nvim"
   use "akinsho/bufferline.nvim"
-  use "moll/vim-bbye"
   use "lewis6991/impatient.nvim"
   use "hrsh7th/cmp-nvim-lsp"
   use "lewis6991/gitsigns.nvim"
   use "hrsh7th/nvim-cmp"
-  use "hrsh7th/cmp-buffer"
-  use "hrsh7th/cmp-path"
-  use "hrsh7th/cmp-cmdline"
   use "neovim/nvim-lspconfig"
   use "williamboman/nvim-lsp-installer"
   use "jose-elias-alvarez/null-ls.nvim"
   use "nvim-telescope/telescope.nvim"
-  use "honza/vim-snippets"
   use 'L3MON4D3/LuaSnip'
-  use { 'saadparwaiz1/cmp_luasnip' }
+  use 'saadparwaiz1/cmp_luasnip'
   use {'kevinhwang91/nvim-bqf', ft = 'qf'}
   use {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'}
 
