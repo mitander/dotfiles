@@ -1,27 +1,28 @@
+" ----Plugged------------------------------------------------------------------|
 call plug#begin('~/.vim/plugged')
-    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-    Plug 'junegunn/fzf.vim'
-    Plug 'tpope/vim-fugitive'
     Plug 'fatih/vim-go'
     Plug 'ziglang/zig.vim'
+    Plug 'rust-lang/rust.vim'
+    Plug 'junegunn/fzf.vim'
+    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    Plug 'tpope/vim-fugitive'
     Plug 'SirVer/ultisnips'
     Plug 'mbbill/undotree'
+    Plug 'airblade/vim-gitgutter'
     Plug 'nanotech/jellybeans.vim'
-    Plug 'kevinhwang91/nvim-bqf'
-	Plug 'lewis6991/gitsigns.nvim'
-	Plug 'nvim-lua/plenary.nvim'
-	Plug 'hrsh7th/nvim-cmp'
-	Plug 'hrsh7th/cmp-nvim-lsp'
-	Plug 'neovim/nvim-lspconfig'
-	Plug 'dstein64/nvim-scrollview'
-    Plug 'kyazdani42/nvim-web-devicons'
-    Plug 'kyazdani42/nvim-tree.lua'
+    Plug 'airblade/vim-rooter'
+    Plug 'rhysd/vim-clang-format'
+    Plug 'tpope/vim-commentary'
 call plug#end()
 
-" setup lua plugins
-lua require('setup')
-
-" settings
+" ----Settings-----------------------------------------------------------------|
+set noswapfile
+set nobackup
+set nolist
+set hlsearch
+set incsearch
+set hidden
 set mouse=a
 set number
 set ruler
@@ -29,71 +30,58 @@ set tabstop=4
 set shiftwidth=4
 set smartcase
 set ignorecase
-set noswapfile
-set nobackup
-set nowritebackup
-set undodir=~/.vim/undodir
-set undofile
 set scrolloff=8
-set updatetime=50
+set updatetime=300
 set shortmess+=c
 set laststatus=2
 set background=dark
-set smartindent expandtab
+set smartindent
+set expandtab
+set ww=h,l,<,>,[,]
+set linebreak
+set autoread
+set wildmenu
+set wildmode=longest:full,full
+set history=1000
+set scrolloff=8
+set ttimeoutlen=50
+set virtualedit=block
+set showmatch
+set wildignore+=*.o
+set switchbuf=useopen,usetab
+set splitbelow
+set splitright
+set shell=/bin/zsh
+set statusline=%{expand('%:p:h:t')}/%t
+set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
-" colorscheme
-syntax on
-colorscheme jellybeans
+" ----Mappings-----------------------------------------------------------------|
+cab W  w
+cab Wq wq
+cab Q q
 
-" colors
-hi GitSignsChange ctermbg=NONE   ctermfg=yellow
-hi StatusLineNC   ctermbg=236    ctermfg=243
-hi StatusLine     ctermbg=236    ctermfg=253
-hi SignColumn     ctermbg=NONE	 ctermfg=236
-hi VertSplit      ctermbg=NONE   ctermfg=236
-hi LineNr         ctermbg=NONE   ctermfg=NONE
-hi Normal         ctermbg=NONE   ctermfg=NONE
-hi NonText        ctermbg=NONE   ctermfg=NONE
-hi Comment        ctermbg=NONE   ctermfg=gray
-
-" binds
 let mapleader=" "
 map <space> <nop>
 
-nnoremap <silent> <leader>u :UndotreeShow<CR>
-nnoremap <silent> <leader>/ :noh<CR>
+nnoremap <silent> <CR> :noh<CR>
+nnoremap <silent> <CR> :noh<CR>
+nnoremap <silent> <leader>so :so ~/.config/nvim/init.vim<CR>
 nnoremap <silent> <leader>p "_dP
-nnoremap <silent> <C-p> :CtrlP<CR>
-nnoremap <silent> <C-f> :Rg<CR>
-nnoremap <silent> <C-b> :Buffer<CR>
-nnoremap <silent> <C-n> :NvimTreeToggle<CR>
-nnoremap <silent> gs :Git<CR>
-nnoremap <silent> gb :Git blame<CR>
-nnoremap <silent> gl :Commits<CR>
-nnoremap <silent> gp :Gitsigns preview_hunk<CR>
-nnoremap <silent> g. :Gitsigns toggle_signs<CR>
 
-" window
+nnoremap <silent> <c-t> :tabnew<CR>
+nnoremap <silent> <tab> gt
+nnoremap <silent> <s-tab> gT
+
 nnoremap <silent> <C-h> :wincmd h<CR>
 nnoremap <silent> <C-j> :wincmd j<CR>
 nnoremap <silent> <C-k> :wincmd k<CR>
 nnoremap <silent> <C-l> :wincmd l<CR>
+
 nnoremap <silent> <Up> :resize +2<CR>
 nnoremap <silent> <Down> :resize -2<CR>
 nnoremap <silent> <Left> :vertical resize +2<CR>
 nnoremap <silent> <Right> :vertical resize -2<CR>
 
-" lsp
-nnoremap <silent> K :lua vim.lsp.buf.hover()<CR>
-nnoremap <silent> gD :lua vim.lsp.buf.declaration()<CR>
-nnoremap <silent> gd :lua vim.lsp.buf.definition()<CR>
-nnoremap <silent> gi :lua vim.lsp.buf.implementation()<CR>
-nnoremap <silent> gr :lua vim.lsp.buf.references()<CR>
-nnoremap <silent> g] :lua vim.lsp.diagnostic.goto_next()<CR>
-nnoremap <silent> g[ :lua vim.lsp.diagnostic.goto_prev()<CR>
-nnoremap <silent> <leader>rn :lua vim.lsp.buf.rename()<CR>
-
-" move lines
 nnoremap <silent> j gj
 nnoremap <silent> k gk
 nnoremap <silent> <A-j> :m .+1<CR>==
@@ -105,28 +93,127 @@ inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
 vnoremap <silent> < <gv
 vnoremap <silent> > >gv
 
-" save/quit helpers
-cab W  w
-cab Wq wq
-cab wQ wq
-cab WQ wq
-cab Q  q
-
-" fzf settings
-let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%'"
-let g:fzf_layout = { 'window': { 'width': 0.7, 'height': 0.6 } }
-let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-s': 'split', 'ctrl-v': 'vsplit' }
-
-" rg settings
+" ----Plugins------------------------------------------------------------------|
+" ripgrep
+nnoremap <silent> <C-f> :Rg<CR>
 if executable('Rg')
     let g:rg_derive_root = 1
 endif
 
-" commands
-autocmd TextYankPost * silent! lua vim.highlight.on_yank({timeout = 100})
-autocmd BufWritePre * :%s/\s\+$//e
-autocmd FileType qf :nnoremap <silent> <buffer><esc> :q<CR>
-autocmd FileType qf :nnoremap <silent> <buffer><CR> <CR>:cclose<CR>
-autocmd FileType * :nnoremap <silent> <buffer> <C-l> :wincmd l<CR>
+" fzf
+nnoremap <silent> <C-p> :Files<CR>
+let g:fzf_layout = { 'window': { 'width': 0.7, 'height': 0.6 } }
+let g:fzf_action = {
+    \'ctrl-t': 'tab split',
+    \'ctrl-s': 'split',
+    \'ctrl-v': 'vsplit'}
 
-command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles --exclude-standard --others --cached'
+" commentary
+vnoremap <silent> <leader>/ :Commentary<CR>
+nnoremap <silent> <leader>/ :Commentary<CR>
+
+" undotree
+if has("persistent_undo")
+    nnoremap <silent> <leader>u :UndotreeToggle<CR>
+    set undodir=~/.vim/tmp/undodir
+    set undofile
+endif
+
+" git-gutter
+nnoremap <silent> gp :GitGutterPreviewHunk<CR>
+nnoremap <silent> g. :GitGutterToggle<CR>
+let g:gitgutter_enabled = 0
+let g:gitgutter_sign_added = '|'
+let g:gitgutter_sign_modified = '|'
+let g:gitgutter_sign_removed = '|'
+let g:gitgutter_sign_removed_first_line = '|'
+let g:gitgutter_sign_removed_above_and_below = '|'
+let g:gitgutter_sign_modified_removed = '|'
+
+" rooter
+let g:rooter_targets = '*'
+let g:rooter_silent_chdir = 1
+
+" fugitive
+nnoremap <silent> gs :Git<CR>
+nnoremap <silent> gb :Git blame<CR>
+nnoremap <silent> gl :Commits<CR>
+
+" vim-go
+let g:go_play_open_browser = 0
+let g:go_fmt_fail_silently = 1
+let g:go_fmt_command = "goimports"
+
+" vim-rust
+let g:rustfmt_autosave = 1
+let g:rustfmt_emit_files = 1
+let g:rustfmt_fail_silently = 0
+let g:rust_clip_command = 'xclip -selection clipboard'
+
+" coc
+nmap <silent> <C-n> :CocCommand explorer<CR>
+nmap <silent> <leader>rn <Plug>(coc-rename)
+nmap <silent> <leader>a  :<C-u>CocList diagnostics<cr>
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+nmap <silent> g[ <Plug>(coc-diagnostic-prev)
+nmap <silent> g] <Plug>(coc-diagnostic-next)
+nmap <silent> K :call <SID>show_documentation()<CR>
+
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
+inoremap <silent><expr> <cr>
+            \ pumvisible() ? coc#_select_confirm() :
+            \ "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<cr>"
+
+let g:coc_global_extensions = [
+  \ 'coc-tsserver',
+  \ 'coc-pairs',
+  \ 'coc-lists',
+  \ 'coc-explorer',
+  \ 'coc-rust-analyzer',
+  \ 'coc-go',
+  \ 'coc-zls',
+  \ ]
+
+" ----Colors-------------------------------------------------------------------|
+syntax on
+colorscheme jellybeans
+
+hi StatusLineNC    ctermbg=236    ctermfg=243
+hi StatusLine      ctermbg=236    ctermfg=253
+hi SignColumn      ctermbg=NONE	  ctermfg=236
+hi ColorColumn     ctermbg=236	  ctermfg=236
+hi VertSplit       ctermbg=NONE   ctermfg=243
+hi LineNr          ctermbg=NONE   ctermfg=NONE
+hi Normal          ctermbg=NONE   ctermfg=NONE
+hi NonText         ctermbg=NONE   ctermfg=NONE
+hi Comment         ctermbg=NONE   ctermfg=gray
+hi GitGutterDelete ctermbg=NONE   ctermfg=red
+hi GitGutterAdd    ctermbg=NONE   ctermfg=green
+hi GitGutterChange ctermbg=NONE   ctermfg=yellow
+
+" ----Commands-----------------------------------------------------------------|
+autocmd Filetype rust set colorcolumn=100
+autocmd Filetype go set colorcolumn=100
+autocmd Filetype c set colorcolumn=80
+autocmd Filetype vim set colorcolumn=80
+
+autocmd CursorHold * silent call CocActionAsync('highlight')
+autocmd FileType c ClangFormatAutoEnable
+
+autocmd BufRead *.orig set readonly
+autocmd BufRead *.pacnew set readonly
+
+autocmd TextYankPost * silent! lua vim.highlight.on_yank({})
+autocmd InsertLeave * set nopaste
+autocmd BufWritePre * :%s/\s\+$//e
+autocmd FileType list :nnoremap <silent> <buffer>q :q<cr>:q<cr>

@@ -69,7 +69,8 @@ export GONOSUMDB=gitlab.com/SensysGatso
 
 export ZIG=/usr/local/zig
 export ZLS=/usr/local/zls
-export GO=$HOME/go
+export GOPATH=$HOME/go
+export GOROOT="/usr/local/go"
 
 export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache
@@ -83,10 +84,13 @@ export MANPAGER="$PAGER"
 export MANWIDTH="999"
 
 # path
-export PATH="$PATH:/snap/bin"
+export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:$ZIG/bin"
 export PATH="$PATH:$ZLS/bin"
-export PATH="$PATH:$GO/bin"
+export PATH="$PATH:$GOPATH/bin"
+export PATH="$PATH:$GOROOT/bin"
+export PATH="$PATH:/usr/local/go/bin"
+export PATH="$PATH:/snap/bin"
 export PATH="$PATH:/bin"
 
 # man page color
