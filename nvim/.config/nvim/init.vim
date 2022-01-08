@@ -1,4 +1,6 @@
-" ----Plugged------------------------------------------------------------------|
+"----[init.vim]----------------------------------------------------------------
+
+"-----Plugged------------------------------------------------------------------
 call plug#begin('~/.vim/plugged')
     Plug 'fatih/vim-go'
     Plug 'ziglang/zig.vim'
@@ -14,9 +16,10 @@ call plug#begin('~/.vim/plugged')
     Plug 'airblade/vim-rooter'
     Plug 'rhysd/vim-clang-format'
     Plug 'tpope/vim-commentary'
+    Plug 'Yggdroot/indentLine'
 call plug#end()
 
-" ----Settings-----------------------------------------------------------------|
+"-----Settings-----------------------------------------------------------------
 set noswapfile
 set nobackup
 set nolist
@@ -31,7 +34,7 @@ set shiftwidth=4
 set smartcase
 set ignorecase
 set scrolloff=8
-set updatetime=300
+set updatetime=50
 set shortmess+=c
 set laststatus=2
 set background=dark
@@ -55,17 +58,13 @@ set shell=/bin/zsh
 set statusline=%{expand('%:p:h:t')}/%t
 set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
-" ----Mappings-----------------------------------------------------------------|
-cab W  w
-cab Wq wq
-cab Q q
-
+"-----Mappings-----------------------------------------------------------------
 let mapleader=" "
 map <space> <nop>
 
 nnoremap <silent> <CR> :noh<CR>
-nnoremap <silent> <CR> :noh<CR>
-nnoremap <silent> <leader>so :so ~/.config/nvim/init.vim<CR>
+nnoremap <silent> <leader>c :tabnew $MYVIMRC<CR>
+nnoremap <silent> <leader>so :so $MYVIMRC<CR> :echo "[init.vim sourced]"<CR>
 nnoremap <silent> <leader>p "_dP
 
 nnoremap <silent> <c-t> :tabnew<CR>
@@ -93,7 +92,11 @@ inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
 vnoremap <silent> < <gv
 vnoremap <silent> > >gv
 
-" ----Plugins------------------------------------------------------------------|
+cab W  w
+cab Wq wq
+cab Q q
+
+"-----Plugins------------------------------------------------------------------
 " ripgrep
 nnoremap <silent> <C-f> :Rg<CR>
 if executable('Rg')
@@ -122,6 +125,7 @@ endif
 " git-gutter
 nnoremap <silent> gp :GitGutterPreviewHunk<CR>
 nnoremap <silent> g. :GitGutterToggle<CR>
+
 let g:gitgutter_enabled = 0
 let g:gitgutter_sign_added = '|'
 let g:gitgutter_sign_modified = '|'
@@ -170,9 +174,9 @@ function! s:show_documentation()
   endif
 endfunction
 
-inoremap <silent><expr> <cr>
+inoremap <silent><expr> <CR>
             \ pumvisible() ? coc#_select_confirm() :
-            \ "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<cr>"
+            \ "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
 let g:coc_global_extensions = [
   \ 'coc-tsserver',
@@ -184,7 +188,7 @@ let g:coc_global_extensions = [
   \ 'coc-zls',
   \ ]
 
-" ----Colors-------------------------------------------------------------------|
+"-----Colors-------------------------------------------------------------------
 syntax on
 colorscheme jellybeans
 
@@ -192,7 +196,7 @@ hi StatusLineNC    ctermbg=236    ctermfg=243
 hi StatusLine      ctermbg=236    ctermfg=253
 hi SignColumn      ctermbg=NONE	  ctermfg=236
 hi ColorColumn     ctermbg=236	  ctermfg=236
-hi VertSplit       ctermbg=NONE   ctermfg=243
+hi VertSplit       ctermbg=NONE   ctermfg=244
 hi LineNr          ctermbg=NONE   ctermfg=NONE
 hi Normal          ctermbg=NONE   ctermfg=NONE
 hi NonText         ctermbg=NONE   ctermfg=NONE
@@ -201,7 +205,7 @@ hi GitGutterDelete ctermbg=NONE   ctermfg=red
 hi GitGutterAdd    ctermbg=NONE   ctermfg=green
 hi GitGutterChange ctermbg=NONE   ctermfg=yellow
 
-" ----Commands-----------------------------------------------------------------|
+"-----Commands-----------------------------------------------------------------
 autocmd Filetype rust set colorcolumn=100
 autocmd Filetype go set colorcolumn=100
 autocmd Filetype c set colorcolumn=80
@@ -216,4 +220,4 @@ autocmd BufRead *.pacnew set readonly
 autocmd TextYankPost * silent! lua vim.highlight.on_yank({})
 autocmd InsertLeave * set nopaste
 autocmd BufWritePre * :%s/\s\+$//e
-autocmd FileType list :nnoremap <silent> <buffer>q :q<cr>:q<cr>
+autocmd FileType list :nnoremap <silent> <buffer>q :q<CR>:q<CR>
