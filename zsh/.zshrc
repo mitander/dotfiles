@@ -4,6 +4,8 @@ alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
 alias vimlua="vim $XDG_CONFIG_HOME/nvim/lua/setup.lua"
 alias alarc="vim $XDG_CONFIG_HOME/alacritty/alacritty.yml"
 alias vim="nvim"
+# alias e='emacsclient -nw'
+# alias emacs=e
 alias ls="ls --color=auto"
 alias l="ls -A --color=auto"
 alias tn="tmux new-session -s "
@@ -77,6 +79,8 @@ export XDG_CACHE_HOME=$HOME/.cache
 export XDG_DOWNLOAD_DIR=$HOME/Downloads
 
 export EDITOR="nvim"
+#export EDITOR="emacs"
+export ALTERNATE_EDITOR='nvim'
 export TERMINAL="alacritty"
 export BROWSER="firefox"
 export PAGER="nvim +Man!"

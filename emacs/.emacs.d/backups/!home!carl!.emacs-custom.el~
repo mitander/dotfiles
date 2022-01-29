@@ -1,0 +1,13 @@
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(perspective virtualenvwrapper eshell-prompt-extras merlin ocp-indent py-yapf lua-mode sml-mode reason-mode tuareg haskell-mode racket-mode markdown-mode toml-mode yaml-mode web-mode go-mode rust-mode scss-mode exec-path-from-shell rainbow-delimiters gist magit visual-regexp paradox helm-projectile projectile helm-swoop helm company use-package)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

@@ -56,7 +56,6 @@ set splitbelow
 set splitright
 set shell=/bin/zsh
 set statusline=%{expand('%:p:h:t')}/%t
-set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
 "-----Mappings-----------------------------------------------------------------
 let mapleader=" "
@@ -67,9 +66,10 @@ nnoremap <silent> <leader>c :tabnew $MYVIMRC<CR>
 nnoremap <silent> <leader>so :so $MYVIMRC<CR> :echo "[init.vim sourced]"<CR>
 nnoremap <silent> <leader>p "_dP
 
-nnoremap <silent> <c-t> :tabnew<CR>
-nnoremap <silent> <tab> gt
-nnoremap <silent> <s-tab> gT
+nnoremap <silent> <C-t> :tabnew<CR>
+nnoremap <silent> <C-w><C-l> gt
+nnoremap <silent> <C-w><C-h> gT
+nnoremap <silent> <C-w><C-w> :tabprevious<CR>
 
 nnoremap <silent> <C-h> :wincmd h<CR>
 nnoremap <silent> <C-j> :wincmd j<CR>
@@ -143,10 +143,10 @@ nnoremap <silent> gs :Git<CR>
 nnoremap <silent> gb :Git blame<CR>
 nnoremap <silent> gl :Commits<CR>
 
-" vim-go
-let g:go_play_open_browser = 0
-let g:go_fmt_fail_silently = 1
-let g:go_fmt_command = "goimports"
+" vim-go - disabled due to errors with coc
+" let g:go_play_open_browser = 0
+" let g:go_fmt_fail_silently = 1
+" let g:go_fmt_command = "goimports"
 
 " vim-rust
 let g:rustfmt_autosave = 1
