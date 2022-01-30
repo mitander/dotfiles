@@ -16,7 +16,11 @@ call plug#begin('~/.vim/plugged')
     Plug 'airblade/vim-rooter'
     Plug 'rhysd/vim-clang-format'
     Plug 'tpope/vim-commentary'
+    Plug 'ahmedkhalf/project.nvim'
     Plug 'Yggdroot/indentLine'
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'nvim-telescope/telescope.nvim'
+    Plug 'fabi1cazenave/termopen.vim'
 call plug#end()
 
 "-----Settings-----------------------------------------------------------------
@@ -29,8 +33,8 @@ set hidden
 set mouse=a
 set number
 set ruler
-set tabstop=4
-set shiftwidth=4
+set tabstop=2
+set shiftwidth=2
 set smartcase
 set ignorecase
 set scrolloff=8
@@ -56,6 +60,7 @@ set splitbelow
 set splitright
 set shell=/bin/zsh
 set statusline=%{expand('%:p:h:t')}/%t
+set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
 "-----Mappings-----------------------------------------------------------------
 let mapleader=" "
@@ -66,10 +71,9 @@ nnoremap <silent> <leader>c :tabnew $MYVIMRC<CR>
 nnoremap <silent> <leader>so :so $MYVIMRC<CR> :echo "[init.vim sourced]"<CR>
 nnoremap <silent> <leader>p "_dP
 
-nnoremap <silent> <C-t> :tabnew<CR>
-nnoremap <silent> <C-w><C-l> gt
-nnoremap <silent> <C-w><C-h> gT
-nnoremap <silent> <C-w><C-w> :tabprevious<CR>
+nnoremap <silent> <c-t> :tabnew<CR>
+nnoremap <silent> <c-w><c-h> gt
+nnoremap <silent> <c-w><c-l> gT
 
 nnoremap <silent> <C-h> :wincmd h<CR>
 nnoremap <silent> <C-j> :wincmd j<CR>
@@ -143,16 +147,22 @@ nnoremap <silent> gs :Git<CR>
 nnoremap <silent> gb :Git blame<CR>
 nnoremap <silent> gl :Commits<CR>
 
-" vim-go - disabled due to errors with coc
-" let g:go_play_open_browser = 0
-" let g:go_fmt_fail_silently = 1
-" let g:go_fmt_command = "goimports"
+" vim-go
+let g:go_play_open_browser = 0
+let g:go_fmt_fail_silently = 1
+let g:go_fmt_command = "goimports"
 
 " vim-rust
 let g:rustfmt_autosave = 1
 let g:rustfmt_emit_files = 1
 let g:rustfmt_fail_silently = 0
 let g:rust_clip_command = 'xclip -selection clipboard'
+
+" telescope
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 " coc
 nmap <silent> <C-n> :CocCommand explorer<CR>
@@ -188,6 +198,31 @@ let g:coc_global_extensions = [
   \ 'coc-zls',
   \ ]
 
+"-----term-open----------------------------------------------------------------
+"
+" navigate term split
+tnoremap <silent> <C-k> <C-\><C-n>:wincmd k<CR>
+tnoremap <silent> <C-j> <C-\><C-n>:wincmd j<CR>
+tnoremap <silent> <C-h> <C-\><C-n>:wincmd h<CR>
+tnoremap <silent> <C-l> <C-\><C-n>:wincmd l<CR>
+
+" navigate term tab
+tnoremap <silent> <C-w><C-h> <C-\><C-n>gT
+tnoremap <silent> <C-w><C-l> <C-\><C-n>gt
+
+" navigate term tab
+tnoremap <silent> <C-w><C-v> <C-\><C-n>:wincmd L<CR>i
+tnoremap <silent> <C-w><C-s> <C-\><C-n>:wincmd J<CR>i
+tnoremap <silent> <ESC> <C-\><C-n>
+
+" open terminal split
+
+let $NVIM_LISTEN_ADDRESS='/tmp/nvimsocket'
+nnoremap <silent><C-w><CR> :call TermOpen()<CR>
+nnoremap <silent><C-w><C-s> :call TermOpen("", "s")<CR>
+nnoremap <silent><C-w><C-v> :call TermOpen("", "v")<CR>
+nnoremap <silent><C-w><C-t> :call TermOpen("", "t")<CR>
+nnoremap <silent><leader>g :call TermOpen("lazygit", "t")<CR>
 "-----Colors-------------------------------------------------------------------
 syntax on
 colorscheme jellybeans
@@ -207,8 +242,13 @@ hi GitGutterChange ctermbg=NONE   ctermfg=yellow
 
 "-----Commands-----------------------------------------------------------------
 autocmd Filetype rust set colorcolumn=100
+autocmd Filetype rust set tabstop=4 shiftwidth=4
+
 autocmd Filetype go set colorcolumn=100
+autocmd Filetype go set tabstop=4 shiftwidth=4
+
 autocmd Filetype c set colorcolumn=80
+autocmd Filetype c set tabstop=4 shiftwidth=4
 autocmd Filetype vim set colorcolumn=80
 
 autocmd CursorHold * silent call CocActionAsync('highlight')

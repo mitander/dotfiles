@@ -4,8 +4,6 @@ alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
 alias vimlua="vim $XDG_CONFIG_HOME/nvim/lua/setup.lua"
 alias alarc="vim $XDG_CONFIG_HOME/alacritty/alacritty.yml"
 alias vim="nvim"
-# alias e='emacsclient -nw'
-# alias emacs=e
 alias ls="ls --color=auto"
 alias l="ls -A --color=auto"
 alias tn="tmux new-session -s "
@@ -65,6 +63,16 @@ xset r rate 275 40
 # fzf variables
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
+# if nvr is installed, set listen address
+if type -f nvr > /dev/null; then
+  alias vim="NVIM_LISTEN_ADDRESS=/tmp/nvimsocket nvim"
+  if [ -n "${NVIM_LISTEN_ADDRESS}" ]; then
+    function nvim() {nvr $1}
+  fi
+fi
+
+# allow vim to open files from terminal buffer with "vim [filename]"
+
 # variables
 export GOPRIVATE=gitlab.com/SensysGatso
 export GONOSUMDB=gitlab.com/SensysGatso
@@ -79,8 +87,6 @@ export XDG_CACHE_HOME=$HOME/.cache
 export XDG_DOWNLOAD_DIR=$HOME/Downloads
 
 export EDITOR="nvim"
-#export EDITOR="emacs"
-export ALTERNATE_EDITOR='nvim'
 export TERMINAL="alacritty"
 export BROWSER="firefox"
 export PAGER="nvim +Man!"
