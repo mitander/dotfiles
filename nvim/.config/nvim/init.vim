@@ -41,7 +41,6 @@ set shortmess+=c
 set background=dark
 set smartindent
 set expandtab
-set ww=h,l,<,>,[,]
 set linebreak
 set autoread
 set wildmenu
@@ -59,6 +58,8 @@ set shell=/bin/zsh
 set statusline=%{expand('%:p:h:t')}/%t
 set laststatus=2
 set statusline^=%{FugitiveStatusline()}
+
+"set ww=h,l,<,>,[,]
 
 "-----Colors-------------------------------------------------------------------
 syntax on
@@ -106,15 +107,14 @@ map <space> <nop>
 " misc
 nnoremap <silent> <CR> :noh<CR>
 nnoremap <silent> <leader>c :tabnew $MYVIMRC<CR>
-nnoremap <silent> <leader>so :so $MYVIMRC<CR> :echo "[init.vim sourced]"<CR>
+nnoremap <silent> <leader>so :so $MYVIMRC<CR>:echo("sourced: init.vim")<CR>
 nnoremap <silent> <leader>p "_dP
 
 " tabs
-nnoremap <silent> <c-t> :tabnew<CR>
-nnoremap <silent> <c-w><c-h> gt
-nnoremap <silent> <c-w><c-l> gT
-
-" tabs: terminal
+nnoremap <silent> <C-t> :tabnew<CR>
+nnoremap <silent> <C-w><c-h> gt
+nnoremap <silent> <C-w><c-l> gT
+tnoremap <silent> <C-t> :tabnew<CR>
 tnoremap <silent> <C-w><C-h> <C-\><C-n>gT
 tnoremap <silent> <C-w><C-l> <C-\><C-n>gt
 
@@ -123,17 +123,18 @@ nnoremap <silent> <C-h> :wincmd h<CR>
 nnoremap <silent> <C-j> :wincmd j<CR>
 nnoremap <silent> <C-k> :wincmd k<CR>
 nnoremap <silent> <C-l> :wincmd l<CR>
-
-" splits: terminal
 tnoremap <silent> <C-k> <C-\><C-n>:wincmd k<CR>
 tnoremap <silent> <C-j> <C-\><C-n>:wincmd j<CR>
 tnoremap <silent> <C-h> <C-\><C-n>:wincmd h<CR>
 tnoremap <silent> <C-l> <C-\><C-n>:wincmd l<CR>
+
+" rotate splits
+nnoremap <silent> <C-w><C-v> <C-\><C-n>:wincmd L<CR>
+nnoremap <silent> <C-w><C-s> <C-\><C-n>:wincmd J<CR>
 tnoremap <silent> <C-w><C-v> <C-\><C-n>:wincmd L<CR>i
 tnoremap <silent> <C-w><C-s> <C-\><C-n>:wincmd J<CR>i
-tnoremap <silent> <ESC> <C-\><C-n>
 
-" resize
+" resize splits
 nnoremap <silent> <Up> :resize +2<CR>
 nnoremap <silent> <Down> :resize -2<CR>
 nnoremap <silent> <Left> :vertical resize +2<CR>
@@ -149,26 +150,39 @@ vnoremap <silent> <A-k> :m '<-2<CR>gv=gv
 inoremap <silent> <A-j> <Esc>:m .+1<CR>==gi
 inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
 
+" terminal escape
+tnoremap <silent> <ESC> <C-\><C-n>
+
 " indent
 vnoremap <silent> < <gv
 vnoremap <silent> > >gv
+
+" juicy yanks
+nnoremap <leader>y "+y
+vnoremap <leader>y "+y
+nnoremap <leader>Y gg"+yG
+
+" remove this shit
+nnoremap <silent> Q <nop>
 
 " save/quit helpers
 cab W  w
 cab Wq wq
 cab Q q
 
+" delete word backwards
+inoremap <C-x> <C-w>
+
 "-----Plugins------------------------------------------------------------------
 " open-term
 let $NVIM_LISTEN_ADDRESS='/tmp/nvimsocket'
-
 nnoremap <silent><C-w><CR> :call TermOpen()<CR>
-nnoremap <silent><C-w><C-s> :call TermOpen("", "s")<CR>
-nnoremap <silent><C-w><C-v> :call TermOpen("", "v")<CR>
-nnoremap <silent><C-w><C-t> :call TermOpen("", "t")<CR>
+nnoremap <silent><C-w>s :call TermOpen("", "s")<CR>
+nnoremap <silent><C-w>v :call TermOpen("", "v")<CR>
+nnoremap <silent><C-w>t :call TermOpen("", "t")<CR>
 nnoremap <silent><leader>g :call TermOpen("lazygit", "t")<CR>
 
-" " commentary
+" commentary
 vnoremap <silent> <leader>/ :Commentary<CR>
 nnoremap <silent> <leader>/ :Commentary<CR>
 
