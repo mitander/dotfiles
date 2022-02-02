@@ -1,7 +1,11 @@
+# xgd variables
+export XDG_CONFIG_HOME=$HOME/.config
+export XDG_CACHE_HOME=$HOME/.cache
+export XDG_DOWNLOAD_DIR=$HOME/Downloads
+
 # alias
 alias zshrc="vim $HOME/.zshrc"
 alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
-alias vimlua="vim $XDG_CONFIG_HOME/nvim/lua/setup.lua"
 alias alarc="vim $XDG_CONFIG_HOME/alacritty/alacritty.yml"
 alias vim="nvim"
 alias ls="ls --color=auto"
@@ -63,28 +67,11 @@ xset r rate 275 40
 # fzf variables
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
-# if nvr is installed, set listen address
-if type -f nvr > /dev/null; then
-  alias vim="NVIM_LISTEN_ADDRESS=/tmp/nvimsocket nvim"
-  if [ -n "${NVIM_LISTEN_ADDRESS}" ]; then
-    function nvim() {nvr $1}
-  fi
-fi
-
-# allow vim to open files from terminal buffer with "vim [filename]"
-
 # variables
-export GOPRIVATE=gitlab.com/SensysGatso
-export GONOSUMDB=gitlab.com/SensysGatso
-
 export ZIG=/usr/local/zig
 export ZLS=/usr/local/zls
 export GOPATH=$HOME/go
 export GOROOT="/usr/local/go"
-
-export XDG_CONFIG_HOME=$HOME/.config
-export XDG_CACHE_HOME=$HOME/.cache
-export XDG_DOWNLOAD_DIR=$HOME/Downloads
 
 export EDITOR="nvim"
 export TERMINAL="alacritty"
@@ -110,3 +97,14 @@ export LESS_TERMCAP_me=$'\e[0m'
 export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[4;32m'
+
+# # allow vim to open files from terminal buffer with "vim [filename]"
+# # if nvr is installed, set listen address
+# if type -f nvr > /dev/null; then
+#   alias vim="NVIM_LISTEN_ADDRESS=/tmp/nvimsocket nvim"
+#   if [ -n "${NVIM_LISTEN_ADDRESS}" ]; then
+#     function nvim() {nvr $1}
+#   fi
+# fi
+
+[ -r .zsh.env ] && source .zsh.env

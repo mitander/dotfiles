@@ -43,23 +43,164 @@ set smartindent
 set expandtab
 set linebreak
 set autoread
-set wildmenu
 set wildmode=longest:full,full
 set history=1000
 set scrolloff=8
 set ttimeoutlen=50
 set virtualedit=block
-set showmatch
 set wildignore+=*.o
 set switchbuf=useopen,usetab
-set splitbelow
-set splitright
+set splitbelow splitright
 set shell=/bin/zsh
-set statusline=%{expand('%:p:h:t')}/%t
+set signcolumn=yes
+set undodir=~/.vim/tmp/undodir
+set undofile
 set laststatus=2
-set statusline^=%{FugitiveStatusline()}
+set statusline=%{expand('%:p:h:t')}/%t
 
-"set ww=h,l,<,>,[,]
+"-----Mappings-----------------------------------------------------------------
+let mapleader=" "
+map <space> <nop>
+
+" misc
+nnoremap <silent> <enter> :noh<enter>
+nnoremap <silent> <leader>c :tabnew $MYVIMRC<enter>
+nnoremap <silent> <leader>so :so $MYVIMRC<enter>
+nnoremap <silent> <leader>p "_dP
+
+" tabs
+nnoremap <silent> <c-t> :tabnew<enter>
+nnoremap <silent> <c-w><C-h> gT
+nnoremap <silent> <c-w><C-l> gt
+
+" splits
+nnoremap <silent> <c-h> :wincmd h<enter>
+nnoremap <silent> <c-j> :wincmd j<enter>
+nnoremap <silent> <c-k> :wincmd k<enter>
+nnoremap <silent> <c-l> :wincmd l<enter>
+
+" rotate splits
+nnoremap <silent> <c-w>s :wincmd L<enter>
+nnoremap <silent> <c-w>v :wincmd J<enter>
+
+" resize splits
+nnoremap <silent> <up> :resize +2<enter>
+nnoremap <silent> <down> :resize -2<enter>
+nnoremap <silent> <left> :vertical resize +2<enter>
+nnoremap <silent> <right> :vertical resize -2<enter>
+
+" move lines
+nnoremap <silent> j gj
+nnoremap <silent> k gk
+nnoremap <silent> <a-j> :m .+1<enter>==
+nnoremap <silent> <a-k> :m .-2<enter>==
+vnoremap <silent> <a-j> :m '>+1<enter>gv=gv
+vnoremap <silent> <a-k> :m '<-2<enter>gv=gv
+inoremap <silent> <a-j> <esc>:m .+1<enter>==gi
+inoremap <silent> <a-k> <esc>:m .-2<enter>==gi
+
+" edit file under cursor
+nnoremap <silent> gf :edit <cfile><enter>
+
+" pls no
+nnoremap <silent> Q <nop>
+nnoremap <silent> qq <nop>
+
+" delete word backwards
+inoremap <C-x> <C-w>
+
+" indent
+vnoremap <silent> < <gv
+vnoremap <silent> > >gv
+
+" quit/save maps
+cabbrev W w
+cabbrev Q q
+cabbrev Wq wq
+
+"-----Plugins------------------------------------------------------------------
+" fzf
+nnoremap <silent> <c-f> :Rg<enter>
+nnoremap <silent> <c-n> :Lexplore<enter>
+nnoremap <silent> <c-p> :Files<enter>
+command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles'
+
+let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%'"
+let g:fzf_layout = {'window':{'width':0.8,'height':0.8}}
+let g:fzf_action = {'ctrl-t':'tab split','ctrl-s':'split','ctrl-v':'vsplit' }
+
+" ripgrep
+if executable('Rg')
+    let g:rg_derive_root = 1
+endif
+
+" commentary
+vnoremap <silent> <leader>/ :Commentary<enter>
+nnoremap <silent> <leader>/ :Commentary<enter>
+
+" undotree
+nnoremap <silent> <leader>u :UndotreeToggle<enter>
+
+" git-gutter
+nnoremap <silent> gp :GitGutterPreviewHunk<enter>
+nnoremap <silent> g. :GitGutterToggle<enter>
+
+let g:gitgutter_enabled = 0
+let g:gitgutter_sign_added = '|'
+let g:gitgutter_sign_modified = '|'
+let g:gitgutter_sign_removed = '|'
+let g:gitgutter_sign_removed_first_line = '|'
+let g:gitgutter_sign_removed_above_and_below = '|'
+let g:gitgutter_sign_modified_removed = '|'
+
+" rooter
+let g:rooter_targets = '/,*'
+let g:rooter_silent_chdir = 1
+
+" fugitive
+nnoremap <silent> gs :Git<enter>
+nnoremap <silent> gb :Git blame<enter>
+nnoremap <silent> gl :Commits<enter>
+
+" vim-rust
+let g:rustfmt_autosave = 1
+let g:rustfmt_emit_files = 1
+let g:rustfmt_fail_silently = 0
+let g:rust_clip_command = 'xclip -selection clipboard'
+
+" coc
+nmap <silent> <c-n> :CocCommand explorer<enter>
+nmap <silent> <leader>rn <plug>(coc-rename)
+nmap <silent> <leader>a  :<c-u>CocList diagnostics<enter>
+nmap <silent> gd <plug>(coc-definition)
+nmap <silent> gy <plug>(coc-type-definition)
+nmap <silent> gi <plug>(coc-implementation)
+nmap <silent> gr <plug>(coc-references)
+nmap <silent> g[ <plug>(coc-diagnostic-prev)
+nmap <silent> g] <plug>(coc-diagnostic-next)
+nmap <silent> K :call <sid>show_documentation()<enter>
+
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
+inoremap <silent><expr> <enter>
+            \ pumvisible() ? coc#_select_confirm() :
+            \ "\<C-g>u\<enter>\<c-r>=coc#on_enter()\<enter>"
+
+let g:coc_global_extensions = [
+  \ 'coc-tsserver',
+  \ 'coc-pairs',
+  \ 'coc-lists',
+  \ 'coc-explorer',
+  \ 'coc-rust-analyzer',
+  \ 'coc-go',
+  \ 'coc-zls',
+  \ ]
 
 "-----Colors-------------------------------------------------------------------
 syntax on
@@ -67,8 +208,8 @@ colorscheme jellybeans
 
 hi StatusLineNC    ctermbg=236    ctermfg=243
 hi StatusLine      ctermbg=236    ctermfg=253
-hi SignColumn      ctermbg=NONE	  ctermfg=236
-hi ColorColumn     ctermbg=236	  ctermfg=236
+hi SignColumn      ctermbg=NONE   ctermfg=236
+hi ColorColumn     ctermbg=236    ctermfg=236
 hi VertSplit       ctermbg=NONE   ctermfg=244
 hi LineNr          ctermbg=NONE   ctermfg=NONE
 hi Normal          ctermbg=NONE   ctermfg=NONE
@@ -82,15 +223,15 @@ hi GitGutterChange ctermbg=NONE   ctermfg=yellow
 autocmd Filetype rust set colorcolumn=100
 autocmd Filetype rust set tabstop=4 shiftwidth=4
 
-autocmd Filetype go set colorcolumn=100
+" autocmd Filetype go set colorcolumn=100
 autocmd Filetype go set tabstop=4 shiftwidth=4
 
 autocmd Filetype c set colorcolumn=80
 autocmd Filetype c set tabstop=4 shiftwidth=4
-autocmd Filetype vim set colorcolumn=80
-
-autocmd CursorHold * silent call CocActionAsync('highlight')
 autocmd FileType c ClangFormatAutoEnable
+
+autocmd Filetype vim set colorcolumn=80
+autocmd CursorHold * silent call CocActionAsync('highlight')
 
 autocmd BufRead *.orig set readonly
 autocmd BufRead *.pacnew set readonly
@@ -98,186 +239,6 @@ autocmd BufRead *.pacnew set readonly
 autocmd TextYankPost * silent! lua vim.highlight.on_yank({})
 autocmd InsertLeave * set nopaste
 autocmd BufWritePre * :%s/\s\+$//e
-autocmd FileType list :nnoremap <silent> <buffer>q :q<CR>:q<CR>
+autocmd FileType list :nnoremap <silent> <buffer>q :q<enter>:q<enter>
 
-"-----Mappings-----------------------------------------------------------------
-let mapleader=" "
-map <space> <nop>
-
-" misc
-nnoremap <silent> <CR> :noh<CR>
-nnoremap <silent> <leader>c :tabnew $MYVIMRC<CR>
-nnoremap <silent> <leader>so :so $MYVIMRC<CR>:echo("sourced: init.vim")<CR>
-nnoremap <silent> <leader>p "_dP
-
-" tabs
-nnoremap <silent> <C-t> :tabnew<CR>
-nnoremap <silent> <C-w><c-h> gt
-nnoremap <silent> <C-w><c-l> gT
-tnoremap <silent> <C-t> :tabnew<CR>
-tnoremap <silent> <C-w><C-h> <C-\><C-n>gT
-tnoremap <silent> <C-w><C-l> <C-\><C-n>gt
-
-" splits
-nnoremap <silent> <C-h> :wincmd h<CR>
-nnoremap <silent> <C-j> :wincmd j<CR>
-nnoremap <silent> <C-k> :wincmd k<CR>
-nnoremap <silent> <C-l> :wincmd l<CR>
-tnoremap <silent> <C-k> <C-\><C-n>:wincmd k<CR>
-tnoremap <silent> <C-j> <C-\><C-n>:wincmd j<CR>
-tnoremap <silent> <C-h> <C-\><C-n>:wincmd h<CR>
-tnoremap <silent> <C-l> <C-\><C-n>:wincmd l<CR>
-
-" rotate splits
-nnoremap <silent> <C-w><C-v> <C-\><C-n>:wincmd L<CR>
-nnoremap <silent> <C-w><C-s> <C-\><C-n>:wincmd J<CR>
-tnoremap <silent> <C-w><C-v> <C-\><C-n>:wincmd L<CR>i
-tnoremap <silent> <C-w><C-s> <C-\><C-n>:wincmd J<CR>i
-
-" resize splits
-nnoremap <silent> <Up> :resize +2<CR>
-nnoremap <silent> <Down> :resize -2<CR>
-nnoremap <silent> <Left> :vertical resize +2<CR>
-nnoremap <silent> <Right> :vertical resize -2<CR>
-
-" move lines
-nnoremap <silent> j gj
-nnoremap <silent> k gk
-nnoremap <silent> <A-j> :m .+1<CR>==
-nnoremap <silent> <A-k> :m .-2<CR>==
-vnoremap <silent> <A-j> :m '>+1<CR>gv=gv
-vnoremap <silent> <A-k> :m '<-2<CR>gv=gv
-inoremap <silent> <A-j> <Esc>:m .+1<CR>==gi
-inoremap <silent> <A-k> <Esc>:m .-2<CR>==gi
-
-" terminal escape
-tnoremap <silent> <ESC> <C-\><C-n>
-
-" indent
-vnoremap <silent> < <gv
-vnoremap <silent> > >gv
-
-" juicy yanks
-nnoremap <leader>y "+y
-vnoremap <leader>y "+y
-nnoremap <leader>Y gg"+yG
-
-" remove this shit
-nnoremap <silent> Q <nop>
-
-" save/quit helpers
-cab W  w
-cab Wq wq
-cab Q q
-
-" delete word backwards
-inoremap <C-x> <C-w>
-
-"-----Plugins------------------------------------------------------------------
-" open-term
-let $NVIM_LISTEN_ADDRESS='/tmp/nvimsocket'
-nnoremap <silent><C-w><CR> :call TermOpen()<CR>
-nnoremap <silent><C-w>s :call TermOpen("", "s")<CR>
-nnoremap <silent><C-w>v :call TermOpen("", "v")<CR>
-nnoremap <silent><C-w>t :call TermOpen("", "t")<CR>
-nnoremap <silent><leader>g :call TermOpen("lazygit", "t")<CR>
-
-" commentary
-vnoremap <silent> <leader>/ :Commentary<CR>
-nnoremap <silent> <leader>/ :Commentary<CR>
-
-" undotree
-if has("persistent_undo")
-    nnoremap <silent> <leader>u :UndotreeToggle<CR>
-    set undodir=~/.vim/tmp/undodir
-    set undofile
-endif
-
-" git-gutter
-nnoremap <silent> gp :GitGutterPreviewHunk<CR>
-nnoremap <silent> g. :GitGutterToggle<CR>
-
-let g:gitgutter_enabled = 0
-let g:gitgutter_sign_added = '|'
-let g:gitgutter_sign_modified = '|'
-let g:gitgutter_sign_removed = '|'
-let g:gitgutter_sign_removed_first_line = '|'
-let g:gitgutter_sign_removed_above_and_below = '|'
-let g:gitgutter_sign_modified_removed = '|'
-
-" rooter
-let g:rooter_targets = '/,*'
-let g:rooter_silent_chdir = 0
-
-" fugitive
-nnoremap <silent> gs :Git<CR>
-nnoremap <silent> gb :Git blame<CR>
-nnoremap <silent> gl :Commits<CR>
-
-" vim-rust
-let g:rustfmt_autosave = 1
-let g:rustfmt_emit_files = 1
-let g:rustfmt_fail_silently = 0
-let g:rust_clip_command = 'xclip -selection clipboard'
-
-" coc
-nmap <silent> <C-n> :CocCommand explorer<CR>
-nmap <silent> <leader>rn <Plug>(coc-rename)
-nmap <silent> <leader>a  :<C-u>CocList diagnostics<cr>
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-nmap <silent> g[ <Plug>(coc-diagnostic-prev)
-nmap <silent> g] <Plug>(coc-diagnostic-next)
-nmap <silent> K :call <SID>show_documentation()<CR>
-
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction
-
-inoremap <silent><expr> <CR>
-            \ pumvisible() ? coc#_select_confirm() :
-            \ "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-
-let g:coc_global_extensions = [
-  \ 'coc-tsserver',
-  \ 'coc-pairs',
-  \ 'coc-lists',
-  \ 'coc-explorer',
-  \ 'coc-rust-analyzer',
-  \ 'coc-go',
-  \ 'coc-zls',
-  \ ]
-
-" telescope
-nnoremap <silent><C-p> <cmd>Telescope find_files<cr>
-nnoremap <silent><C-f> <cmd>Telescope live_grep<cr>
-nnoremap <silent><leader>p <cmd>Telescope projects<cr>
-
-lua << EOF
-local telescope = require('telescope')
-local actions = require('telescope.actions')
-
-telescope.load_extension('projects')
-
-telescope.setup{
-  defaults = {
-    mappings = {
-      i = {
-        ["<C-s>"] = actions.select_horizontal,
-        ["<C-j>"] = actions.move_selection_next,
-        ["<C-k>"] = actions.move_selection_previous,
-        ["<esc>"] = actions.close,
-      }
-    }
-  }
-}
-EOF
-
-" project_nvim
-lua require('project_nvim').setup{}
+echo "~ happy coding ~"
