@@ -1,24 +1,21 @@
 "-----Plugged------------------------------------------------------------------
 call plug#begin('~/.vim/plugged')
-    Plug 'fatih/vim-go'
-    Plug 'ziglang/zig.vim'
-    Plug 'rust-lang/rust.vim'
-    Plug 'junegunn/fzf.vim'
-    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-    Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'tpope/vim-fugitive'
-    Plug 'SirVer/ultisnips'
-    Plug 'mbbill/undotree'
-    Plug 'airblade/vim-gitgutter'
-    Plug 'nanotech/jellybeans.vim'
-    Plug 'airblade/vim-rooter'
-    Plug 'rhysd/vim-clang-format'
-    Plug 'tpope/vim-commentary'
-    Plug 'ahmedkhalf/project.nvim'
-    Plug 'Yggdroot/indentLine'
-    Plug 'nvim-lua/plenary.nvim'
-    Plug 'nvim-telescope/telescope.nvim'
-    Plug 'fabi1cazenave/termopen.vim'
+  Plug 'fatih/vim-go'
+  Plug 'ziglang/zig.vim'
+  Plug 'rust-lang/rust.vim'
+  Plug 'junegunn/fzf.vim'
+  Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+  Plug 'neoclide/coc.nvim', {'branch': 'release'}
+  Plug 'tpope/vim-fugitive'
+  Plug 'SirVer/ultisnips'
+  Plug 'mbbill/undotree'
+  Plug 'airblade/vim-gitgutter'
+  Plug 'nanotech/jellybeans.vim'
+  Plug 'airblade/vim-rooter'
+  Plug 'rhysd/vim-clang-format'
+  Plug 'tpope/vim-commentary'
+  Plug 'ahmedkhalf/project.nvim'
+  Plug 'Yggdroot/indentLine'
 call plug#end()
 
 "-----Settings-----------------------------------------------------------------
@@ -53,8 +50,6 @@ set switchbuf=useopen,usetab
 set splitbelow splitright
 set shell=/bin/zsh
 set signcolumn=yes
-set undodir=~/.vim/tmp/undodir
-set undofile
 set laststatus=2
 set statusline=%{expand('%:p:h:t')}/%t
 
@@ -131,7 +126,7 @@ let g:fzf_action = {'ctrl-t':'tab split','ctrl-s':'split','ctrl-v':'vsplit' }
 
 " ripgrep
 if executable('Rg')
-    let g:rg_derive_root = 1
+  let g:rg_derive_root = 1
 endif
 
 " commentary
@@ -139,7 +134,11 @@ vnoremap <silent> <leader>/ :Commentary<enter>
 nnoremap <silent> <leader>/ :Commentary<enter>
 
 " undotree
-nnoremap <silent> <leader>u :UndotreeToggle<enter>
+if has("persistent_undo")
+  nnoremap <silent> <leader>u :UndotreeToggle<enter>
+  set undodir=~/.vim/tmp/undodir
+  set undofile
+endif
 
 " git-gutter
 nnoremap <silent> gp :GitGutterPreviewHunk<enter>
@@ -169,16 +168,16 @@ let g:rustfmt_fail_silently = 0
 let g:rust_clip_command = 'xclip -selection clipboard'
 
 " coc
-nmap <silent> <c-n> :CocCommand explorer<enter>
-nmap <silent> <leader>rn <plug>(coc-rename)
-nmap <silent> <leader>a  :<c-u>CocList diagnostics<enter>
-nmap <silent> gd <plug>(coc-definition)
-nmap <silent> gy <plug>(coc-type-definition)
-nmap <silent> gi <plug>(coc-implementation)
-nmap <silent> gr <plug>(coc-references)
-nmap <silent> g[ <plug>(coc-diagnostic-prev)
-nmap <silent> g] <plug>(coc-diagnostic-next)
-nmap <silent> K :call <sid>show_documentation()<enter>
+nnoremap <silent> <c-n> :CocCommand explorer<enter>
+nnoremap <silent> <leader>rn <plug>(coc-rename)
+nnoremap <silent> <leader>a  :<c-u>CocList diagnostics<enter>
+nnoremap <silent> gd <plug>(coc-definition)
+nnoremap <silent> gy <plug>(coc-type-definition)
+nnoremap <silent> gi <plug>(coc-implementation)
+nnoremap <silent> gr <plug>(coc-references)
+nnoremap <silent> g[ <plug>(coc-diagnostic-prev)
+nnoremap <silent> g] <plug>(coc-diagnostic-next)
+nnoremap <silent> K :call <sid>show_documentation()<enter>
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
