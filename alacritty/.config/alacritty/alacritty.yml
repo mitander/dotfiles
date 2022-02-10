@@ -14,22 +14,22 @@ scrolling:
 
 font:
   normal:
-    family: SF Mono
+    family: FiraCode
     style: Medium
 
   bold:
-    family: SF Mono
+    family: FiraCode
     style: Bold
 
   italic:
-    family: SF Mono
+    family: FiraCode
     style: Italic
 
   bold_italic:
-    family: SF Mono
+    family: FiraCode
     style: Bold Italic
 
-  size: 12
+  size: 11
 
 
 colors:
@@ -58,7 +58,7 @@ colors:
     text: '0x000000'
     cursor: '0xffffff'
 
-background_opacity: 1
+window.opacity: 1
 
 
 key_bindings:

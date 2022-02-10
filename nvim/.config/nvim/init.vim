@@ -135,9 +135,9 @@ nnoremap <silent> <leader>/ :Commentary<enter>
 
 " undotree
 if has("persistent_undo")
-  nnoremap <silent> <leader>u :UndotreeToggle<enter>
-  set undodir=~/.vim/tmp/undodir
+  set undodir="~/.vim/tmp/undodir"
   set undofile
+  nnoremap <silent> <leader>u :UndotreeToggle<enter>
 endif
 
 " git-gutter
@@ -229,6 +229,8 @@ autocmd Filetype c set colorcolumn=80
 autocmd Filetype c set tabstop=4 shiftwidth=4
 autocmd FileType c ClangFormatAutoEnable
 
+autocmd FileType json set tabstop=2 shiftwidth=2
+
 autocmd Filetype vim set colorcolumn=80
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
@@ -240,4 +242,8 @@ autocmd InsertLeave * set nopaste
 autocmd BufWritePre * :%s/\s\+$//e
 autocmd FileType list :nnoremap <silent> <buffer>q :q<enter>:q<enter>
 
-echo "~ happy coding ~"
+if executable('python3')
+  command FormatJson :%!python3 -m json.tool
+endif
+
+echo('~ happy coding ~')

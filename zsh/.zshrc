@@ -107,4 +107,4 @@ export LESS_TERMCAP_us=$'\e[4;32m'
 #   fi
 # fi
 
-[ -r .zsh.env ] && source .zsh.env
+[ -r .zsh.custom ] && source .zsh.custom
