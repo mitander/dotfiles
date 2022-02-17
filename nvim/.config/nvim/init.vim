@@ -97,20 +97,17 @@ cabbrev W w
 cabbrev Q q
 cabbrev Wq wq
 
+" nvim-tree
+nnoremap <silent> <c-n> :NvimTreeToggle<enter>
+
 " fzf
 nnoremap <silent> <c-f> :Rg<enter>
-nnoremap <silent> <c-n> :Lexplore<enter>
 nnoremap <silent> <c-p> :CtrlP<enter>
 command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles --cached --others --exclude-standard'
 
 let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%'"
 let g:fzf_layout = {'window':{'width':0.8,'height':0.8}}
 let g:fzf_action = {'ctrl-t':'tab split','ctrl-s':'split','ctrl-v':'vsplit' }
-
-" ripgrep
-if executable('Rg')
-  let g:rg_derive_root = 1
-endif
 
 " commentary
 vnoremap <silent> <leader>/ :Commentary<enter>

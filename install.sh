@@ -8,7 +8,7 @@ sudo apt install zsh tmux build-essential libtool-bin gettext
 # Install neovim
 which nvim
 nvim -v
-git clone --depth 1 --branch nightly https://github.com/neovim/neovim.git
+git clone --depth 1 https://github.com/neovim/neovim.git
 cd ./neovim
 ./configure --prefix=$HOME/.local/bin
 sudo make CMAKE_BUILD_TYPE=RelWithDebInfo
