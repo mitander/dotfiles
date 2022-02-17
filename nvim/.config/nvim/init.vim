@@ -1,21 +1,4 @@
-call plug#begin('~/.vim/plugged')
-  Plug 'fatih/vim-go'
-  Plug 'ziglang/zig.vim'
-  Plug 'rust-lang/rust.vim'
-  Plug 'junegunn/fzf.vim'
-  Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-  Plug 'neoclide/coc.nvim', {'branch': 'release'}
-  Plug 'tpope/vim-fugitive'
-  Plug 'SirVer/ultisnips'
-  Plug 'mbbill/undotree'
-  Plug 'airblade/vim-gitgutter'
-  Plug 'nanotech/jellybeans.vim'
-  Plug 'airblade/vim-rooter'
-  Plug 'rhysd/vim-clang-format'
-  Plug 'tpope/vim-commentary'
-  Plug 'ahmedkhalf/project.nvim'
-  Plug 'Yggdroot/indentLine'
-call plug#end()
+lua require("user.init")
 
 set noswapfile
 set nobackup
@@ -53,34 +36,6 @@ set statusline=%{expand('%:p:h:t')}/%t
 
 syntax on
 colorscheme jellybeans
-
-hi StatusLineNC    ctermbg=236    ctermfg=243
-hi StatusLine      ctermbg=236    ctermfg=253
-hi SignColumn      ctermbg=NONE   ctermfg=236
-hi ColorColumn     ctermbg=236    ctermfg=236
-hi VertSplit       ctermbg=NONE   ctermfg=244
-hi LineNr          ctermbg=NONE   ctermfg=NONE
-hi Normal          ctermbg=NONE   ctermfg=NONE
-hi NonText         ctermbg=NONE   ctermfg=NONE
-hi Comment         ctermbg=NONE   ctermfg=gray
-hi GitGutterDelete ctermbg=NONE   ctermfg=red
-hi GitGutterAdd    ctermbg=NONE   ctermfg=green
-hi GitGutterChange ctermbg=NONE   ctermfg=yellow
-
-autocmd Filetype rust set colorcolumn=100
-autocmd Filetype rust set tabstop=4 shiftwidth=4
-autocmd Filetype go set colorcolumn=100
-autocmd Filetype go set tabstop=4 shiftwidth=4
-autocmd Filetype c set colorcolumn=80
-autocmd Filetype c set tabstop=4 shiftwidth=4
-autocmd FileType c ClangFormatAutoEnable
-autocmd CursorHold * silent call CocActionAsync('highlight')
-autocmd BufRead *.orig set readonly
-autocmd BufRead *.pacnew set readonly
-autocmd TextYankPost * silent! lua vim.highlight.on_yank({})
-autocmd InsertLeave * set nopaste
-autocmd BufWritePre * :%s/\s\+$//e
-autocmd FileType list :nnoremap <silent> <buffer>q :q<enter>:q<enter>
 
 " leader
 let mapleader=" "
@@ -128,7 +83,7 @@ nnoremap <silent> gf :edit <cfile><enter>
 
 " pls no
 nnoremap <silent> Q <nop>
-nnoremap <silent> qq <nop>
+nnoremap <silent> q <nop>
 
 " delete word backwards
 inoremap <C-x> <C-w>
@@ -163,7 +118,7 @@ nnoremap <silent> <leader>/ :Commentary<enter>
 
 " undotree
 if has("persistent_undo")
-  set undodir="~/.vim/tmp/undodir"
+  set undodir=~/.vim/tmp/undodir
   set undofile
   nnoremap <silent> <leader>u :UndotreeToggle<enter>
 endif
@@ -195,36 +150,54 @@ let g:rustfmt_emit_files = 1
 let g:rustfmt_fail_silently = 0
 let g:rust_clip_command = 'xclip -selection clipboard'
 
-" coc
-nnoremap <silent> <c-n> :CocCommand explorer<enter>
-nnoremap <silent> <leader>rn <plug>(coc-rename)
-nnoremap <silent> <leader>a  :<c-u>CocList diagnostics<enter>
-nnoremap <silent> gd <plug>(coc-definition)
-nnoremap <silent> gy <plug>(coc-type-definition)
-nnoremap <silent> gi <plug>(coc-implementation)
-nnoremap <silent> gr <plug>(coc-references)
-nnoremap <silent> g[ <plug>(coc-diagnostic-prev)
-nnoremap <silent> g] <plug>(coc-diagnostic-next)
-nnoremap <silent> K :call <sid>show_documentation()<enter>
+hi StatusLineNC    ctermbg=236    ctermfg=243
+hi StatusLine      ctermbg=236    ctermfg=253
+hi SignColumn      ctermbg=NONE   ctermfg=236
+hi ColorColumn     ctermbg=236    ctermfg=236
+hi VertSplit       ctermbg=NONE   ctermfg=244
+hi LineNr          ctermbg=NONE   ctermfg=NONE
+hi Normal          ctermbg=NONE   ctermfg=NONE
+hi NonText         ctermbg=NONE   ctermfg=NONE
+hi Comment         ctermbg=NONE   ctermfg=gray
+hi GitGutterDelete ctermbg=NONE   ctermfg=red
+hi GitGutterAdd    ctermbg=NONE   ctermfg=green
+hi GitGutterChange ctermbg=NONE   ctermfg=yellow
 
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
-endfunction
+augroup _general
+  autocmd!
+  autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200})
+  autocmd BufWritePre * :%s/\s\+$//e
+  autocmd InsertLeave * set nopaste
+  autocmd BufRead *.orig set readonly
+  autocmd BufRead *.pacnew set readonly
+augroup end
 
-inoremap <silent><expr> <enter>
-            \ pumvisible() ? coc#_select_confirm() :
-            \ "\<C-g>u\<enter>\<c-r>=coc#on_enter()\<enter>"
+augroup _quickfix
+  autocmd!
+  autocmd FileType qf nnoremap <silent> <buffer> q :close<enter>
+  autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
+augroup end
 
-let g:coc_global_extensions = [
-  \ 'coc-tsserver',
-  \ 'coc-pairs',
-  \ 'coc-lists',
-  \ 'coc-explorer',
-  \ 'coc-rust-analyzer',
-  \ 'coc-go',
-  \ 'coc-zls',
-  \ ]
+augroup _git
+  autocmd!
+  autocmd FileType gitcommit setlocal wrap
+  autocmd FileType gitcommit setlocal spell
+augroup end
+
+augroup _markdown
+  autocmd!
+  autocmd FileType markdown setlocal wrap
+  autocmd FileType markdown setlocal spell
+augroup end
+
+augroup _filetype
+  autocmd Filetype rust set colorcolumn=100
+  autocmd Filetype rust set tabstop=4 shiftwidth=4
+
+  autocmd Filetype go set colorcolumn=100
+  autocmd Filetype go set tabstop=4 shiftwidth=4
+
+  autocmd Filetype c set colorcolumn=80
+  autocmd Filetype c set tabstop=4 shiftwidth=4
+  autocmd FileType c ClangFormatAutoEnable
+augroup end
