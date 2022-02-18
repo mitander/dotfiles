@@ -62,6 +62,7 @@ return packer.startup(function(use)
   use 'jose-elias-alvarez/null-ls.nvim'
   use 'L3MON4D3/LuaSnip'
   use 'junegunn/fzf.vim'
+  use 'nathom/filetype.nvim'
   use {'junegunn/fzf', run = function() vim.fn['fzf#install']() end}
   use {'kevinhwang91/nvim-bqf', ft = 'qf'}
   use {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'}
