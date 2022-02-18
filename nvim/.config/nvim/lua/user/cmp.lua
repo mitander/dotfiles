@@ -59,10 +59,10 @@ cmp.setup {
     }),
 	mapping = {
         ["<C-k>"] = cmp.mapping.select_prev_item(),
-		["<C-j>"] = cmp.mapping.select_next_item(),
-		['<C-u>'] = cmp.mapping.scroll_docs((-4), { 'i', 'c' }),
-		['<C-d>'] = cmp.mapping.scroll_docs((4), { 'i', 'c' }),
-		['<CR>'] = cmp.mapping.confirm({ select = true }),
+        ["<C-j>"] = cmp.mapping.select_next_item(),
+        ['<C-u>'] = cmp.mapping.scroll_docs((-4), { 'i', 'c' }),
+        ['<C-d>'] = cmp.mapping.scroll_docs((4), { 'i', 'c' }),
+        ['<CR>'] = cmp.mapping.confirm({ select = true }),
         ["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
         ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
