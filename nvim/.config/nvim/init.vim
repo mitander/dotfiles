@@ -198,3 +198,5 @@ augroup _filetype
   autocmd Filetype c set tabstop=4 shiftwidth=4
   autocmd FileType c ClangFormatAutoEnable
 augroup end
+
+command FormatJson :%!jq .

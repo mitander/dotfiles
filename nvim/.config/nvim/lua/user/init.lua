@@ -1,7 +1,7 @@
 require("user.plugins")
 require("user.lsp")
 require("user.cmp")
-require("user.treesitter")
+-- require("user.treesitter")
 require("user.nvim-tree")
 require("user.impatient")
 require("user.bqf")

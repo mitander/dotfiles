@@ -1,6 +1,11 @@
-[user]
-	email = carlmitander@gmail.com
-	name = mitander
+; Work
+; [user]
+; 	email = c.mitander@sensysgatso.com
+; 	name = Carl Mitander
+; Private
+; [user]
+; 	email = carlmitander@gmail.com
+; 	name = mitander
 [core]
 	editor = nvim
 [credential]
