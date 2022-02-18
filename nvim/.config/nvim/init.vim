@@ -86,7 +86,8 @@ nnoremap <silent> Q <nop>
 nnoremap <silent> q <nop>
 
 " delete word backwards
-inoremap <C-x> <C-w>
+inoremap <C-x> <c-w>
+nnoremap <C-x> a<c-w><esc>
 
 " indent
 vnoremap <silent> < <gv
@@ -110,8 +111,7 @@ let g:fzf_layout = {'window':{'width':0.8,'height':0.8}}
 let g:fzf_action = {'ctrl-t':'tab split','ctrl-s':'split','ctrl-v':'vsplit' }
 
 " commentary
-vnoremap <silent> <leader>/ :Commentary<enter>
-nnoremap <silent> <leader>/ :Commentary<enter>
+map <silent> <leader>/ :Commentary<enter>
 
 " undotree
 if has("persistent_undo")

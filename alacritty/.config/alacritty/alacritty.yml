@@ -14,19 +14,19 @@ scrolling:
 
 font:
   normal:
-    family: FiraCode
+    family: Fira Code Nerd Font
     style: Medium
 
   bold:
-    family: FiraCode
+    family: Fira Code Nerd Font
     style: Bold
 
   italic:
-    family: FiraCode
+    family: Fira Code Nerd Font
     style: Italic
 
   bold_italic:
-    family: FiraCode
+    family: Fira Code Nerd Font
     style: Bold Italic
 
   size: 11
