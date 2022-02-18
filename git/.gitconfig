@@ -1,11 +1,11 @@
-; Work
-; [user]
-; 	email = c.mitander@sensysgatso.com
-; 	name = Carl Mitander
-; Private
-; [user]
-; 	email = carlmitander@gmail.com
-; 	name = mitander
+[includeIf "gitdir:~/"]
+  path = ~/.gitconfig-custom
+[includeIf "gitdir:~/c/sgg/"]
+  path = ~/.gitconfig-work
+[includeIf "gitdir:~/c/p/"]
+  path = ~/.gitconfig-personal
+[includeIf "gitdir:~/dotfiles/"]
+  path = ~/.gitconfig-personal
 [core]
 	editor = nvim
 [credential]
