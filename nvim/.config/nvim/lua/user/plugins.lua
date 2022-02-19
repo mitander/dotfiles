@@ -25,7 +25,6 @@ vim.cmd [[
 -- Use a protected call so we don't error out on first use
 local status_ok, packer = pcall(require, "packer")
 if not status_ok then
-  print("lolxd")
   return
 end
 
@@ -52,17 +51,19 @@ return packer.startup(function(use)
   use 'rhysd/vim-clang-format'
   use 'tpope/vim-commentary'
   use 'kyazdani42/nvim-tree.lua'
+  use 'kyazdani42/nvim-web-devicons'
   use 'nvim-lua/plenary.nvim'
   use 'lewis6991/impatient.nvim'
-  use "neovim/nvim-lspconfig"
   use 'hrsh7th/nvim-cmp'
   use 'hrsh7th/cmp-nvim-lsp'
+  use "neovim/nvim-lspconfig"
   use 'williamboman/nvim-lsp-installer'
   use 'saadparwaiz1/cmp_luasnip'
   use 'jose-elias-alvarez/null-ls.nvim'
   use 'L3MON4D3/LuaSnip'
   use 'junegunn/fzf.vim'
   use {'akinsho/bufferline.nvim', requires = 'kyazdani42/nvim-web-devicons'}
+  use 'nathom/filetype.nvim'
   use {'junegunn/fzf', run = function() vim.fn['fzf#install']() end}
   use {'kevinhwang91/nvim-bqf', ft = 'qf'}
   use {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'}
