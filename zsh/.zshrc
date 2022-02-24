@@ -20,7 +20,7 @@ alias gc="git commit"
 alias ga="git add"
 alias gaa="git add ."
 alias gp="git push"
-alias gp="git push --force"
+alias gpp="git push --force"
 alias gr="git rebase -i"
 alias ge="git commit --amend --no-edit"
 alias so="source ~/.zshrc"
@@ -61,17 +61,23 @@ bindkey -v '^R' history-incremental-search-backward
 # z autojump
 [ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
 
-# keyboard repeat settings
-xset r rate 275 40
-
 # fzf variables
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
+
+# linux/macos
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  xset r rate 275 40
+  export GOROOT="/usr/local/go"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  export ZIG=/usr/local/zig
+  export ZLS=/usr/local/zls
+  export GOROOT=/opt/homebrew/opt/go/libexec
+fi
 
 # variables
 export ZIG=/usr/local/zig
 export ZLS=/usr/local/zls
 export GOPATH=$HOME/go
-export GOROOT="/usr/local/go"
 
 export EDITOR="nvim"
 export TERMINAL="alacritty"
@@ -87,8 +93,7 @@ export PATH="$PATH:$ZLS/bin"
 export PATH="$PATH:$GOPATH/bin"
 export PATH="$PATH:$GOROOT/bin"
 export PATH="$PATH:/usr/local/go/bin"
-export PATH="$PATH:/snap/bin"
-export PATH="$PATH:/bin"
+export PATH="$PATH:$HOME/.cargo/bin"
 
 # man page color
 export LESS_TERMCAP_mb=$'\e[1;34m'
