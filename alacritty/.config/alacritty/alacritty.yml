@@ -29,11 +29,11 @@ font:
     family: FiraCode Nerd Font
     style: Bold Italic
 
-  size: 12
+  size: 14
 
 
 colors:
-  #primary:
+ #primary:
   #  background: '#121212'
   #  foreground: '#c8c7c7'
   normal:
