@@ -15,4 +15,12 @@ vim.cmd [[
   augroup end
 ]]
 
+vim.cmd [[
+  augroup colorscheme
+      autocmd!
+      autocmd VimEnter * colorscheme onedark
+  augroup end
+]]
+
+
 return M

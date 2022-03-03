@@ -1,3 +1,4 @@
+
 local colors = {
   none = "NONE",
   fg = "#abb2bf",

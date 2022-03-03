@@ -1,55 +1,28 @@
 local M = {}
 
-local g = vim.g
-
-function M.bootstrap()
-  local fn = vim.fn
-  local install_path = fn.stdpath "data" .. "/site/pack/packer/start/packer.nvim"
-  if fn.empty(fn.glob(install_path)) > 0 then
-    PACKER_BOOTSTRAP = fn.system {
-      "git",
-      "clone",
-      "--depth",
-      "1",
-      "https://github.com/wbthomason/packer.nvim",
-      install_path,
-    }
-    print "Cloning packer...\n"
-    vim.cmd [[packadd packer.nvim]]
+function M.load(modules)
+  for _, m in ipairs(modules) do
+    local ok, err = pcall(require, m)
+    if not ok then
+      return error("Failed to load module: " .. m .. "\n\n Error: " .. err)
+    end
   end
 end
 
-function M.disabled_builtins()
-  g.loaded_gzip = false
-  g.loaded_netrwPlugin = false
-  g.loaded_netrwSettngs = false
-  g.loaded_netrwFileHandlers = false
-  g.loaded_tar = false
-  g.loaded_tarPlugin = false
-  g.zipPlugin = false
-  g.loaded_zipPlugin = false
-  g.loaded_2html_plugin = false
-  g.loaded_remote_plugins = false
+function M.disable_builtins()
+  vim.g.loaded_gzip = false
+  vim.g.loaded_netrwPlugin = false
+  vim.g.loaded_netrwSettngs = false
+  vim.g.loaded_netrwFileHandlers = false
+  vim.g.loaded_2html_plugin = false
+  vim.g.loaded_remote_plugins = false
+  vim.g.loaded_tar = false
+  vim.g.loaded_tarPlugin = false
+  vim.g.zipPlugin = false
+  vim.g.loaded_zipPlugin = false
 end
 
-function M.impatient()
-  local impatient_ok, _ = pcall(require, "impatient")
-  if impatient_ok then
-    require("impatient").enable_profile()
-  end
-end
-
-function M.compiled()
-  local packer_file = vim.fn.stdpath "config" .. "/lua/packer_compiled.lua"
-  local run_me, _ = loadfile(packer_file)
-  if run_me then
-    run_me()
-  else
-    print "Please run :PackerSync"
-  end
-end
-
-function M.list_registered_providers_names(filetype)
+function M.list_lsp_sources(filetype)
   local s = require "null-ls.sources"
   local available_sources = s.get_available(filetype)
   local registered = {}
@@ -62,18 +35,25 @@ function M.list_registered_providers_names(filetype)
   return registered
 end
 
-function M.list_registered_formatters(filetype)
+function M.list_formatters(filetype)
   local null_ls_methods = require "null-ls.methods"
   local formatter_method = null_ls_methods.internal["FORMATTING"]
-  local registered_providers = M.list_registered_providers_names(filetype)
+  local registered_providers = M.list_lsp_sources(filetype)
   return registered_providers[formatter_method] or {}
 end
 
-function M.list_registered_linters(filetype)
+function M.list_linters(filetype)
   local null_ls_methods = require "null-ls.methods"
   local formatter_method = null_ls_methods.internal["DIAGNOSTICS"]
-  local registered_providers = M.list_registered_providers_names(filetype)
+  local registered_providers = M.list_lsp_sources(filetype)
   return registered_providers[formatter_method] or {}
+end
+
+function M.impatient()
+  local impatient_ok, _ = pcall(require, "impatient")
+  if impatient_ok then
+    require("impatient").enable_profile()
+  end
 end
 
 return M

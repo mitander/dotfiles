@@ -1,7 +1,7 @@
 local M = {}
 
 local set = vim.opt
-vim.cmd("colorscheme onedark")
+
 set.swapfile = false -- Disable use of swapfile for the buffer
 set.backup = false -- Disable making a backup file
 set.writebackup = false -- Disable making a backup before overwriting a file
@@ -36,7 +36,6 @@ set.spell = false -- Disable spelling checking and highlighting
 set.showmode = false -- Disable showing modes in command line
 set.termguicolors = true -- Enable 24-bit RGB color in the TUI
 set.cursorline = true -- Highlight the text line of the cursor
-
 set.relativenumber = false -- Show relative numberline
 set.wrap = false -- Disable wrapping of lines longer than the width of window
 set.conceallevel = 0 -- Show text normally
