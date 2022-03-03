@@ -129,6 +129,13 @@ function M.config()
       h = { "<cmd>ToggleTerm size=10 direction=horizontal<cr>", "Horizontal" },
       v = { "<cmd>ToggleTerm size=80 direction=vertical<cr>", "Vertical" },
     },
+    f = {
+      name = "Files",
+      w = { "<cmd>Telescope live_grep<cr>", "Live grep" },
+      f = { "<cmd>Telescope find_files<cr>", "Find file" },
+      b = { "<cmd>Telescope buffers<cr>", "Find buffer" },
+      o = { "<cmd>Telescope oldfiles<cr>", "Show previous files" },
+    },
   }
 
   which_key.setup(default_setup)

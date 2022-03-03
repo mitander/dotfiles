@@ -1,5 +1,3 @@
-local M = {}
-
 local packer_status_ok, packer = pcall(require, "packer")
 if not packer_status_ok then
   return
@@ -37,7 +35,6 @@ packer.startup {
     use { "numToStr/Comment.nvim", event = "BufRead" }
     use { "lukas-reineke/indent-blankline.nvim" }
     use { "folke/which-key.nvim" }
-    use { 'nanotech/jellybeans.vim' }
 
     use {
       "nathom/filetype.nvim",
@@ -150,5 +147,3 @@ require("configs.comment").config()
 require("configs.indent-line").config()
 require("configs.which-key").config()
 require("configs.gitsigns").config()
-
-return M

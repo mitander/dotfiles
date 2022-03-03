@@ -5,7 +5,7 @@ export XDG_DOWNLOAD_DIR=$HOME/Downloads
 
 # alias
 alias zshrc="vim $HOME/.zshrc"
-alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
+alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.lua"
 alias alarc="vim $XDG_CONFIG_HOME/alacritty/alacritty.yml"
 alias vim="nvim"
 alias ls="ls --color=auto"
