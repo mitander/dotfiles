@@ -3,6 +3,5 @@ if not status_ok then
   return
 end
 
-print("hello from lsp")
 require "configs.lsp.lsp-installer"
 require("configs.lsp.handlers").setup()

@@ -4,7 +4,6 @@ if not status_ok then
 end
 
 lsp_installer.on_server_ready(function(server)
-  print("lsp-installer-ready")
   local opts = server:get_default_options()
   opts.on_attach = require("configs.lsp.handlers").on_attach
   opts.capabilities = require("configs.lsp.handlers").capabilities
