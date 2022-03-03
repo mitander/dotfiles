@@ -1,7 +1,7 @@
 local utils = require "core.utils"
 local packer = require "plugins.packer"
 
--- Bootstrap packer (automatic install)
+-- Bootstrap packer
 packer.bootstrap()
 
 -- Load impatient
@@ -10,14 +10,20 @@ utils.impatient()
 -- Disable vim builtin functions
 utils.disable_builtins()
 
--- Core modules
+-- Load core modules
 local core_modules = {
   "core.options",
   "core.autocmds",
   "core.mappings",
 }
 
--- Plugin modules
+local core_err = utils.load(core_modules)
+if core_err then
+  print("Failed to load core modules: " .. core_err)
+  return
+end
+
+-- Load plugin modules
 local plugin_modules = {
   "plugins.icons",
   "plugins.bufferline",
@@ -39,14 +45,6 @@ local plugin_modules = {
   "plugins.gitsigns",
 }
 
--- Load core modules
-local core_err = utils.load(core_modules)
-if core_err then
-  print("Failed to load core modules: " .. core_err)
-  return
-end
-
--- Load plugin modules
 local plug_err = utils.load(plugin_modules)
 if plug_err then
   print("Failed to load plugin modules: " .. plug_err)
