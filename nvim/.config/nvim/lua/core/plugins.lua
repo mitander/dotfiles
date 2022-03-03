@@ -1,7 +1,5 @@
 local M = {}
 
-local utils = require "core.utils"
-
 local packer_status_ok, packer = pcall(require, "packer")
 if not packer_status_ok then
   return
@@ -39,6 +37,7 @@ packer.startup {
     use { "numToStr/Comment.nvim", event = "BufRead" }
     use { "lukas-reineke/indent-blankline.nvim" }
     use { "folke/which-key.nvim" }
+    use { 'nanotech/jellybeans.vim' }
 
     use {
       "nathom/filetype.nvim",
@@ -137,12 +136,12 @@ require("configs.icons").config()
 require("configs.bufferline").config()
 require("configs.nvim-tree").config()
 require("configs.lualine").config()
-require("configs.treesitter").config()
+-- require("configs.treesitter").config()
 require("configs.cmp").config()
 require("configs.lsp")
 require("configs.lsp.lspsaga").config()
 require("configs.symbols-outline").setup()
-require("user.null-ls").config()
+require("configs.null-ls").config()
 require("configs.telescope").config()
 require("configs.colorizer").config()
 require("configs.autopairs").config()
@@ -150,5 +149,6 @@ require("configs.toggleterm").config()
 require("configs.comment").config()
 require("configs.indent-line").config()
 require("configs.which-key").config()
+require("configs.gitsigns").config()
 
 return M

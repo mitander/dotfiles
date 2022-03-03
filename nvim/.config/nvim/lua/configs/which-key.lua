@@ -67,12 +67,8 @@ function M.config()
   }
 
   local mappings = {
-    ["d"] = { "<cmd>Dashboard<cr>", "Dashboard" },
     ["e"] = { "<cmd>NvimTreeToggle<cr>", "Explorer" },
-    ["w"] = { "<cmd>w<CR>", "Save" },
-    ["q"] = { "<cmd>q<CR>", "Quit" },
     ["c"] = { "<cmd>Bdelete!<CR>", "Close Buffer" },
-    ["h"] = { "<cmd>nohlsearch<CR>", "No Highlight" },
     ["/"] = { "<cmd>lua require('Comment.api').toggle_current_linewise()<cr>", "Comment" },
 
     p = {
@@ -99,6 +95,7 @@ function M.config()
       b = { "<cmd>Telescope git_branches<cr>", "Checkout branch" },
       c = { "<cmd>Telescope git_commits<cr>", "Checkout commit" },
       d = { "<cmd>Gitsigns diffthis HEAD<cr>", "Diff" },
+      t = { "<cmd>Gitsigns toggle_signs", "Toggle gitsigns" },
     },
 
     l = {
@@ -107,7 +104,7 @@ function M.config()
       f = { "<cmd>lua vim.lsp.buf.formatting_sync()<cr>", "Format" },
       i = { "<cmd>LspInfo<cr>", "Info" },
       I = { "<cmd>LspInstallInfo<cr>", "Installer Info" },
-      r = { "<cmd>Lspsaga rename<cr>", "Rename" },
+      rn = { "<cmd>Lspsaga rename<cr>", "Rename" },
       s = { "<cmd>Telescope lsp_document_symbols<cr>", "Document Symbols" },
     },
 

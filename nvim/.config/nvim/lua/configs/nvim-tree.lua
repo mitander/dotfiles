@@ -6,6 +6,13 @@ function M.config()
     return
   end
 
+  local config_status_ok, nvim_tree_config = pcall(require, "nvim-tree.config")
+  if not config_status_ok then
+    return
+  end
+
+  local tree_cb = nvim_tree_config.nvim_tree_callback
+
   local g = vim.g
 
   g.nvim_tree_indent_markers = 1
@@ -51,7 +58,7 @@ function M.config()
     },
     auto_close = true,
     open_on_tab = false,
-    quit_on_open = false,
+    quit_on_open = true,
     hijack_cursor = true,
     hide_root_folder = true,
     update_cwd = true,
@@ -78,6 +85,16 @@ function M.config()
       number = false,
       relativenumber = false,
       signcolumn = "yes",
+      mappings = {
+        custom_only = false,
+        list = {
+          { key = { "l", "<CR>", "o" }, cb = tree_cb "edit" },
+          { key = { "h", "<BS>" }, cb = tree_cb "close_node" },
+          { key = "h", cb = tree_cb "close_node" },
+          { key = "<C-v>", cb = tree_cb "vsplit" },
+          { key = "<C-s>", cb = tree_cb "split" },
+        },
+      },
     },
     git = {
       enable = true,

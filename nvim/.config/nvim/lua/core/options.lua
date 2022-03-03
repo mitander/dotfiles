@@ -33,10 +33,11 @@ set.foldmethod = "manual" -- Create folds manually
 set.completeopt = { "menuone", "noselect" } -- Options for insert mode completion
 set.colorcolumn = "99999" -- Fix for the indentline problem
 set.spell = false -- Disable spelling checking and highlighting
--- set.showmode = false -- Disable showing modes in command line
+set.showmode = false -- Disable showing modes in command line
 set.termguicolors = true -- Enable 24-bit RGB color in the TUI
 set.cursorline = true -- Highlight the text line of the cursor
-set.relativenumber = true -- Show relative numberline
+
+set.relativenumber = false -- Show relative numberline
 set.wrap = false -- Disable wrapping of lines longer than the width of window
 set.conceallevel = 0 -- Show text normally
 set.cmdheight = 1 -- Number of screen lines to use for the command line

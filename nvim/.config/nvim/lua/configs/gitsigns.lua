@@ -24,7 +24,7 @@ function M.config()
         linehl = "GitSignsChangeLn",
       },
     },
-    signcolumn = true,
+    signcolumn = false,
     numhl = false,
     linehl = false,
     word_diff = false,

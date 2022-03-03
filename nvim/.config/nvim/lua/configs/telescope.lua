@@ -24,13 +24,13 @@ function M.config()
           ["<C-j>"] = actions.move_selection_next,
           ["<C-k>"] = actions.move_selection_previous,
 
-          ["<C-c>"] = actions.close,
+          ["<esc>"] = actions.close,
 
           ["<Down>"] = actions.move_selection_next,
           ["<Up>"] = actions.move_selection_previous,
 
           ["<CR>"] = actions.select_default,
-          ["<C-x>"] = actions.select_horizontal,
+          ["<C-s>"] = actions.select_horizontal,
           ["<C-v>"] = actions.select_vertical,
           ["<C-t>"] = actions.select_tab,
 
@@ -50,7 +50,7 @@ function M.config()
         n = {
           ["<esc>"] = actions.close,
           ["<CR>"] = actions.select_default,
-          ["<C-x>"] = actions.select_horizontal,
+          ["<C-s>"] = actions.select_horizontal,
           ["<C-v>"] = actions.select_vertical,
           ["<C-t>"] = actions.select_tab,
 

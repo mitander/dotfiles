@@ -1,5 +1,3 @@
-" Author: Kabin Karki <kabinkarki555@gmail.com>
-
 lua << EOF
 
 package.loaded["onedark"] = nil
