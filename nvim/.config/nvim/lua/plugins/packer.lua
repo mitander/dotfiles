@@ -1,5 +1,5 @@
 local M = {}
-
+local packer_file =  vim.fn.stdpath "config" .. "/lua/packer_compiled.lua"
 
 function M.startup()
   local ok, packer = pcall(require, "packer")
@@ -9,6 +9,8 @@ function M.startup()
 
   packer.startup {
     function(use)
+      use { "fatih/vim-go" }
+      use { "rust-lang/rust.vim" }
       use { "wbthomason/packer.nvim" }
       use { "lewis6991/impatient.nvim" }
       use { "nvim-lua/plenary.nvim" }
@@ -110,7 +112,7 @@ function M.startup()
     end,
 
     config = {
-      compile_path = vim.fn.stdpath "config" .. "/lua/packer_compiled.lua",
+      compile_path = packer_file,
       display = {
         open_fn = function()
           return require("packer.util").float { border = "rounded" }
@@ -147,8 +149,7 @@ function M.bootstrap()
 end
 
 function M.compile()
-  local f =  vim.fn.stdpath "config" .. "/lua/packer_compiled.lua"
-  local func, _ = loadfile(f)
+  local func, _ = loadfile(packer_file)
   if func then
     func()
   else

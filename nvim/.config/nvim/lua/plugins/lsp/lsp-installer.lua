@@ -12,6 +12,5 @@ lsp_installer.on_server_ready(function(server)
   if present then
     opts = vim.tbl_deep_extend("force", av_overrides, opts)
   end
-
   server.setup(server, opts)
 end)
