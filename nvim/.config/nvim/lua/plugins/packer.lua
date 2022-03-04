@@ -1,5 +1,22 @@
 local M = {}
-local packer_file =  vim.fn.stdpath "config" .. "/lua/packer_compiled.lua"
+
+local fn = vim.fn
+local packer_compile =  fn.stdpath "config" .. "/lua/packer_compiled.lua"
+local packer_install = fn.stdpath "data" .. "/site/pack/packer/start/packer.nvim"
+
+-- Bootstrap
+if fn.empty(fn.glob(packer_install)) > 0 then
+  PACKER_BOOTSTRAP = fn.system {
+    "git",
+    "clone",
+    "--depth",
+    "1",
+    "https://github.com/wbthomason/packer.nvim",
+    packer_install,
+  }
+  print "Cloning packer...\n"
+  vim.cmd [[packadd packer.nvim]]
+end
 
 function M.startup()
   local ok, packer = pcall(require, "packer")
@@ -21,11 +38,11 @@ function M.startup()
       use { "hrsh7th/cmp-buffer", after = "nvim-cmp" }
       use { "hrsh7th/cmp-path", after = "nvim-cmp" }
       use { "hrsh7th/cmp-nvim-lsp" }
+      use { "hrsh7th/nvim-cmp", event = "BufRead" }
       use { "kyazdani42/nvim-web-devicons" }
       use { "akinsho/bufferline.nvim", after = "nvim-web-devicons" }
       use { "kyazdani42/nvim-tree.lua", cmd = { "NvimTreeToggle", "NvimTreeFocus" } }
       use { "nvim-lualine/lualine.nvim" }
-      use { "hrsh7th/nvim-cmp", event = "BufRead" }
       use { "neovim/nvim-lspconfig", event = "BufRead" }
       use { "tami5/lspsaga.nvim", event = "BufRead" }
       use { "simrat39/symbols-outline.nvim", cmd = "SymbolsOutline" }
@@ -112,7 +129,7 @@ function M.startup()
     end,
 
     config = {
-      compile_path = packer_file,
+      compile_path = packer_compile,
       display = {
         open_fn = function()
           return require("packer.util").float { border = "rounded" }
@@ -131,25 +148,8 @@ function M.startup()
   }
 end
 
-function M.bootstrap()
-  local fn = vim.fn
-  local install_path = fn.stdpath "data" .. "/site/pack/packer/start/packer.nvim"
-  if fn.empty(fn.glob(install_path)) > 0 then
-    PACKER_BOOTSTRAP = fn.system {
-      "git",
-      "clone",
-      "--depth",
-      "1",
-      "https://github.com/wbthomason/packer.nvim",
-      install_path,
-    }
-    print "Cloning packer...\n"
-    vim.cmd [[packadd packer.nvim]]
-    end
-end
-
 function M.compile()
-  local func, _ = loadfile(packer_file)
+  local func, _ = loadfile(packer_compile)
   if func then
     func()
   else

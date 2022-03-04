@@ -2,6 +2,8 @@ local M = {}
 
 local set = vim.opt
 
+vim.cmd [[ colorscheme onedark ]] -- Colorscheme
+
 set.swapfile = false -- Disable use of swapfile for the buffer
 set.backup = false -- Disable making a backup file
 set.writebackup = false -- Disable making a backup before overwriting a file
@@ -41,6 +43,5 @@ set.wrap = false -- Disable wrapping of lines longer than the width of window
 set.conceallevel = 0 -- Show text normally
 set.cmdheight = 1 -- Number of screen lines to use for the command line
 set.pumheight = 10 -- Height of the pop up menu
-set.laststatus = 2 -- laststatus
 
 return M
