@@ -1,5 +1,18 @@
-lua require("user.init")
+" lua plugins
+lua require("plugins.packer")
+lua require("plugins.lsp")
+lua require("plugins.cmp")
+lua require("plugins.treesitter")
+lua require("plugins.nvim-tree")
+lua require("plugins.impatient")
+lua require("plugins.bqf")
+lua require("plugins.filetype")
+lua require("plugins.lualine")
+lua require("plugins.bufferline")
+lua require("plugins.indent")
+lua require("plugins.null-ls")
 
+" options
 set noswapfile
 set nobackup
 set nolist
@@ -9,8 +22,6 @@ set hidden
 set mouse=a
 set number
 set ruler
-set tabstop=2
-set shiftwidth=2
 set smartcase
 set ignorecase
 set scrolloff=8
@@ -22,6 +33,7 @@ set expandtab
 set linebreak
 set autoread
 set wildmode=longest:full,full
+set wildmenu
 set history=1000
 set scrolloff=8
 set ttimeoutlen=50
@@ -31,9 +43,11 @@ set switchbuf=useopen,usetab
 set splitbelow splitright
 set shell=/bin/zsh
 set signcolumn=yes
-set laststatus=2
-set statusline=%{expand('%:p:h:t')}/%t
+" set laststatus=2
+" set statusline=%{expand('%:p:h:t')}/%t
+set path+=**
 
+" colorscheme
 syntax on
 colorscheme jellybeans
 
@@ -41,16 +55,24 @@ colorscheme jellybeans
 let mapleader=" "
 map <space> <nop>
 
-" misc
-nnoremap <silent> <enter> :noh<enter>
+" vim config
 nnoremap <silent> <leader>c :tabnew $MYVIMRC<enter>
 nnoremap <silent> <leader>so :so $MYVIMRC<enter>
+
+" clear highlighting
+nnoremap <silent> <enter> :noh<enter>
+
+" paste without yanking
 nnoremap <silent> <leader>p "_dP
 
 " tabs
 nnoremap <silent> <c-t> :tabnew<enter>
 nnoremap <silent> <c-w><C-h> gT
 nnoremap <silent> <c-w><C-l> gt
+
+" buffers
+nnoremap <silent> <s-h> :bprev<enter>
+nnoremap <silent> <s-l> :bnext<enter>
 
 " splits
 nnoremap <silent> <c-h> :wincmd h<enter>
@@ -71,12 +93,12 @@ nnoremap <silent> <right> :vertical resize -2<enter>
 " move lines
 nnoremap <silent> j gj
 nnoremap <silent> k gk
-nnoremap <silent> <a-j> :m .+1<enter>==
-nnoremap <silent> <a-k> :m .-2<enter>==
-vnoremap <silent> <a-j> :m '>+1<enter>gv=gv
-vnoremap <silent> <a-k> :m '<-2<enter>gv=gv
-inoremap <silent> <a-j> <esc>:m .+1<enter>==gi
-inoremap <silent> <a-k> <esc>:m .-2<enter>==gi
+" nnoremap <silent> <C-J> :m .+1<enter>==
+" nnoremap <silent> <C-K> :m .-2<enter>==
+" vnoremap <silent> <C-J> :m '>+1<enter>gv=gv
+" vnoremap <silent> <C-K> :m '<-2<enter>gv=gv
+" inoremap <silent> <C-J> <esc>:m .+1<enter>==gi
+" inoremap <silent> <C-K> <esc>:m .-2<enter>==gi
 
 " edit file under cursor
 nnoremap <silent> gf :edit <cfile><enter>
@@ -89,11 +111,14 @@ nnoremap <silent> q <nop>
 inoremap <C-x> <c-w>
 nnoremap <C-x> a<c-w><esc>
 
-" indent
+" keep visual selection when indenting
 vnoremap <silent> < <gv
 vnoremap <silent> > >gv
 
-" quit/save maps
+" chmod current file
+nnoremap <leader>x :silent !chmod +x %<enter>
+
+" quit/save helpers
 cabbrev W w
 cabbrev Q q
 cabbrev Wq wq
@@ -147,19 +172,26 @@ let g:rustfmt_emit_files = 1
 let g:rustfmt_fail_silently = 0
 let g:rust_clip_command = 'xclip -selection clipboard'
 
-hi VertSplit       ctermbg=256    ctermfg=236
-hi SignColumn      ctermbg=256    ctermfg=236
-hi ColorColumn     ctermbg=236    ctermfg=236
-hi StatusLineNC    ctermbg=236    ctermfg=243
-hi StatusLine      ctermbg=236    ctermfg=253
-hi Normal          ctermbg=NONE   ctermfg=256
-hi LineNr          ctermbg=NONE   ctermfg=253
-hi NonText         ctermbg=NONE   ctermfg=256
-hi Comment         ctermbg=NONE   ctermfg=gray
-hi GitGutterDelete ctermbg=NONE   ctermfg=red
-hi GitGutterAdd    ctermbg=NONE   ctermfg=green
-hi GitGutterChange ctermbg=NONE   ctermfg=yellow
+" symbols-outline
+nnoremap <silent> <leader>ss :SymbolsOutline<enter>
 
+" highlighting
+hi VertSplit           ctermbg=256  ctermfg=236
+hi SignColumn          ctermbg=256  ctermfg=236
+hi ColorColumn         ctermbg=236  ctermfg=236
+hi StatusLineNC        ctermbg=236  ctermfg=243
+hi StatusLine          ctermbg=236  ctermfg=253
+hi Normal              ctermbg=NONE ctermfg=256
+hi LineNr              ctermbg=NONE ctermfg=253
+hi NonText             ctermbg=NONE ctermfg=256
+hi Comment             ctermbg=NONE ctermfg=gray
+hi GitGutterDelete     ctermbg=NONE ctermfg=red
+hi GitGutterAdd        ctermbg=NONE ctermfg=green
+hi GitGutterChange     ctermbg=NONE ctermfg=yellow
+hi IndentBlanklineChar ctermbg=NONE ctermfg=243
+hi Pmenu               ctermbg=236  ctermfg=253
+
+" autocommands
 augroup _general
   autocmd!
   autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200})
@@ -188,14 +220,17 @@ augroup _markdown
 augroup end
 
 augroup _filetype
-  autocmd Filetype rust set colorcolumn=100
-  autocmd Filetype rust set tabstop=4 shiftwidth=4
+  autocmd!
+  autocmd Filetype * setlocal tabstop=2 shiftwidth=2
 
-  autocmd Filetype go set colorcolumn=100
-  autocmd Filetype go set tabstop=4 shiftwidth=4
+  autocmd Filetype rust setlocal colorcolumn=100
+  autocmd Filetype rust setlocal tabstop=4 shiftwidth=4
 
-  autocmd Filetype c set colorcolumn=80
-  autocmd Filetype c set tabstop=2 shiftwidth=2
+  autocmd Filetype go setlocal colorcolumn=100
+  autocmd Filetype go setlocal tabstop=4 shiftwidth=4
+
+  autocmd Filetype c setlocal colorcolumn=80
+  autocmd Filetype c setlocal tabstop=2 shiftwidth=2
   autocmd FileType c ClangFormatAutoEnable
 augroup end
 

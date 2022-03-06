@@ -32,8 +32,8 @@ bqf.setup({
     },
     -- make `drop` and `tab drop` to become preferred
     func_map = {
-        drop = 'o',
-        openc = '<CR>',
+        drop = '<CR>',
+        openc = 'o',
         split = '<C-s>',
         tabdrop = '<C-t>',
         tabc = '',
