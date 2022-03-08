@@ -40,6 +40,10 @@ HISTSIZE=999999999
 SAVEHIST=$HISTSIZE
 HISTFILE=$HOME/.zsh_history
 
+# share history between panes
+setopt inc_append_history
+setopt sharehistory
+
 # autocomplete
 autoload -U compinit
 zstyle ':completion:*' menu select
@@ -55,12 +59,6 @@ bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
 
-# backwards search
-bindkey -v '^R' history-incremental-search-backward
-
-# z autojump
-[ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
-
 # fzf variables
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
@@ -69,8 +67,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   xset r rate 275 40
   export GOROOT="/usr/local/go"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  export ZIG=/usr/local/zig
-  export ZLS=/usr/local/zls
+  alias ls="ls -G"
+  bindkey "ç" fzf-cd-widget
   export GOROOT=/opt/homebrew/opt/go/libexec
 fi
 
@@ -103,13 +101,11 @@ export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[4;32m'
 
-# # allow vim to open files from terminal buffer with "vim [filename]"
-# # if nvr is installed, set listen address
-# if type -f nvr > /dev/null; then
-#   alias vim="NVIM_LISTEN_ADDRESS=/tmp/nvimsocket nvim"
-#   if [ -n "${NVIM_LISTEN_ADDRESS}" ]; then
-#     function nvim() {nvr $1}
-#   fi
-# fi
+#  load z autojump
+[ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
 
+# load custom config
 [ -r .zsh.custom ] && source .zsh.custom
+
+# load fzf keybinds
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
