@@ -221,8 +221,6 @@ augroup end
 
 augroup _filetype
   autocmd!
-  autocmd Filetype * setlocal tabstop=2 shiftwidth=2
-
   autocmd Filetype rust setlocal colorcolumn=100
   autocmd Filetype rust setlocal tabstop=4 shiftwidth=4
 
