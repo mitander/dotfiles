@@ -50,6 +50,7 @@ set path+=**
 " colorscheme
 syntax on
 colorscheme jellybeans
+set termguicolors
 
 " leader
 let mapleader=" "
@@ -176,20 +177,20 @@ let g:rust_clip_command = 'xclip -selection clipboard'
 nnoremap <silent> <leader>ss :SymbolsOutline<enter>
 
 " highlighting
-hi VertSplit           ctermbg=256  ctermfg=236
-hi SignColumn          ctermbg=256  ctermfg=236
-hi ColorColumn         ctermbg=236  ctermfg=236
-hi StatusLineNC        ctermbg=236  ctermfg=243
-hi StatusLine          ctermbg=236  ctermfg=253
-hi Normal              ctermbg=NONE ctermfg=256
-hi LineNr              ctermbg=NONE ctermfg=253
-hi NonText             ctermbg=NONE ctermfg=256
-hi Comment             ctermbg=NONE ctermfg=gray
-hi GitGutterDelete     ctermbg=NONE ctermfg=red
-hi GitGutterAdd        ctermbg=NONE ctermfg=green
-hi GitGutterChange     ctermbg=NONE ctermfg=yellow
-hi IndentBlanklineChar ctermbg=NONE ctermfg=243
-hi Pmenu               ctermbg=236  ctermfg=253
+hi VertSplit           guibg=256  guifg=236
+hi SignColumn          guibg=256  guifg=236
+hi ColorColumn         guibg=236  guifg=236
+hi StatusLineNC        guibg=236  guifg=243
+hi StatusLine          guibg=236  guifg=253
+hi Pmenu               guibg=236  guifg=253
+hi Normal              guibg=NONE guifg=256
+hi LineNr              guibg=NONE guifg=253
+hi NonText             guibg=NONE guifg=256
+hi Comment             guibg=NONE guifg=gray
+hi GitGutterDelete     guibg=NONE guifg=red
+hi GitGutterAdd        guibg=NONE guifg=green
+hi GitGutterChange     guibg=NONE guifg=yellow
+hi IndentBlanklineChar guibg=NONE guifg=gray
 
 " autocommands
 augroup _general

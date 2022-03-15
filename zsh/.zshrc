@@ -109,3 +109,6 @@ export LESS_TERMCAP_us=$'\e[4;32m'
 
 # load fzf keybinds
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+source /usr/share/doc/fzf/examples/key-bindings.zsh
+source /usr/share/doc/fzf/examples/completion.zsh
