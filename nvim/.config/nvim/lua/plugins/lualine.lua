@@ -5,7 +5,14 @@ end
 
 -- Customize jellybeans
 local custom_jellybeans = require'lualine.themes.jellybeans'
+
+-- clearer filename
 custom_jellybeans.normal.c.fg = '#e8e8de'
+
+-- same color for all modes
+custom_jellybeans.normal.a.bg = '#8197bf'
+custom_jellybeans.insert.a.bg = '#8197bf'
+custom_jellybeans.visual.a.bg = '#8197bf'
 
 
 local config = {
@@ -17,19 +24,19 @@ local config = {
   },
   sections = {
     lualine_a = {'mode'},
-    lualine_b = {'branch', 'diff', 'diagnostics'},
+    lualine_b = {'branch', 'diagnostics'},
     lualine_c = {'filename'},
     lualine_x = {'encoding', 'fileformat', 'filetype'},
     lualine_y = {'progress'},
     lualine_z = {'location'}
   },
   inactive_sections = {
-    lualine_a = {},
-    lualine_b = {},
+    lualine_a = {'mode'},
+    lualine_b = {'branch', 'diagnostics'},
     lualine_c = {'filename'},
-    lualine_x = {'location'},
-    lualine_y = {},
-    lualine_z = {}
+    lualine_x = {'encoding', 'fileformat', 'filetype'},
+    lualine_y = {'progress'},
+    lualine_z = {'location'}
   },
   tabline = {},
   extensions = {}

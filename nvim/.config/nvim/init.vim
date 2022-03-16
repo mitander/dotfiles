@@ -24,6 +24,7 @@ set number
 set ruler
 set smartcase
 set ignorecase
+set noshowmode
 set scrolloff=8
 set updatetime=50
 set shortmess+=c
@@ -43,9 +44,11 @@ set switchbuf=useopen,usetab
 set splitbelow splitright
 set shell=/bin/zsh
 set signcolumn=yes
+set path+=**
+set tabstop=2 shiftwidth=2
+
 " set laststatus=2
 " set statusline=%{expand('%:p:h:t')}/%t
-set path+=**
 
 " colorscheme
 syntax on
@@ -91,6 +94,10 @@ nnoremap <silent> <down> :resize -2<enter>
 nnoremap <silent> <left> :vertical resize +2<enter>
 nnoremap <silent> <right> :vertical resize -2<enter>
 
+" buffers
+nnoremap <silent> Q :bd <enter>
+nnoremap <silent> <leader>qa :qall!<enter>
+
 " move lines
 nnoremap <silent> j gj
 nnoremap <silent> k gk
@@ -105,7 +112,6 @@ nnoremap <silent> k gk
 nnoremap <silent> gf :edit <cfile><enter>
 
 " pls no
-nnoremap <silent> Q <nop>
 nnoremap <silent> q <nop>
 
 " delete word backwards
@@ -177,16 +183,16 @@ let g:rust_clip_command = 'xclip -selection clipboard'
 nnoremap <silent> <leader>ss :SymbolsOutline<enter>
 
 " highlighting
-hi VertSplit           guibg=256  guifg=236
 hi SignColumn          guibg=256  guifg=236
 hi ColorColumn         guibg=236  guifg=236
 hi StatusLineNC        guibg=236  guifg=243
 hi StatusLine          guibg=236  guifg=253
 hi Pmenu               guibg=236  guifg=253
-hi Normal              guibg=NONE guifg=256
+hi Normal              guibg=NONE guifg=259
 hi LineNr              guibg=NONE guifg=253
 hi NonText             guibg=NONE guifg=256
 hi Comment             guibg=NONE guifg=gray
+hi VertSplit           guibg=NONE guifg=gray
 hi GitGutterDelete     guibg=NONE guifg=red
 hi GitGutterAdd        guibg=NONE guifg=green
 hi GitGutterChange     guibg=NONE guifg=yellow

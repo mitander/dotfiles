@@ -33,9 +33,10 @@ font:
 
 
 colors:
-  #primary:
-  #  background: '#121212'
-  #  foreground: '#c8c7c7'
+  primary:
+    background: '#161616'
+    foreground: '#e4e4e4'
+
   normal:
     black:   '#1c1c1c'
     red:     '#d75f5f'
@@ -54,12 +55,15 @@ colors:
     magenta: '#d7afff'
     cyan:    '#8fbfdc'
     white:   '#ebdbb2'
+    colors:
+
+  selection:
+    text: '#5963a2'
+    background: '#f6f6f6'
+
   cursor:
     text: '0x000000'
     cursor: '0xffffff'
-
-window.opacity: 1
-
 
 key_bindings:
   - { key: V,      mods: Control|Shift, action: Paste                      }

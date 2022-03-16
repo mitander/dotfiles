@@ -19,14 +19,11 @@ local colors = {
 bufferline.setup {
   options = {
     offsets = {
-      { filetype = "NvimTree", text = "", padding = 1 },
-      { filetype = "neo-tree", text = "", padding = 1 },
-      { filetype = "Outline", text = "", padding = 1 },
+      { filetype = "NvimTree", text = "NvimTree", padding = 1 },
     },
-    buffer_close_icon = "",
     modified_icon = "",
-    close_icon = "",
-    show_close_icon = true,
+    -- close_icon = "",
+    -- show_close_icon = true,
     left_trunc_marker = "",
     right_trunc_marker = "",
     max_name_length = 14,
@@ -35,10 +32,9 @@ bufferline.setup {
     show_tab_indicators = true,
     enforce_regular_tabs = false,
     view = "multiwindow",
-    show_buffer_close_icons = true,
     separator_style = "thin",
-    always_show_bufferline = true,
-    diagnostics = false,
+    always_show_bufferline = false,
+    diagnostics = "nvim_lsp",
   },
 
   highlights = {

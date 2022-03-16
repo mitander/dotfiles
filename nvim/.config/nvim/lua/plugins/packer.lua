@@ -1,5 +1,5 @@
 local fn = vim.fn
-local packer_compile =  fn.stdpath "config" .. "/lua/plugins/packer/packer_compiled.lua"
+local packer_compile =  fn.stdpath "data" .. "/lua/plugins/packer/packer_compiled.lua"
 local packer_install = fn.stdpath "data" .. "/site/pack/packer/start/packer.nvim"
 
 -- Automatically install packer
