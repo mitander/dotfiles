@@ -133,11 +133,11 @@ bufferline.setup {
     },
     separator_visible = {
       guifg = colors.grey,
-      guibg = colors.grey,
+      guibg = colors.none,
     },
     separator_selected = {
       guifg = colors.grey,
-      guibg = colors.grey,
+      guibg = colors.none,
     },
   },
 }
