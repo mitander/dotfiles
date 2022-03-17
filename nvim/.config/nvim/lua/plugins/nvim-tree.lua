@@ -55,7 +55,7 @@ nvim_tree.setup {
     args = {},
   },
   filters = {
-    dotfiles = false,
+    dotfiles = true,
     custom = {},
   },
   view = {
@@ -72,6 +72,7 @@ nvim_tree.setup {
         { key = "h", cb = tree_cb "close_node" },
         { key = "<C-v>", cb = tree_cb "vsplit" },
         { key = "<C-s>", cb = tree_cb "split" },
+        { key = "<C-t>", cb = tree_cb "tab" },
       },
     },
     number = false,
@@ -81,7 +82,6 @@ nvim_tree.setup {
     cmd = "trash",
     require_confirm = true,
   },
-  quit_on_open = 1,
   git_hl = 1,
   disable_window_picker = 1,
   root_folder_modifier = ":t",
@@ -92,4 +92,9 @@ nvim_tree.setup {
     folder_arrows = 1,
     tree_width = 30,
   },
+  actions = {
+    open_file = {
+      quit_on_open = true
+    }
+  }
 }

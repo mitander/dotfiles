@@ -101,12 +101,12 @@ nnoremap <silent> <leader>qa :qall!<enter>
 " move lines
 nnoremap <silent> j gj
 nnoremap <silent> k gk
-" nnoremap <silent> <C-J> :m .+1<enter>==
-" nnoremap <silent> <C-K> :m .-2<enter>==
-" vnoremap <silent> <C-J> :m '>+1<enter>gv=gv
-" vnoremap <silent> <C-K> :m '<-2<enter>gv=gv
-" inoremap <silent> <C-J> <esc>:m .+1<enter>==gi
-" inoremap <silent> <C-K> <esc>:m .-2<enter>==gi
+nnoremap <silent> <A-j> :m .+1<enter>==
+nnoremap <silent> <A-k> :m .-2<enter>==
+vnoremap <silent> <A-j> :m '>+1<enter>gv=gv
+vnoremap <silent> <A-k> :m '<-2<enter>gv=gv
+inoremap <silent> <A-j> <esc>:m .+1<enter>==gi
+inoremap <silent> <A-k> <esc>:m .-2<enter>==gi
 
 " edit file under cursor
 nnoremap <silent> gf :edit <cfile><enter>
@@ -134,6 +134,7 @@ cabbrev Wq wq
 nnoremap <silent> <c-n> :NvimTreeToggle<enter>
 
 " fzf
+nnoremap <silent> <c-b> :Buffers<enter>
 nnoremap <silent> <c-f> :Rg<enter>
 nnoremap <silent> <c-p> :CtrlP<enter>
 command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles --cached --others --exclude-standard'

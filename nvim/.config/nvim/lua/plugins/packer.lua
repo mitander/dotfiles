@@ -19,7 +19,7 @@ end
 vim.cmd [[
   augroup packer_user_config
     autocmd!
-    autocmd BufWritePost init.lua source <afile> | PackerSync
+    autocmd BufWritePost packer.lua source <afile> | PackerSync
   augroup end
 ]]
 
@@ -66,7 +66,8 @@ packer.startup {
     use 'lewis6991/impatient.nvim'
     use 'hrsh7th/nvim-cmp'
     use 'hrsh7th/cmp-nvim-lsp'
-    use "neovim/nvim-lspconfig"
+    use 'neovim/nvim-lspconfig'
+    use 'nvim-lua/lsp-status.nvim'
     use 'williamboman/nvim-lsp-installer'
     use 'saadparwaiz1/cmp_luasnip'
     use 'jose-elias-alvarez/null-ls.nvim'
