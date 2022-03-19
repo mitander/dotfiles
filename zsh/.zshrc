@@ -3,10 +3,12 @@ export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache
 export XDG_DOWNLOAD_DIR=$HOME/Downloads
 
+export DOTFILES=$HOME/dotfiles
+
 # alias
 alias zshrc="vim $HOME/.zshrc"
-alias vimrc="vim $XDG_CONFIG_HOME/nvim/init.vim"
-alias alarc="vim $XDG_CONFIG_HOME/alacritty/alacritty.yml"
+alias vimrc="vim $DOTFILES/nvim/.config/nvim/init.vim"
+alias alarc="vim $DOTFILES/alacritty/.config/alacritty/alacritty.yml"
 alias vim="nvim"
 alias ls="ls --color=auto"
 alias l="ls -A --color=auto"
@@ -110,5 +112,5 @@ export LESS_TERMCAP_us=$'\e[4;32m'
 # load fzf keybinds
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-source /usr/share/doc/fzf/examples/key-bindings.zsh
-source /usr/share/doc/fzf/examples/completion.zsh
+# source /usr/share/doc/fzf/examples/key-bindings.zsh
+# source /usr/share/doc/fzf/examples/completion.zsh

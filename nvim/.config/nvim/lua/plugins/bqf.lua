@@ -34,9 +34,6 @@ bqf.setup({
     func_map = {
         drop = '<CR>',
         openc = 'o',
-        split = '<C-s>',
-        tabdrop = '<C-t>',
-        tabc = '',
         ptogglemode = 'z,',
     },
     filter = {
