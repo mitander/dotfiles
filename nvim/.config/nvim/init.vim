@@ -232,6 +232,9 @@ augroup _filetype
   autocmd Filetype rust setlocal colorcolumn=100
   autocmd Filetype rust setlocal tabstop=4 shiftwidth=4
 
+  autocmd Filetype zig setlocal colorcolumn=100
+  autocmd Filetype zig setlocal tabstop=4 shiftwidth=4
+
   autocmd Filetype go setlocal colorcolumn=100
   autocmd Filetype go setlocal tabstop=4 shiftwidth=4
 

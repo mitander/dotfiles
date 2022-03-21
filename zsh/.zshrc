@@ -3,10 +3,25 @@ export XDG_CONFIG_HOME=$HOME/.config
 export XDG_CACHE_HOME=$HOME/.cache
 export XDG_DOWNLOAD_DIR=$HOME/Downloads
 
+# path
+export PATH="$PATH:$HOME/.local/bin"
+export PATH="$PATH:/usr/local/bin"
+export PATH="$PATH:/usr/bin"
+
+# settings
+export EDITOR="nvim"
+export TERMINAL="alacritty"
+export BROWSER="firefox"
+export PAGER="nvim +Man!"
+export MANPAGER="$PAGER"
+export MANWIDTH="999"
+
+# dotfiles
 export DOTFILES=$HOME/dotfiles
 
 # alias
 alias zshrc="vim $HOME/.zshrc"
+alias zshc="vim $HOME/.zsh.custom"
 alias vimrc="vim $DOTFILES/nvim/.config/nvim/init.vim"
 alias alarc="vim $DOTFILES/alacritty/.config/alacritty/alacritty.yml"
 alias vim="nvim"
@@ -61,39 +76,19 @@ bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
 
-# fzf variables
+# fzf command
 export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
-# linux/macos
+# linux specific
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   xset r rate 275 40
-  export GOROOT="/usr/local/go"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-  alias ls="ls -G"
-  bindkey "ç" fzf-cd-widget
-  export GOROOT=/opt/homebrew/opt/go/libexec
 fi
 
-# variables
-export ZIG=/usr/local/zig
-export ZLS=/usr/local/zls
-export GOPATH=$HOME/go
-
-export EDITOR="nvim"
-export TERMINAL="alacritty"
-export BROWSER="firefox"
-export PAGER="nvim +Man!"
-export MANPAGER="$PAGER"
-export MANWIDTH="999"
-
-# path
-export PATH="$PATH:$HOME/.local/bin"
-export PATH="$PATH:$ZIG/bin"
-export PATH="$PATH:$ZLS/bin"
-export PATH="$PATH:$GOPATH/bin"
-export PATH="$PATH:$GOROOT/bin"
-export PATH="$PATH:/usr/local/go/bin"
-export PATH="$PATH:$HOME/.cargo/bin"
+# macos specific
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  alias ls="ls -G"
+  bindkey "ç" fzf-cd-widget
+fi
 
 # man page color
 export LESS_TERMCAP_mb=$'\e[1;34m'
@@ -103,14 +98,8 @@ export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[4;32m'
 
-#  load z autojump
+# load z autojump
 [ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
 
 # load custom config
 [ -r .zsh.custom ] && source .zsh.custom
-
-# load fzf keybinds
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-# source /usr/share/doc/fzf/examples/key-bindings.zsh
-# source /usr/share/doc/fzf/examples/completion.zsh
