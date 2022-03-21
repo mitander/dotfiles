@@ -1,36 +1,20 @@
-# xgd variables
-export XDG_CONFIG_HOME=$HOME/.config
-export XDG_CACHE_HOME=$HOME/.cache
-export XDG_DOWNLOAD_DIR=$HOME/Downloads
-
-# path
-export PATH="$PATH:$HOME/.local/bin"
-export PATH="$PATH:/usr/local/bin"
-export PATH="$PATH:/usr/bin"
-
-# settings
-export EDITOR="nvim"
-export TERMINAL="alacritty"
-export BROWSER="firefox"
-export PAGER="nvim +Man!"
-export MANPAGER="$PAGER"
-export MANWIDTH="999"
-
-# dotfiles
-export DOTFILES=$HOME/dotfiles
-
-# alias
-alias zshrc="vim $HOME/.zshrc"
-alias zshc="vim $HOME/.zsh.custom"
-alias vimrc="vim $DOTFILES/nvim/.config/nvim/init.vim"
-alias alarc="vim $DOTFILES/alacritty/.config/alacritty/alacritty.yml"
+# general
 alias vim="nvim"
-alias ls="ls --color=auto"
-alias l="ls -A --color=auto"
+alias so="source ~/.zshrc"
+
+# config
+alias zshc="vim $HOME/.custom.zsh"
+alias zshrc="vim $HOME/dotfiles/zsh/.zshrc"
+alias vimrc="vim $HOME/dotfiles/nvim/.config/nvim/init.vim"
+alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.yml"
+
+# tmux
 alias tn="tmux new-session -s "
 alias ta="tmux attach-session -t "
 alias tm="tmux attach -t coffee || tmux new -s coffee"
 alias tls="tmux ls"
+
+# git
 alias gs="git status"
 alias gl="git log --oneline --graph --color=always --abbrev-commit --date=short |less -REX"
 alias gc="git commit"
@@ -40,7 +24,29 @@ alias gp="git push"
 alias gpp="git push --force"
 alias gr="git rebase -i"
 alias ge="git commit --amend --no-edit"
-alias so="source ~/.zshrc"
+
+# linux
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  alias ls="ls --color=auto"
+  alias la="ls -A --color=auto"
+
+  xset r rate 275 40
+
+  source /usr/share/doc/fzf/examples/key-bindings.zsh
+  source /usr/share/doc/fzf/examples/completion.zsh
+fi
+
+# macos
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  alias ls="ls -G"
+  alias la="ls -GA"
+
+  bindkey "ç" fzf-cd-widget
+  source ~/.fzf.zsh
+fi
+
+# fzf command
+export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
 # prompt
 autoload -Uz vcs_info
@@ -69,26 +75,20 @@ compinit
 _comp_options+=(globdots)		# include hidden files.
 
 # vim keys
-export KEYTIMEOUT=1
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
+export KEYTIMEOUT=1
 
-# fzf command
-export FZF_DEFAULT_COMMAND="rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
-
-# linux specific
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  xset r rate 275 40
-fi
-
-# macos specific
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  alias ls="ls -G"
-  bindkey "ç" fzf-cd-widget
-fi
+# settings
+export EDITOR="nvim"
+export TERMINAL="alacritty"
+export BROWSER="firefox"
+export PAGER="nvim +Man!"
+export MANPAGER="$PAGER"
+export MANWIDTH="999"
 
 # man page color
 export LESS_TERMCAP_mb=$'\e[1;34m'
@@ -98,8 +98,18 @@ export LESS_TERMCAP_se=$'\e[0m'
 export LESS_TERMCAP_ue=$'\e[0m'
 export LESS_TERMCAP_us=$'\e[4;32m'
 
-# load z autojump
-[ -f ~/.config/z/z.sh ] && . ~/.config/z/z.sh
+# xgd variables
+export XDG_CONFIG_HOME=$HOME/.config
+export XDG_CACHE_HOME=$HOME/.cache
+export XDG_DOWNLOAD_DIR=$HOME/Downloads
 
-# load custom config
-[ -r .zsh.custom ] && source .zsh.custom
+# path
+export PATH=$PATH:$HOME/.local/bin
+export PATH=$PATH:/usr/local/bin
+export PATH=$PATH:/usr/bin
+
+# load custom paths
+[ -r ~/.custom.zsh ] && source ~/.custom.zsh
+
+# load z
+[ -f ~/.config/z/z.sh ] && source ~/.config/z/z.sh
