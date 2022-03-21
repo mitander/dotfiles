@@ -4,7 +4,7 @@ if not status_ok then
 end
 
 -- Customize jellybeans
-local custom_jellybeans = require'lualine.themes.jellybeans'
+local custom_jellybeans = require('lualine.themes.jellybeans')
 
 -- clearer filename
 custom_jellybeans.normal.c.fg = '#e8e8de'

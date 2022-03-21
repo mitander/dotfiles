@@ -11,6 +11,7 @@ lua require("plugins.lualine")
 lua require("plugins.bufferline")
 lua require("plugins.indent")
 lua require("plugins.null-ls")
+lua require("plugins.toggleterm")
 
 " options
 set noswapfile
@@ -70,7 +71,6 @@ nnoremap <silent> <enter> :noh<enter>
 nnoremap <silent> <leader>p "_dP
 
 " tabs
-nnoremap <silent> <c-t> :tabnew<enter>
 nnoremap <silent> <c-w><C-h> gT
 nnoremap <silent> <c-w><C-l> gt
 
@@ -89,10 +89,10 @@ nnoremap <silent> <c-w>s :wincmd L<enter>
 nnoremap <silent> <c-w>v :wincmd J<enter>
 
 " resize splits
-nnoremap <silent> <up> :resize +2<enter>
-nnoremap <silent> <down> :resize -2<enter>
-nnoremap <silent> <left> :vertical resize +2<enter>
-nnoremap <silent> <right> :vertical resize -2<enter>
+nnoremap <silent> <up> :resize -5<enter>
+nnoremap <silent> <down> :resize +5<enter>
+nnoremap <silent> <left> :vertical resize +5<enter>
+nnoremap <silent> <right> :vertical resize -5<enter>
 
 " buffers
 nnoremap <silent> Q :bd <enter>
@@ -173,6 +173,10 @@ let g:rooter_silent_chdir = 1
 nnoremap <silent> gs :Git<enter>
 nnoremap <silent> gb :Git blame<enter>
 nnoremap <silent> gl :Commits<enter>
+
+" toggleterm
+nnoremap <silent> gg <cmd>lua _lazygit_toggle()<enter>
+nnoremap <silent> <c-t> :ToggleTerm<enter>
 
 " vim-rust
 let g:rustfmt_autosave = 1

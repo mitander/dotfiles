@@ -81,6 +81,7 @@ packer.startup {
     use {'akinsho/bufferline.nvim', after = 'nvim-web-devicons'}
     use {'simrat39/symbols-outline.nvim'}
     use {'nvim-lua/popup.nvim'}
+    use {'akinsho/toggleterm.nvim'}
 
     use {
         "antoinemadec/FixCursorHold.nvim",
