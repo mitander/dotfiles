@@ -3,16 +3,6 @@ if not status_ok then
   return
 end
 
-vim.g.indentLine_enabled = 1
-vim.g.indent_blankline_show_trailing_blankline_indent = false
-vim.g.indent_blankline_show_first_indent_level = true
-vim.g.indent_blankline_use_treesitter = true
-vim.g.indent_blankline_show_current_context = true
-vim.g.indent_blankline_char = "▏"
-
-vim.opt.list = true
-vim.opt.listchars:append("space:⋅")
-
 vim.g.indent_blankline_buftype_exclude = {
   "nofile",
   "terminal",
@@ -24,6 +14,7 @@ vim.g.indent_blankline_filetype_exclude = {
   "help",
   "packer",
   "NvimTree",
+  "fzf",
 }
 
 vim.g.indent_blankline_context_patterns = {
@@ -50,8 +41,12 @@ vim.g.indent_blankline_context_patterns = {
 }
 
 indent_blankline.setup {
-  show_current_context = true,
+  show_current_context = false,
   show_current_context_start = false,
+  use_treesitter = false,
+  show_trailing_blankline_indent = false,
+  show_first_indent_level = true,
+  char = "▏"
 }
 
 -- Color
@@ -60,4 +55,4 @@ if not colors_ok then
   return
 end
 
-colors.hl("IndentBlanklineChar", colors.none, colors.gray)
+colors.hl("IndentBlanklineChar", colors.none, colors.light_gray)

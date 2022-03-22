@@ -8,7 +8,6 @@ if not colors_ok then
   return
 end
 
-
 bufferline.setup {
   options = {
     offsets = {
@@ -111,7 +110,7 @@ bufferline.setup {
     },
     modified_visible = {
       guifg = colors.yellow,
-      guibg = colors.none,
+      guibg = colors.gray,
     },
     modified_selected = {
       guifg = colors.green,
@@ -125,7 +124,7 @@ bufferline.setup {
     },
     separator_visible = {
       guifg = colors.gray,
-      guibg = colors.none,
+      guibg = colors.gray,
     },
     separator_selected = {
       guifg = colors.gray,

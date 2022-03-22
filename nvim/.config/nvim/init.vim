@@ -17,7 +17,6 @@ lua require("plugins.gitsigns")
 " options
 set noswapfile
 set nobackup
-set nolist
 set hlsearch
 set incsearch
 set hidden
@@ -87,10 +86,10 @@ nnoremap <silent> <c-w>s :wincmd L<enter>
 nnoremap <silent> <c-w>v :wincmd J<enter>
 
 " resize splits
-nnoremap <silent> <up> :resize -5<enter>
-nnoremap <silent> <down> :resize +5<enter>
-nnoremap <silent> <left> :vertical resize +5<enter>
-nnoremap <silent> <right> :vertical resize -5<enter>
+nnoremap <silent> <s-up> :resize -5<enter>
+nnoremap <silent> <s-down> :resize +5<enter>
+nnoremap <silent> <s-left> :vertical resize +5<enter>
+nnoremap <silent> <s-right> :vertical resize -5<enter>
 
 " buffers
 nnoremap <silent> Q :bd <enter>

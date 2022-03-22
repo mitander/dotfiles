@@ -15,9 +15,9 @@ local custom_jellybeans = require('lualine.themes.jellybeans')
 custom_jellybeans.normal.c.fg = colors.white
 
 -- same color for all modes
-custom_jellybeans.normal.a.bg = colors.blue
-custom_jellybeans.insert.a.bg = colors.blue
-custom_jellybeans.visual.a.bg = colors.blue
+custom_jellybeans.normal.a.bg = colors.magneta
+custom_jellybeans.insert.a.bg = colors.magneta
+custom_jellybeans.visual.a.bg = colors.magneta
 
 local config = {
   options = {
