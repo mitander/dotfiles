@@ -1,7 +1,3 @@
-vim.cmd[[syntax on]]
-vim.cmd[[colorscheme jellybeans]]
-vim.cmd[[set termguicolors]]
-
 local M = {
   black = '#3b3b3b',
   red = '#cf6a4c',
