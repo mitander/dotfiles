@@ -16,20 +16,20 @@ local M = {
   none = 'NONE'
 }
 
-function M.hl(group, bg, fg)
+function M.highlight(group, bg, fg)
   vim.cmd("au ColorScheme * hi " .. group .. " guibg=" .. bg .. " guifg=" .. fg .. " ")
 end
 
 -- General vim highlights
-M.hl("Pmenu", M.none, M.white)
-M.hl("Normal", M.none, M.white)
-M.hl("LineNr", M.none, M.white)
-M.hl("NonText", M.none, M.white)
-M.hl("VertSplit", M.none, M.gray)
-M.hl("SignColumn", M.none, M.none)
-M.hl("ColorColumn",M.white, M.white)
-M.hl("StatusLine", M.none, M.none)
-M.hl("StatusLineNC", M.none, M.none)
-M.hl("Comment", M.none, M.light_gray)
+M.highlight("Pmenu", M.none, M.white)
+M.highlight("Normal", M.none, M.white)
+M.highlight("LineNr", M.none, M.white)
+M.highlight("NonText", M.none, M.white)
+M.highlight("VertSplit", M.none, M.gray)
+M.highlight("SignColumn", M.none, M.none)
+M.highlight("ColorColumn",M.gray, M.gray)
+M.highlight("StatusLine", M.none, M.none)
+M.highlight("StatusLineNC", M.none, M.none)
+M.highlight("Comment", M.none, M.light_gray)
 
 return M

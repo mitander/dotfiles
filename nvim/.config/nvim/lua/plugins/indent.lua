@@ -55,4 +55,4 @@ if not colors_ok then
   return
 end
 
-colors.hl("IndentBlanklineChar", colors.none, colors.light_gray)
+colors.highlight("IndentBlanklineChar", colors.none, colors.gray)

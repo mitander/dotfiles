@@ -3,10 +3,12 @@ if not status_ok then
   return
 end
 
-vim.cmd([[
-    hi BqfPreviewBorder guifg=#50a14f ctermfg=71
-    hi link BqfPreviewRange Search
-]])
+local colors_ok, colors = pcall(require, "plugins.colors")
+if not colors_ok then
+  return
+end
+
+colors.highlight("BqfPreviewBorder", colors.none, colors.light_gray)
 
 bqf.setup({
     auto_enable = true,
@@ -32,7 +34,7 @@ bqf.setup({
     },
     -- make `drop` and `tab drop` to become preferred
     func_map = {
-        drop = '<CR>',
+        drop = '<enter>',
         openc = 'o',
         ptogglemode = 'z,',
     },

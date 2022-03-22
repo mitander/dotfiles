@@ -98,3 +98,17 @@ nvim_tree.setup {
     }
   }
 }
+
+local colors_ok, colors = pcall(require, "plugins.colors")
+if not colors_ok then
+  return
+end
+
+colors.highlight("IndentBlanklineChar", colors.none, colors.light_gray)
+colors.highlight("NvimTreeSymlink", colors.none, colors.magneta)
+colors.highlight("NvimTreeFolderName", colors.none, colors.white)
+colors.highlight("NvimTreeRootFolder", colors.none, colors.gray)
+colors.highlight("LspDiagnosticsError", colors.none, colors.red)
+colors.highlight("LspDiagnosticsWarning", colors.none, colors.yellow)
+colors.highlight("LspDiagnosticsInformation", colors.none, colors.white)
+colors.highlight("LspDiagnosticsHint", colors.none, colors.white)

@@ -11,25 +11,27 @@ if not colors_ok then
   return
 end
 
--- Custom diagnostics colors
 -- Hint
-colors.hl("DiagnosticHint", colors.none, colors.white)
-colors.hl("DiagnosticFloatingHint", colors.none, colors.white)
-colors.hl("DiagnosticSignHint", colors.none, colors.white)
-colors.hl("DiagnosticUnderlineHint", colors.none, colors.white)
+colors.highlight("DiagnosticHint", colors.none, colors.white)
+colors.highlight("DiagnosticFloatingHint", colors.none, colors.white)
+colors.highlight("DiagnosticSignHint", colors.none, colors.white)
+colors.highlight("DiagnosticUnderlineHint", colors.none, colors.white)
+
 -- Info
-colors.hl("DiagnosticInfo", colors.none, colors.white)
-colors.hl("DiagnosticFloatingInfo", colors.none, colors.white)
-colors.hl("DiagnosticSignInfo", colors.none, colors.white)
-colors.hl("DiagnosticUnderlineInfo", colors.none, colors.white)
+colors.highlight("DiagnosticInfo", colors.none, colors.white)
+colors.highlight("DiagnosticFloatingInfo", colors.none, colors.white)
+colors.highlight("DiagnosticSignInfo", colors.none, colors.white)
+colors.highlight("DiagnosticUnderlineInfo", colors.none, colors.white)
+
 --Warn
-colors.hl("DiagnosticWarn", colors.none, colors.yellow)
-colors.hl("DiagnosticFloatingWarn", colors.none, colors.yellow)
-colors.hl("DiagnosticSignWarn", colors.none, colors.yellow)
-colors.hl("DiagnosticUnderlineWarn", colors.none, colors.yellow)
+colors.highlight("DiagnosticWarn", colors.none, colors.yellow)
+colors.highlight("DiagnosticFloatingWarn", colors.none, colors.yellow)
+colors.highlight("DiagnosticSignWarn", colors.none, colors.yellow)
+colors.highlight("DiagnosticUnderlineWarn", colors.none, colors.yellow)
+
 -- Error
-colors.hl("DiagnosticError", colors.none, colors.red)
-colors.hl("DiagnosticFloatingError", colors.none, colors.red)
-colors.hl("DiagnosticSignError", colors.none, colors.red)
-colors.hl("DiagnosticUnderlineError", colors.none, colors.red)
+colors.highlight("DiagnosticError", colors.none, colors.red)
+colors.highlight("DiagnosticFloatingError", colors.none, colors.red)
+colors.highlight("DiagnosticSignError", colors.none, colors.red)
+colors.highlight("DiagnosticUnderlineError", colors.none, colors.red)
 

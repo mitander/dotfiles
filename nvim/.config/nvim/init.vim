@@ -58,8 +58,8 @@ let mapleader=" "
 map <space> <nop>
 
 " vim config
-nnoremap <silent> <leader>c :tabnew $MYVIMRC<enter>
-nnoremap <silent> <leader>so :so $MYVIMRC<enter>
+nnoremap <silent> <leader>c :tabnew $HOME/dotfiles/nvim/.config/nvim/init.vim<enter>
+nnoremap <silent> <leader>so :so $HOME/dotfiles/nvim/.config/nvim/init.vim<enter>
 
 " clear highlighting
 nnoremap <silent> <enter> :noh<enter>

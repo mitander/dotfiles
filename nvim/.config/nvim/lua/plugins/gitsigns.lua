@@ -61,6 +61,6 @@ if not colors_ok then
   return
 end
 
-colors.hl("GitSignsAdd", colors.none, colors.green)
-colors.hl("GitSignsDelete", colors.none, colors.red)
-colors.hl("GitSignsChange", colors.none, colors.yellow)
+colors.highlight("GitSignsAdd", colors.none, colors.green)
+colors.highlight("GitSignsDelete", colors.none, colors.red)
+colors.highlight("GitSignsChange", colors.none, colors.yellow)
