@@ -152,6 +152,7 @@ endif
 
 " git-gutter
 nnoremap <silent> gp :Gitsigns preview_hunk<enter>
+nnoremap <silent> g. :Gitsigns toggle_signs<enter>
 
 " rooter
 let g:rooter_targets = '/,*'
