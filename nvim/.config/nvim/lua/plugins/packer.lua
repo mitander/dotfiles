@@ -55,7 +55,7 @@ packer.startup {
     use 'tpope/vim-fugitive'
     use 'SirVer/ultisnips'
     use 'mbbill/undotree'
-    use 'airblade/vim-gitgutter'
+    use 'lewis6991/gitsigns.nvim'
     use 'nanotech/jellybeans.vim'
     use 'airblade/vim-rooter'
     use 'rhysd/vim-clang-format'

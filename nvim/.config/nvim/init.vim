@@ -12,6 +12,7 @@ lua require("plugins.bufferline")
 lua require("plugins.indent")
 lua require("plugins.null-ls")
 lua require("plugins.toggleterm")
+lua require("plugins.gitsigns")
 
 " options
 set noswapfile
@@ -47,9 +48,6 @@ set shell=/bin/zsh
 set signcolumn=yes
 set path+=**
 set tabstop=2 shiftwidth=2
-
-" set laststatus=2
-" set statusline=%{expand('%:p:h:t')}/%t
 
 " colorscheme
 syntax on
@@ -154,16 +152,7 @@ if has("persistent_undo")
 endif
 
 " git-gutter
-nnoremap <silent> gp :GitGutterPreviewHunk<enter>
-nnoremap <silent> g. :GitGutterToggle<enter>
-
-let g:gitgutter_enabled = 0
-let g:gitgutter_sign_added = '|'
-let g:gitgutter_sign_modified = '|'
-let g:gitgutter_sign_removed = '|'
-let g:gitgutter_sign_removed_first_line = '|'
-let g:gitgutter_sign_removed_above_and_below = '|'
-let g:gitgutter_sign_modified_removed = '|'
+nnoremap <silent> gp :Gitsigns preview_hunk<enter>
 
 " rooter
 let g:rooter_targets = '/,*'
@@ -175,7 +164,7 @@ nnoremap <silent> gb :Git blame<enter>
 nnoremap <silent> gl :Commits<enter>
 
 " toggleterm
-nnoremap <silent> gg <cmd>lua _lazygit_toggle()<enter>
+nnoremap <silent> <leader>gg <cmd>lua _lazygit_toggle()<enter>
 nnoremap <silent> <c-t> :ToggleTerm<enter>
 
 " vim-rust
@@ -186,22 +175,6 @@ let g:rust_clip_command = 'xclip -selection clipboard'
 
 " symbols-outline
 nnoremap <silent> <leader>ss :SymbolsOutline<enter>
-
-" highlighting
-hi SignColumn          guibg=256  guifg=236
-hi ColorColumn         guibg=236  guifg=236
-hi StatusLineNC        guibg=236  guifg=243
-hi StatusLine          guibg=236  guifg=253
-hi Pmenu               guibg=236  guifg=253
-hi Normal              guibg=NONE guifg=259
-hi LineNr              guibg=NONE guifg=253
-hi NonText             guibg=NONE guifg=256
-hi Comment             guibg=NONE guifg=gray
-hi VertSplit           guibg=NONE guifg=gray
-hi GitGutterDelete     guibg=NONE guifg=red
-hi GitGutterAdd        guibg=NONE guifg=green
-hi GitGutterChange     guibg=NONE guifg=yellow
-hi IndentBlanklineChar guibg=NONE guifg=gray
 
 " autocommands
 augroup _general
@@ -248,3 +221,8 @@ augroup _filetype
 augroup end
 
 command FormatJson :%!jq .
+
+" set laststatus=2
+" set statusline=%{expand('%:p:h:t')}/%t
+" hi StatusLineNC        guibg=236  guifg=243
+" hi StatusLine          guibg=236  guifg=253

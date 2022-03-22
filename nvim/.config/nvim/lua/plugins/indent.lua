@@ -2,23 +2,30 @@ local status_ok, indent_blankline = pcall(require, "indent_blankline")
 if not status_ok then
   return
 end
+
 vim.g.indentLine_enabled = 1
 vim.g.indent_blankline_show_trailing_blankline_indent = false
 vim.g.indent_blankline_show_first_indent_level = true
 vim.g.indent_blankline_use_treesitter = true
 vim.g.indent_blankline_show_current_context = true
 vim.g.indent_blankline_char = "▏"
+
+vim.opt.list = true
+vim.opt.listchars:append("space:⋅")
+
 vim.g.indent_blankline_buftype_exclude = {
   "nofile",
   "terminal",
   "lsp-installer",
   "lspinfo",
 }
+
 vim.g.indent_blankline_filetype_exclude = {
   "help",
   "packer",
   "NvimTree",
 }
+
 vim.g.indent_blankline_context_patterns = {
   "class",
   "return",
@@ -42,10 +49,15 @@ vim.g.indent_blankline_context_patterns = {
   "operation_type",
 }
 
-vim.opt.list = true
-vim.opt.listchars:append("space:⋅")
-
 indent_blankline.setup {
   show_current_context = true,
   show_current_context_start = false,
 }
+
+-- Color
+local colors_ok, colors = pcall(require, "plugins.colors")
+if not colors_ok then
+  return
+end
+
+colors.hl("IndentBlanklineChar", colors.none, colors.gray)

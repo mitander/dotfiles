@@ -37,10 +37,10 @@ function _G.terminal_keymaps()
   local opts = {noremap = true}
   vim.api.nvim_buf_set_keymap(0, 't', '<C-j>', [[<C-\><C-n><C-W>j]], opts)
   vim.api.nvim_buf_set_keymap(0, 't', '<C-k>', [[<C-\><C-n><C-W>k]], opts)
-  vim.api.nvim_buf_set_keymap(0, 't', '<up>', '<cmd>resize +5<enter>', opts)
-  vim.api.nvim_buf_set_keymap(0, 't', '<down>', '<cmd>resize -5<enter>', opts)
-  vim.api.nvim_buf_set_keymap(0, 't', '<left>', '<cmd>vertical resize +5<enter>', opts)
-  vim.api.nvim_buf_set_keymap(0, 't', '<right>', '<cmd>vertical resize -5<enter>', opts)
+  vim.api.nvim_buf_set_keymap(0, 't', '<s-up>', '<cmd>resize +5<enter>', opts)
+  vim.api.nvim_buf_set_keymap(0, 't', '<s-down>', '<cmd>resize -5<enter>', opts)
+  vim.api.nvim_buf_set_keymap(0, 't', '<s-left>', '<cmd>vertical resize +5<enter>', opts)
+  vim.api.nvim_buf_set_keymap(0, 't', '<s-right>', '<cmd>vertical resize -5<enter>', opts)
   vim.api.nvim_buf_set_keymap(0, 't', '<c-t>', '<cmd>ToggleTerm <enter>', opts)
 end
 
