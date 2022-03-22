@@ -1,5 +1,9 @@
--- In init.lua or filetype.nvim's config file
-require("filetype").setup({
+local status_ok, filetype = pcall(require, "filetype")
+if not status_ok then
+  return
+end
+
+filetype.setup({
     overrides = {
         extensions = {
             -- Set the filetype of *.pn files to potion

@@ -48,7 +48,6 @@ end
 packer.startup {
   function(use)
     use 'wbthomason/packer.nvim'
-    use 'nvim-lualine/lualine.nvim'
     use 'fatih/vim-go'
     use 'ziglang/zig.vim'
     use 'rust-lang/rust.vim'
@@ -73,15 +72,16 @@ packer.startup {
     use 'jose-elias-alvarez/null-ls.nvim'
     use 'L3MON4D3/LuaSnip'
     use 'junegunn/fzf.vim'
-    use {'lukas-reineke/indent-blankline.nvim'}
+    use 'lukas-reineke/indent-blankline.nvim'
     use 'nathom/filetype.nvim'
+    use 'simrat39/symbols-outline.nvim'
+    use 'nvim-lua/popup.nvim'
+    use 'akinsho/toggleterm.nvim'
+    use 'nvim-lualine/lualine.nvim'
     use {'junegunn/fzf', run = function() vim.fn['fzf#install']() end}
     use {'kevinhwang91/nvim-bqf', ft = 'qf'}
     use {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'}
     use {'akinsho/bufferline.nvim', after = 'nvim-web-devicons'}
-    use {'simrat39/symbols-outline.nvim'}
-    use {'nvim-lua/popup.nvim'}
-    use {'akinsho/toggleterm.nvim'}
 
     use {
         "antoinemadec/FixCursorHold.nvim",
