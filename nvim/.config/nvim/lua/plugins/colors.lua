@@ -1,13 +1,12 @@
 local M = {
-  black = '#3b3b3b',
   red = '#cf6a4c',
   green = '#99ad6a',
   yellow = '#d8ad4c',
   magneta = '#8197bf',
   cyan = '#71b9f8',
   white = '#e8e8de',
-  gray = '#30302c',
-  dark_gray = '#1d1e1f',
+  gray = '#3b3b3b',
+  dark_gray = '#30302c',
   light_gray = '#b0b0b0',
   none = 'NONE'
 }

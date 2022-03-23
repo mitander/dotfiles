@@ -13,6 +13,7 @@ local custom_jellybeans = require('lualine.themes.jellybeans')
 
 -- clearer filename
 custom_jellybeans.normal.c.fg = colors.white
+custom_jellybeans.normal.c.bg = colors.gray
 
 -- same color for all modes
 custom_jellybeans.normal.a.bg = colors.magneta
