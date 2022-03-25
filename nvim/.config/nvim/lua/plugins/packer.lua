@@ -82,14 +82,7 @@ packer.startup {
     use {'kevinhwang91/nvim-bqf', ft = 'qf'}
     use {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'}
     use {'akinsho/bufferline.nvim', after = 'nvim-web-devicons'}
-
-    use {
-        "antoinemadec/FixCursorHold.nvim",
-        event = "BufRead",
-        config = function()
-          vim.g.cursorhold_updatetime = 100
-        end,
-      }
+    use({"aserowy/tmux.nvim"})
 
     if PACKER_BOOTSTRAP then
       require("packer").sync()

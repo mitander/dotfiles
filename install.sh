@@ -15,7 +15,7 @@ if ! [ -x "$(command -v nvim)" ]; then
 fi
 
 # Install dependancies
-sudo apt install zsh tmux build-essential libtool-bin gettext
+sudo apt install zsh tmux build-essential libtool-bin gettext xsel jq fzf
 
 # Link dotfiles
 cd $HOME/dotfiles
@@ -23,6 +23,7 @@ stow nvim
 stow zsh
 stow tmux
 stow alacritty
+stow git
 
 # Install font
 sudo cp -r $PWD/fonts/FiraCodeNerdFont /usr/local/share/fonts/

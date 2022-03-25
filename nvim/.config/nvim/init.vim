@@ -13,6 +13,7 @@ lua require("plugins.indent")
 lua require("plugins.null-ls")
 lua require("plugins.toggleterm")
 lua require("plugins.gitsigns")
+lua require("plugins.tmux")
 
 " options
 set noswapfile
@@ -74,12 +75,8 @@ nnoremap <silent> <c-w><C-l> gt
 " buffers
 nnoremap <silent> <s-h> :bprev<enter>
 nnoremap <silent> <s-l> :bnext<enter>
-
-" splits
-nnoremap <silent> <c-h> :wincmd h<enter>
-nnoremap <silent> <c-j> :wincmd j<enter>
-nnoremap <silent> <c-k> :wincmd k<enter>
-nnoremap <silent> <c-l> :wincmd l<enter>
+nnoremap <silent> <s-q> :bd <enter>
+nnoremap <silent> <leader>qa :qall!<enter>
 
 " rotate splits
 nnoremap <silent> <c-w>s :wincmd L<enter>
@@ -91,29 +88,15 @@ nnoremap <silent> <s-down> :resize +5<enter>
 nnoremap <silent> <s-left> :vertical resize +5<enter>
 nnoremap <silent> <s-right> :vertical resize -5<enter>
 
-" buffers
-nnoremap <silent> Q :bd <enter>
-nnoremap <silent> <leader>qa :qall!<enter>
-
 " move lines
 nnoremap <silent> j gj
 nnoremap <silent> k gk
-nnoremap <silent> <A-j> :m .+1<enter>==
-nnoremap <silent> <A-k> :m .-2<enter>==
-vnoremap <silent> <A-j> :m '>+1<enter>gv=gv
-vnoremap <silent> <A-k> :m '<-2<enter>gv=gv
-inoremap <silent> <A-j> <esc>:m .+1<enter>==gi
-inoremap <silent> <A-k> <esc>:m .-2<enter>==gi
 
 " edit file under cursor
 nnoremap <silent> gf :edit <cfile><enter>
 
 " pls no
 nnoremap <silent> q <nop>
-
-" delete word backwards
-inoremap <C-x> <c-w>
-nnoremap <C-x> a<c-w><esc>
 
 " keep visual selection when indenting
 vnoremap <silent> < <gv
@@ -173,56 +156,40 @@ let g:rustfmt_emit_files = 1
 let g:rustfmt_fail_silently = 0
 let g:rust_clip_command = 'xclip -selection clipboard'
 
+" format json
+if executable("jq")
+  nnoremap <silent> <leader>fj :%!jq .<enter>
+endif
+
 " symbols-outline
 nnoremap <silent> <leader>ss :SymbolsOutline<enter>
 
 " autocommands
-augroup _general
-  autocmd!
-  autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200})
-  autocmd BufWritePre * :%s/\s\+$//e
-  autocmd InsertLeave * set nopaste
-  autocmd BufRead *.orig set readonly
-  autocmd BufRead *.pacnew set readonly
-augroup end
+autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200})
+autocmd BufWritePre * :%s/\s\+$//e
+autocmd InsertLeave * set nopaste
 
-augroup _quickfix
-  autocmd!
-  autocmd FileType qf nnoremap <silent> <buffer> q :close<enter>
-  autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
-augroup end
+autocmd BufRead *.orig set readonly
+autocmd BufRead *.pacnew set readonly
 
-augroup _git
-  autocmd!
-  autocmd FileType gitcommit setlocal wrap
-  autocmd FileType gitcommit setlocal spell
-augroup end
+autocmd FileType qf nnoremap <silent> <buffer> q :close<enter>
+autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
 
-augroup _markdown
-  autocmd!
-  autocmd FileType markdown setlocal wrap
-  autocmd FileType markdown setlocal spell
-augroup end
+autocmd FileType gitcommit setlocal wrap
+autocmd FileType gitcommit setlocal spell
 
-augroup _filetype
-  autocmd!
-  autocmd Filetype rust setlocal colorcolumn=100
-  autocmd Filetype rust setlocal tabstop=4 shiftwidth=4
+autocmd FileType markdown setlocal wrap
+autocmd FileType markdown setlocal spell
 
-  autocmd Filetype zig setlocal colorcolumn=100
-  autocmd Filetype zig setlocal tabstop=4 shiftwidth=4
+autocmd Filetype rust setlocal colorcolumn=100
+autocmd Filetype rust setlocal tabstop=4 shiftwidth=4
 
-  autocmd Filetype go setlocal colorcolumn=100
-  autocmd Filetype go setlocal tabstop=4 shiftwidth=4
+autocmd Filetype zig setlocal colorcolumn=100
+autocmd Filetype zig setlocal tabstop=4 shiftwidth=4
 
-  autocmd Filetype c setlocal colorcolumn=80
-  autocmd Filetype c setlocal tabstop=2 shiftwidth=2
-  autocmd FileType c ClangFormatAutoEnable
-augroup end
+autocmd Filetype go setlocal colorcolumn=100
+autocmd Filetype go setlocal tabstop=4 shiftwidth=4
 
-command FormatJson :%!jq .
-
-" set laststatus=2
-" set statusline=%{expand('%:p:h:t')}/%t
-" hi StatusLineNC        guibg=236  guifg=243
-" hi StatusLine          guibg=236  guifg=253
+autocmd Filetype c setlocal colorcolumn=80
+autocmd Filetype c setlocal tabstop=2 shiftwidth=2
+autocmd FileType c ClangFormatAutoEnable
