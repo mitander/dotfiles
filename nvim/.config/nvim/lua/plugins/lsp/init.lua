@@ -3,8 +3,8 @@ if not status_ok then
   return
 end
 
-require "plugins.lsp.lsp-installer"
-require("plugins.lsp.handlers").setup()
+require('plugins.lsp.lsp-installer')
+require('plugins.lsp.handlers').setup()
 
 local colors_ok, colors = pcall(require, "plugins.colors")
 if not colors_ok then

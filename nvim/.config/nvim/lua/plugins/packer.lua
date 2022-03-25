@@ -44,45 +44,110 @@ else
   print "Run :PackerSync to start"
 end
 
-
 packer.startup {
   function(use)
-    use 'wbthomason/packer.nvim'
-    use 'fatih/vim-go'
-    use 'ziglang/zig.vim'
-    use 'rust-lang/rust.vim'
-    use 'tpope/vim-fugitive'
-    use 'SirVer/ultisnips'
-    use 'mbbill/undotree'
-    use 'lewis6991/gitsigns.nvim'
-    use 'nanotech/jellybeans.vim'
-    use 'airblade/vim-rooter'
-    use 'rhysd/vim-clang-format'
-    use 'tpope/vim-commentary'
-    use 'kyazdani42/nvim-tree.lua'
-    use 'kyazdani42/nvim-web-devicons'
-    use 'nvim-lua/plenary.nvim'
-    use 'lewis6991/impatient.nvim'
-    use 'hrsh7th/nvim-cmp'
-    use 'hrsh7th/cmp-nvim-lsp'
-    use 'neovim/nvim-lspconfig'
-    use 'nvim-lua/lsp-status.nvim'
-    use 'williamboman/nvim-lsp-installer'
-    use 'saadparwaiz1/cmp_luasnip'
-    use 'jose-elias-alvarez/null-ls.nvim'
-    use 'L3MON4D3/LuaSnip'
-    use 'junegunn/fzf.vim'
-    use 'lukas-reineke/indent-blankline.nvim'
-    use 'nathom/filetype.nvim'
-    use 'simrat39/symbols-outline.nvim'
-    use 'nvim-lua/popup.nvim'
-    use 'akinsho/toggleterm.nvim'
-    use 'nvim-lualine/lualine.nvim'
+    -- Packer manages itself
+    use {'wbthomason/packer.nvim'}
+
+    -- Plugins with config files
+    use {'fatih/vim-go'}
+    use {'ziglang/zig.vim'}
+    use {'rust-lang/rust.vim'}
+    use {'tpope/vim-fugitive'}
+    use {'mbbill/undotree'}
+    use {'rhysd/vim-clang-format'}
+    use {'tpope/vim-commentary'}
+    use {'junegunn/fzf.vim'}
     use {'junegunn/fzf', run = function() vim.fn['fzf#install']() end}
-    use {'kevinhwang91/nvim-bqf', ft = 'qf'}
-    use {'nvim-treesitter/nvim-treesitter', run = ':TSUpdate'}
-    use {'akinsho/bufferline.nvim', after = 'nvim-web-devicons'}
-    use({"aserowy/tmux.nvim"})
+    use {'airblade/vim-rooter'}
+    use {'nvim-lua/plenary.nvim'}
+    use {'simrat39/symbols-outline.nvim'}
+    use {'nvim-lua/popup.nvim'}
+    use {'nvim-lua/lsp-status.nvim'}
+    use {'williamboman/nvim-lsp-installer'}
+    use {'SirVer/ultisnips'}
+    use {'kyazdani42/nvim-web-devicons'}
+    use {'L3MON4D3/LuaSnip'}
+    use {'hrsh7th/cmp-nvim-lsp'}
+    use {'saadparwaiz1/cmp_luasnip'}
+
+    -- Plugins with config files
+    use {
+      'neovim/nvim-lspconfig',
+      config = function () require('plugins.lsp') end
+    }
+
+    use {
+      'lewis6991/gitsigns.nvim',
+      config = function () require('plugins.gitsigns') end
+    }
+
+    use {
+      'nanotech/jellybeans.vim',
+      config = function () require('plugins.colors') end
+    }
+
+    use {
+      'kyazdani42/nvim-tree.lua',
+      config = function () require('plugins.nvim-tree') end
+    }
+
+    use {
+      'lewis6991/impatient.nvim',
+      config = function () require('plugins.impatient') end
+    }
+
+    use {
+      'hrsh7th/nvim-cmp',
+      config = function () require('plugins.cmp') end
+    }
+
+    use {
+      'jose-elias-alvarez/null-ls.nvim',
+      config = function () require('plugins.null-ls') end
+    }
+
+    use {
+      'lukas-reineke/indent-blankline.nvim',
+      config = function () require('plugins.indent') end
+    }
+
+    use {
+      'nathom/filetype.nvim',
+      config = function () require('plugins.filetype') end
+    }
+
+    use {
+      'akinsho/toggleterm.nvim',
+      config = function () require('plugins.gitsigns') end
+    }
+
+    use {
+      'nvim-lualine/lualine.nvim',
+      config = function () require('plugins.lualine') end
+    }
+
+    use {
+      'kevinhwang91/nvim-bqf',
+      config = function () require('plugins.bqf') end
+    }
+
+    use {
+      'nvim-treesitter/nvim-treesitter',
+      run = ':TSUpdate',
+      config = function () require('plugins.treesitter') end
+    }
+
+    use {
+      'akinsho/bufferline.nvim',
+      after = 'nvim-web-devicons',
+      config = function () require('plugins.bufferline') end
+    }
+
+    use {
+      'aserowy/tmux.nvim',
+      config = function () require('plugins.tmux') end
+    }
 
     if PACKER_BOOTSTRAP then
       require("packer").sync()

@@ -1,19 +1,5 @@
 " lua plugins
 lua require("plugins.packer")
-lua require("plugins.lsp")
-lua require("plugins.cmp")
-lua require("plugins.treesitter")
-lua require("plugins.nvim-tree")
-lua require("plugins.impatient")
-lua require("plugins.bqf")
-lua require("plugins.filetype")
-lua require("plugins.lualine")
-lua require("plugins.bufferline")
-lua require("plugins.indent")
-lua require("plugins.null-ls")
-lua require("plugins.toggleterm")
-lua require("plugins.gitsigns")
-lua require("plugins.tmux")
 
 " options
 set noswapfile
