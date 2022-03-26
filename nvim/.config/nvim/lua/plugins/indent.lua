@@ -8,6 +8,7 @@ vim.g.indent_blankline_buftype_exclude = {
   "terminal",
   "lsp-installer",
   "lspinfo",
+  "fzf"
 }
 
 vim.g.indent_blankline_filetype_exclude = {
@@ -43,16 +44,15 @@ vim.g.indent_blankline_context_patterns = {
 indent_blankline.setup {
   show_current_context = false,
   show_current_context_start = false,
-  use_treesitter = false,
+  use_treesitter = true,
   show_trailing_blankline_indent = false,
   show_first_indent_level = true,
   char = "▏"
 }
 
--- Color
 local colors_ok, colors = pcall(require, "plugins.colors")
 if not colors_ok then
   return
 end
 
-colors.highlight("IndentBlanklineChar", colors.none, colors.gray)
+vim.cmd(string.format("autocmd BufRead * hi IndentBlanklineChar guibg=%s guifg=%s", colors.none, colors.gray))

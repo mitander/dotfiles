@@ -108,11 +108,6 @@ packer.startup {
     }
 
     use {
-      'lukas-reineke/indent-blankline.nvim',
-      config = function () require('plugins.indent') end
-    }
-
-    use {
       'nathom/filetype.nvim',
       config = function () require('plugins.filetype') end
     }
@@ -147,6 +142,11 @@ packer.startup {
     use {
       'aserowy/tmux.nvim',
       config = function () require('plugins.tmux') end
+    }
+
+    use {
+      'lukas-reineke/indent-blankline.nvim',
+      config = function () require('plugins.indent') end
     }
 
     if PACKER_BOOTSTRAP then

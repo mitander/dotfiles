@@ -176,6 +176,6 @@ autocmd Filetype zig setlocal tabstop=4 shiftwidth=4
 autocmd Filetype go setlocal colorcolumn=100
 autocmd Filetype go setlocal tabstop=4 shiftwidth=4
 
-autocmd Filetype c setlocal colorcolumn=80
-autocmd Filetype c setlocal tabstop=2 shiftwidth=2
+autocmd Filetype c setlocal colorcolumn=100
+autocmd Filetype c setlocal tabstop=4 shiftwidth=4
 autocmd FileType c ClangFormatAutoEnable

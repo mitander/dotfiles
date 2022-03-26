@@ -38,7 +38,7 @@ nvim_tree.setup {
   hijack_netrw = true,
   open_on_setup = false,
   auto_close = true,
-  open_on_tab = false,
+  open_on_tab = true,
   hijack_cursor = false,
   update_cwd = true,
   diagnostics = {
@@ -55,7 +55,7 @@ nvim_tree.setup {
     args = {},
   },
   filters = {
-    dotfiles = true,
+    dotfiles = false,
     custom = {},
   },
   view = {
