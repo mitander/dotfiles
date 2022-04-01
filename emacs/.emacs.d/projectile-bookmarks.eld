@@ -1,1 +1,0 @@
-("~/c/tui-rs/" "~/c/sgg/archiver/" "~/c/termbox/" "~/c/aoc/day1/" "~/dotfiles/")
