@@ -1,14 +1,14 @@
 local status_ok, _ = pcall(require, "lspconfig")
 if not status_ok then
-  return
+	return
 end
 
-require('plugins.lsp.lsp-installer')
-require('plugins.lsp.handlers').setup()
+require("plugins.lsp.lsp-installer")
+require("plugins.lsp.handlers").setup()
 
 local colors_ok, colors = pcall(require, "plugins.colors")
 if not colors_ok then
-  return
+	return
 end
 
 -- Hint
@@ -34,4 +34,3 @@ colors.highlight("DiagnosticError", colors.none, colors.red)
 colors.highlight("DiagnosticFloatingError", colors.none, colors.red)
 colors.highlight("DiagnosticSignError", colors.none, colors.red)
 colors.highlight("DiagnosticUnderlineError", colors.none, colors.red)
-

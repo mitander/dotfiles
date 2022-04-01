@@ -33,7 +33,7 @@ set splitbelow splitright
 set shell=/bin/zsh
 set signcolumn=yes
 set path+=**
-set tabstop=2 shiftwidth=2
+set tabstop=4 shiftwidth=4
 
 " colorscheme
 syntax on
@@ -100,20 +100,22 @@ cabbrev Wq wq
 nnoremap <silent> <c-n> :NvimTreeToggle<enter>
 
 " telescope
-nnoremap <silent> <C-p> <cmd>Telescope git_files<enter>
+nnoremap <silent> <c-p> :CtrlP<enter>
 nnoremap <silent> <C-f> <cmd>Telescope live_grep<enter>
 nnoremap <silent> <C-b> <cmd>Telescope buffers<enter>
 nnoremap <silent> <leader>gs <cmd>Telescope git_status<enter>
 nnoremap <silent> <leader>gl <cmd>Telescope git_commits<enter>
+
+command! CtrlP execute (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files'
 
 " commentary
 map <silent> <leader>/ :Commentary<enter>
 
 " undotree
 if has("persistent_undo")
-  set undodir=~/.vim/tmp/undodir
-  set undofile
-  nnoremap <silent> <leader>u :UndotreeToggle<enter>
+    set undodir=~/.vim/tmp/undodir
+    set undofile
+    nnoremap <silent> <leader>u :UndotreeToggle<enter>
 endif
 
 " gitsigns
@@ -139,7 +141,7 @@ let g:rust_clip_command = 'xclip -selection clipboard'
 
 " format json
 if executable("jq")
-  nnoremap <silent> <leader>fj :%!jq .<enter>
+    nnoremap <silent> <leader>fj :%!jq .<enter>
 endif
 
 " symbols-outline
@@ -162,14 +164,5 @@ autocmd FileType gitcommit setlocal spell
 autocmd FileType markdown setlocal wrap
 autocmd FileType markdown setlocal spell
 
-autocmd Filetype rust setlocal colorcolumn=100
-autocmd Filetype rust setlocal tabstop=4 shiftwidth=4
-
-autocmd Filetype zig setlocal colorcolumn=100
-autocmd Filetype zig setlocal tabstop=4 shiftwidth=4
-
-autocmd Filetype go setlocal colorcolumn=100
-autocmd Filetype go setlocal tabstop=4 shiftwidth=4
-
-autocmd Filetype c setlocal colorcolumn=100
-autocmd Filetype c setlocal tabstop=4 shiftwidth=4
+autocmd Filetype rust,zig,go,c,cpp setlocal colorcolumn=100
+autocmd Filetype rust,zig,go,c,cpp setlocal tabstop=4 shiftwidth=4
