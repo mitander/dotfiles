@@ -47,6 +47,10 @@ bufferline.setup {
     },
 
     -- Buffers
+    buffer = {
+      guifg = colors.white,
+      guibg = colors.gray,
+    },
     buffer_selected = {
       guifg = colors.white,
       guibg = colors.none,
