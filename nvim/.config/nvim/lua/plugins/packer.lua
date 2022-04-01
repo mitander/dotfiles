@@ -71,6 +71,11 @@ packer.startup {
     use {'hrsh7th/cmp-nvim-lsp'}
     use {'saadparwaiz1/cmp_luasnip'}
 
+    use {
+      'nvim-telescope/telescope.nvim',
+      config = function () require('plugins.telescope') end
+    }
+
     -- Plugins with config files
     use {
       'neovim/nvim-lspconfig',
@@ -114,7 +119,7 @@ packer.startup {
 
     use {
       'akinsho/toggleterm.nvim',
-      config = function () require('plugins.gitsigns') end
+      config = function () require('plugins.toggleterm') end
     }
 
     use {

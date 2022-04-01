@@ -99,15 +99,10 @@ cabbrev Wq wq
 " nvim-tree
 nnoremap <silent> <c-n> :NvimTreeToggle<enter>
 
-" fzf
-nnoremap <silent> <c-b> :Buffers<enter>
-nnoremap <silent> <c-f> :Rg<enter>
-nnoremap <silent> <c-p> :CtrlP<enter>
-command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles --cached --others --exclude-standard'
-
-let $FZF_DEFAULT_OPTS="--ansi --preview-window 'right:60%'"
-let g:fzf_layout = {'window':{'width':0.8,'height':0.8}}
-let g:fzf_action = {'ctrl-t':'tab split','ctrl-s':'split','ctrl-v':'vsplit' }
+" telescope
+nnoremap <silent> <C-p> <cmd>Telescope git_files<enter>
+nnoremap <silent> <C-f> <cmd>Telescope live_grep<enter>
+nnoremap <silent> <C-b> <cmd>Telescope buffers<enter>
 
 " commentary
 map <silent> <leader>/ :Commentary<enter>
