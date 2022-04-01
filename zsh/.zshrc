@@ -1,6 +1,7 @@
 # general
 alias vim="nvim"
 alias so="source ~/.zshrc"
+alias :q="exit"
 
 # config
 alias zshc="vim $HOME/.custom.zsh"
@@ -44,6 +45,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
   bindkey "ç" fzf-cd-widget
   source ~/.fzf.zsh
+  bindkey -r "^T"
 fi
 
 # fzf command

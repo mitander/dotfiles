@@ -31,50 +31,49 @@ font:
 
   size: 11
 
-
 colors:
   primary:
-    background: '#1d1f21'
-    foreground: '#e4e4e4'
+    background: "#1d1f21"
+    foreground: "#e4e4e4"
 
   normal:
-    black:   '#1c1c1c'
-    red:     '#d75f5f'
-    green:   '#72a25a'
-    yellow:  '#d8ad4c'
-    blue:    '#597bc5'
-    magenta: '#8787af'
-    cyan:    '#4a8382'
-    white:   '#e8e8de'
+    black: "#1c1c1c"
+    red: "#d75f5f"
+    green: "#72a25a"
+    yellow: "#d8ad4c"
+    blue: "#597bc5"
+    magenta: "#8787af"
+    cyan: "#4a8382"
+    white: "#e8e8de"
   bright:
-    black:   '#3b3b3b'
-    red:     '#ffb964'
-    green:   '#99ad6a'
-    yellow:  '#fad07a'
-    blue:    '#8197bf'
-    magenta: '#d7afff'
-    cyan:    '#8fbfdc'
-    white:   '#ebdbb2'
+    black: "#3b3b3b"
+    red: "#ffb964"
+    green: "#99ad6a"
+    yellow: "#fad07a"
+    blue: "#8197bf"
+    magenta: "#d7afff"
+    cyan: "#8fbfdc"
+    white: "#ebdbb2"
     colors:
 
   selection:
-    text: '#5963a2'
-    background: '#f6f6f6'
+    text: "#5963a2"
+    background: "#f6f6f6"
 
   cursor:
-    text: '0x000000'
-    cursor: '0xffffff'
+    text: "0x000000"
+    cursor: "0xffffff"
 
 key_bindings:
-  - { key: V,      mods: Control|Shift, action: Paste                      }
-  - { key: C,      mods: Control|Shift, action: Copy                       }
-  - { key: Insert, mods: Shift,         action: PasteSelection             }
-  - { key: Key0,   mods: Control,       action: ResetFontSize              }
-  - { key: Equals, mods: Control,       action: IncreaseFontSize           }
-  - { key: Minus,  mods: Control,       action: DecreaseFontSize           }
-  - { key: Paste,                       action: Paste                      }
-  - { key: Copy,                        action: Copy                       }
-  - { key: L,      mods: Control,       action: ClearLogNotice             }
-  - { key: U,      mods: Control,       action: ScrollPageUp,   mode: ~Alt }
-  - { key: D,      mods: Control,       action: ScrollPageDown, mode: ~Alt }
-  - { key: L,      mods: Control,       chars: "\x0c"                      }
+  - { key: V, mods: Control|Shift, action: Paste }
+  - { key: C, mods: Control|Shift, action: Copy }
+  - { key: Insert, mods: Shift, action: PasteSelection }
+  - { key: Key0, mods: Control, action: ResetFontSize }
+  - { key: Equals, mods: Control, action: IncreaseFontSize }
+  - { key: Minus, mods: Control, action: DecreaseFontSize }
+  - { key: Paste, action: Paste }
+  - { key: Copy, action: Copy }
+  - { key: L, mods: Control, action: ClearLogNotice }
+  - { key: U, mods: Control, action: ScrollPageUp, mode: ~Alt }
+  - { key: D, mods: Control, action: ScrollPageDown, mode: ~Alt }
+  - { key: L, mods: Control, chars: "\x0c" }

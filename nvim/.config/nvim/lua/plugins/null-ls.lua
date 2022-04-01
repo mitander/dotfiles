@@ -4,15 +4,15 @@ if not status_ok then
 end
 
 local formatting = null_ls.builtins.formatting
-local diagnostics = null_ls.builtins.diagnostics
 
 null_ls.setup {
   debug = false,
   sources = {
-    -- Set a formatter
-    formatting.rufo,
-    -- Set a linter
-    diagnostics.rubocop,
+    formatting.clang_format,
+    formatting.gofmt,
+    formatting.zigfmt,
+    formatting.rustfmt,
+    formatting.prettier,
   },
   -- NOTE: You can remove this on attach function to disable format on save
   on_attach = function(client)

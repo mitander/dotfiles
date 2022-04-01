@@ -132,9 +132,8 @@ nnoremap <silent> gs :Git<enter>
 nnoremap <silent> gb :Git blame<enter>
 nnoremap <silent> gl :Commits<enter>
 
-" toggleterm
+" toggleterm (lazygit)
 nnoremap <silent> <leader>gg <cmd>lua _lazygit_toggle()<enter>
-nnoremap <silent> <c-t> :ToggleTerm<enter>
 
 " vim-rust
 let g:rustfmt_autosave = 1
@@ -178,4 +177,3 @@ autocmd Filetype go setlocal tabstop=4 shiftwidth=4
 
 autocmd Filetype c setlocal colorcolumn=100
 autocmd Filetype c setlocal tabstop=4 shiftwidth=4
-autocmd FileType c ClangFormatAutoEnable
