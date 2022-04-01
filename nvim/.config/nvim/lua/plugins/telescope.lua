@@ -3,12 +3,12 @@ if not status_ok then
   return
 end
 
-local actions = require "telescope.actions"
+local actions = require("telescope.actions")
 
 telescope.setup {
   defaults = {
-    prompt_prefix = " ",
-    selection_caret = "❯ ",
+    layout_strategy='horizontal',
+    layout_config={width=0.8, height=0.8},
     path_display = { "truncate" },
     mappings = {
       i = {
@@ -75,19 +75,27 @@ telescope.setup {
   pickers = {
     live_grep = {
       file_ignore_patterns = {".git/*", "vendor", ".vscode", ".gitlab", "*cache*"},
-      layout_strategy='vertical',
-      layout_config={width=0.6, height=0.8},
       additional_args = function()
         return {"--hidden"}
       end
     },
     git_files = {
-      layout_strategy='vertical',
-      layout_config={width=0.6, height=0.8},
-    },
-    buffers = {
-      layout_strategy='vertical',
-      layout_config={width=0.6, height=0.8},
+      file_ignore_patterns = {"jpg", "jpeg", "ttf", "otf", "png*"},
+      additional_args = function()
+        return {"--smart-case"}
+      end
     },
   }
 }
+
+
+local colors_ok, colors = pcall(require, "plugins.colors")
+if not colors_ok then
+  return
+end
+
+colors.highlight("TelescopeBorder", colors.none, colors.green)
+colors.highlight("TelescopePromptBorder", colors.none, colors.light_gray)
+colors.highlight("TelescopeResultsBorder", colors.none, colors.light_gray)
+colors.highlight("TelescopePreviewBorder", colors.none, colors.light_gray)
+colors.highlight("TelescopeSelection", colors.none, colors.magneta)

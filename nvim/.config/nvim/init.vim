@@ -103,6 +103,8 @@ nnoremap <silent> <c-n> :NvimTreeToggle<enter>
 nnoremap <silent> <C-p> <cmd>Telescope git_files<enter>
 nnoremap <silent> <C-f> <cmd>Telescope live_grep<enter>
 nnoremap <silent> <C-b> <cmd>Telescope buffers<enter>
+nnoremap <silent> <leader>gs <cmd>Telescope git_status<enter>
+nnoremap <silent> <leader>gl <cmd>Telescope git_commits<enter>
 
 " commentary
 map <silent> <leader>/ :Commentary<enter>
@@ -114,18 +116,17 @@ if has("persistent_undo")
   nnoremap <silent> <leader>u :UndotreeToggle<enter>
 endif
 
-" git-gutter
+" gitsigns
 nnoremap <silent> gp :Gitsigns preview_hunk<enter>
 nnoremap <silent> g. :Gitsigns toggle_signs<enter>
+nnoremap <silent> gl :Gitsigns blame_line<enter>
 
 " rooter
 let g:rooter_targets = '/,*'
 let g:rooter_silent_chdir = 1
 
 " fugitive
-nnoremap <silent> gs :Git<enter>
 nnoremap <silent> gb :Git blame<enter>
-nnoremap <silent> gl :Commits<enter>
 
 " toggleterm (lazygit)
 nnoremap <silent> <leader>gg <cmd>lua _lazygit_toggle()<enter>
