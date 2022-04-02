@@ -93,8 +93,10 @@ if not colors_ok then
 	return
 end
 
-colors.highlight("TelescopeBorder", colors.none, colors.green)
-colors.highlight("TelescopePromptBorder", colors.none, colors.light_gray)
-colors.highlight("TelescopeResultsBorder", colors.none, colors.light_gray)
-colors.highlight("TelescopePreviewBorder", colors.none, colors.light_gray)
-colors.highlight("TelescopeSelection", colors.none, colors.magneta)
+colors.highlight({
+	{ group = "TelescopeBorder", bg = colors.none, fg = colors.green },
+	{ group = "TelescopePromptBorder", bg = colors.none, fg = colors.light_gray },
+	{ group = "TelescopeResultsBorder", bg = colors.none, fg = colors.light_gray },
+	{ group = "TelescopePreviewBorder", bg = colors.none, fg = colors.light_gray },
+	{ group = "TelescopeSelection", bg = colors.none, fg = colors.magneta },
+})

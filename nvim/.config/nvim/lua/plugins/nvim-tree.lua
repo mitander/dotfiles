@@ -103,11 +103,13 @@ if not colors_ok then
 	return
 end
 
-colors.highlight("IndentBlanklineChar", colors.none, colors.light_gray)
-colors.highlight("NvimTreeSymlink", colors.none, colors.magneta)
-colors.highlight("NvimTreeFolderName", colors.none, colors.white)
-colors.highlight("NvimTreeRootFolder", colors.none, colors.gray)
-colors.highlight("LspDiagnosticsError", colors.none, colors.red)
-colors.highlight("LspDiagnosticsWarning", colors.none, colors.yellow)
-colors.highlight("LspDiagnosticsInformation", colors.none, colors.white)
-colors.highlight("LspDiagnosticsHint", colors.none, colors.white)
+colors.highlight({
+	{ group = "IndentBlanklineChar", bg = colors.none, fg = colors.light_gray },
+	{ group = "NvimTreeSymlink", bg = colors.none, fg = colors.magneta },
+	{ group = "NvimTreeFolderName", bg = colors.none, fg = colors.white },
+	{ group = "NvimTreeRootFolder", bg = colors.none, fg = colors.gray },
+	{ group = "LspDiagnosticsError", bg = colors.none, fg = colors.red },
+	{ group = "LspDiagnosticsWarning", bg = colors.none, fg = colors.yellow },
+	{ group = "LspDiagnosticsInformation", bg = colors.none, fg = colors.white },
+	{ group = "LspDiagnosticsHint", bg = colors.none, fg = colors.white },
+})

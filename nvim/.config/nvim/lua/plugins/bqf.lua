@@ -8,7 +8,7 @@ if not colors_ok then
 	return
 end
 
-colors.highlight("BqfPreviewBorder", colors.none, colors.light_gray)
+colors.highlight({ group = "BqfPreviewBorder", bg = colors.none, fg = colors.light_gray })
 
 bqf.setup({
 	auto_enable = true,

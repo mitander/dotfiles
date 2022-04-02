@@ -45,12 +45,12 @@ local function lsp_highlight_document(client)
 	if client.resolved_capabilities.document_highlight then
 		vim.api.nvim_exec(
 			[[
-      augroup lsp_document_highlight
-        autocmd! * <buffer>
-        autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
-        autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
-      augroup END
-    ]],
+              augroup lsp_document_highlight
+                autocmd! * <buffer>
+                autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
+                autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+              augroup END
+            ]],
 			false
 		)
 	end
@@ -68,24 +68,23 @@ local function lsp_keymaps(bufnr)
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "]d", '<cmd>lua vim.diagnostic.goto_next({ border = "rounded" })<CR>', opts)
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "<leader>d", "<cmd>lua vim.diagnostic.setloclist()<CR>", opts)
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
+	vim.api.nvim_buf_set_keymap(bufnr, "n", "ga", "<cmd>lua vim.lsp.buf.code_action()<CR>", opts)
 	vim.cmd([[ command! Format execute 'lua vim.lsp.buf.formatting()' ]])
 end
 
 M.on_attach = function(client, bufnr)
-	if client.name == "clangd" then
-		client.resolved_capabilities.document_formatting = false
-	end
-	if client.name == "gopls" then
-		client.resolved_capabilities.document_formatting = false
-	end
-	if client.name == "rust_analyzer" then
-		client.resolved_capabilities.document_formatting = false
-	end
-	if client.name == "zls" then
-		client.resolved_capabilities.document_formatting = false
-	end
-	if client.name == "sumneko_lua" then
-		client.resolved_capabilities.document_formatting = false
+	local disable_formatting = {
+		"clangd",
+		"gopls",
+		"rust_analyzer",
+		"zls",
+		"sumneko_lua",
+		"jsonls",
+	}
+	for _, client_name in ipairs(disable_formatting) do
+		if client.name == client_name then
+			client.resolved_capabilities.document_formatting = false
+		end
 	end
 
 	lsp_keymaps(bufnr)

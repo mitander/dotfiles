@@ -11,20 +11,26 @@ local M = {
 	none = "NONE",
 }
 
-function M.highlight(group, bg, fg)
-	vim.cmd("au ColorScheme * hi " .. group .. " guibg=" .. bg .. " guifg=" .. fg .. " ")
+function M.highlight(list)
+	for _, v in ipairs(list) do
+		vim.cmd("au ColorScheme * hi " .. v.group .. " guibg=" .. v.bg .. " guifg=" .. v.fg .. " ")
+	end
 end
 
 -- General vim highlights
-M.highlight("Pmenu", M.none, M.white)
-M.highlight("Normal", M.none, M.white)
-M.highlight("LineNr", M.none, M.white)
-M.highlight("NonText", M.none, M.white)
-M.highlight("VertSplit", M.none, M.gray)
-M.highlight("SignColumn", M.none, M.none)
-M.highlight("ColorColumn", M.gray, M.gray)
-M.highlight("StatusLine", M.none, M.none)
-M.highlight("StatusLineNC", M.none, M.none)
-M.highlight("Comment", M.none, M.light_gray)
+local vim_colors = {
+	{ group = "Pmenu", bg = M.none, fg = M.white },
+	{ group = "Normal", bg = M.none, fg = M.white },
+	{ group = "LineNr", bg = M.none, fg = M.white },
+	{ group = "NonText", bg = M.none, fg = M.white },
+	{ group = "VertSplit", bg = M.none, fg = M.gray },
+	{ group = "SignColumn", bg = M.none, fg = M.none },
+	{ group = "ColorColumn", bg = M.gray, fg = M.gray },
+	{ group = "StatusLine", bg = M.none, fg = M.none },
+	{ group = "StatusLineNC", bg = M.none, fg = M.none },
+	{ group = "Comment", bg = M.none, fg = M.light_gray },
+}
+
+M.highlight(vim_colors)
 
 return M

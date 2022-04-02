@@ -12,7 +12,7 @@ null_ls.setup({
 		formatting.gofmt,
 		formatting.zigfmt,
 		formatting.rustfmt,
-		formatting.prettier,
+		formatting.json_tool,
 		formatting.stylua,
 	},
 	on_attach = function(client)

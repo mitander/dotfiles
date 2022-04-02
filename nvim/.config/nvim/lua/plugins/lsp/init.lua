@@ -11,26 +11,21 @@ if not colors_ok then
 	return
 end
 
--- Hint
-colors.highlight("DiagnosticHint", colors.none, colors.white)
-colors.highlight("DiagnosticFloatingHint", colors.none, colors.white)
-colors.highlight("DiagnosticSignHint", colors.none, colors.white)
-colors.highlight("DiagnosticUnderlineHint", colors.none, colors.white)
-
--- Info
-colors.highlight("DiagnosticInfo", colors.none, colors.white)
-colors.highlight("DiagnosticFloatingInfo", colors.none, colors.white)
-colors.highlight("DiagnosticSignInfo", colors.none, colors.white)
-colors.highlight("DiagnosticUnderlineInfo", colors.none, colors.white)
-
---Warn
-colors.highlight("DiagnosticWarn", colors.none, colors.yellow)
-colors.highlight("DiagnosticFloatingWarn", colors.none, colors.yellow)
-colors.highlight("DiagnosticSignWarn", colors.none, colors.yellow)
-colors.highlight("DiagnosticUnderlineWarn", colors.none, colors.yellow)
-
--- Error
-colors.highlight("DiagnosticError", colors.none, colors.red)
-colors.highlight("DiagnosticFloatingError", colors.none, colors.red)
-colors.highlight("DiagnosticSignError", colors.none, colors.red)
-colors.highlight("DiagnosticUnderlineError", colors.none, colors.red)
+colors.highlight({
+	{ group = "DiagnosticsHint", bg = colors.none, fg = colors.white },
+	{ group = "DiagnosticFloatingHint", bg = colors.none, fg = colors.white },
+	{ group = "DiagnosticSignHint", bg = colors.none, fg = colors.white },
+	{ group = "DiagnosticUnderlineHint", bg = colors.none, fg = colors.white },
+	{ group = "DiagnosticInfo", bg = colors.none, fg = colors.white },
+	{ group = "DiagnosticFloatingInfo", bg = colors.none, fg = colors.white },
+	{ group = "DiagnosticSignInfo", bg = colors.none, fg = colors.white },
+	{ group = "DiagnosticUnderlineInfo", bg = colors.none, fg = colors.white },
+	{ group = "DiagnosticWarn", bg = colors.none, fg = colors.yellow },
+	{ group = "DiagnosticFloatingWarn", bg = colors.none, fg = colors.yellow },
+	{ group = "DiagnosticSignWarn", bg = colors.none, fg = colors.yellow },
+	{ group = "DiagnosticUnderlineWarn", bg = colors.none, fg = colors.yellow },
+	{ group = "DiagnosticError", bg = colors.none, fg = colors.red },
+	{ group = "DiagnosticFloatingError", bg = colors.none, fg = colors.red },
+	{ group = "DiagnosticSignError", bg = colors.none, fg = colors.red },
+	{ group = "DiagnosticUnderlineError", bg = colors.none, fg = colors.red },
+})

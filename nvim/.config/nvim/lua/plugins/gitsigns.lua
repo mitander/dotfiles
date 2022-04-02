@@ -61,10 +61,11 @@ if not colors_ok then
 	return
 end
 
-colors.highlight("GitSignsAdd", colors.none, colors.green)
-colors.highlight("GitSignsDelete", colors.none, colors.red)
-colors.highlight("GitSignsChange", colors.none, colors.yellow)
-
-colors.highlight("DiffAdd", colors.none, colors.green)
-colors.highlight("DiffChange", colors.none, colors.red)
-colors.highlight("DiffDelete", colors.none, colors.yellow)
+colors.highlight({
+	{ group = "GitSignsAdd", bg = colors.none, fg = colors.green },
+	{ group = "GitSignsDelete", bg = colors.none, fg = colors.red },
+	{ group = "GitSignsChange", bg = colors.none, fg = colors.yellow },
+	{ group = "DiffAdd", bg = colors.none, fg = colors.green },
+	{ group = "DiffChange", bg = colors.none, fg = colors.red },
+	{ group = "DiffDelete", bg = colors.none, fg = colors.yellow },
+})
