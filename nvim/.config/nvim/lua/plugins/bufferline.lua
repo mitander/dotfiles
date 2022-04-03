@@ -85,6 +85,10 @@ bufferline.setup({
 			guifg = colors.yellow,
 			guibg = colors.none,
 		},
+		warning_visible = {
+			guifg = colors.yellow,
+			guibg = colors.none,
+		},
 		hint = {
 			guifg = colors.white,
 			guibg = colors.gray,
@@ -97,6 +101,10 @@ bufferline.setup({
 			guifg = colors.white,
 			guibg = colors.none,
 		},
+		hint_visible = {
+			guifg = colors.white,
+			guibg = colors.none,
+		},
 		info = {
 			guifg = colors.white,
 			guibg = colors.gray,
@@ -106,6 +114,10 @@ bufferline.setup({
 			guibg = colors.gray,
 		},
 		info_selected = {
+			guifg = colors.white,
+			guibg = colors.none,
+		},
+		info_visible = {
 			guifg = colors.white,
 			guibg = colors.none,
 		},
