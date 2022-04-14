@@ -6,8 +6,8 @@ local M = {
 	cyan = "#71b9f8",
 	white = "#e8e8de",
 	gray = "#3b3b3b",
-	dark_gray = "#30302c",
-	light_gray = "#b0b0b0",
+	gray2 = "#b0b0b0",
+	gray3 = "#2e2e2e",
 	none = "NONE",
 }
 
@@ -19,8 +19,9 @@ end
 
 -- General vim highlights
 local vim_colors = {
+	{ group = "CursorLine", bg = M.gray3, fg = M.none },
 	{ group = "Pmenu", bg = M.none, fg = M.white },
-	{ group = "Normal", bg = M.none, fg = M.white },
+	{ group = "Normal", bg = M.none, fg = M.none },
 	{ group = "LineNr", bg = M.none, fg = M.white },
 	{ group = "NonText", bg = M.none, fg = M.white },
 	{ group = "VertSplit", bg = M.none, fg = M.gray },
@@ -28,7 +29,7 @@ local vim_colors = {
 	{ group = "ColorColumn", bg = M.gray, fg = M.gray },
 	{ group = "StatusLine", bg = M.none, fg = M.none },
 	{ group = "StatusLineNC", bg = M.none, fg = M.none },
-	{ group = "Comment", bg = M.none, fg = M.light_gray },
+	{ group = "Comment", bg = M.none, fg = M.gray2 },
 }
 
 M.highlight(vim_colors)

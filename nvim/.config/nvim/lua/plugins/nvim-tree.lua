@@ -104,7 +104,7 @@ if not colors_ok then
 end
 
 colors.highlight({
-	{ group = "IndentBlanklineChar", bg = colors.none, fg = colors.light_gray },
+	{ group = "IndentBlanklineChar", bg = colors.none, fg = colors.gray2 },
 	{ group = "NvimTreeSymlink", bg = colors.none, fg = colors.magneta },
 	{ group = "NvimTreeFolderName", bg = colors.none, fg = colors.white },
 	{ group = "NvimTreeRootFolder", bg = colors.none, fg = colors.gray },

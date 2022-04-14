@@ -95,8 +95,8 @@ end
 
 colors.highlight({
 	{ group = "TelescopeBorder", bg = colors.none, fg = colors.green },
-	{ group = "TelescopePromptBorder", bg = colors.none, fg = colors.light_gray },
-	{ group = "TelescopeResultsBorder", bg = colors.none, fg = colors.light_gray },
-	{ group = "TelescopePreviewBorder", bg = colors.none, fg = colors.light_gray },
+	{ group = "TelescopePromptBorder", bg = colors.none, fg = colors.gray2 },
+	{ group = "TelescopeResultsBorder", bg = colors.none, fg = colors.gray2 },
+	{ group = "TelescopePreviewBorder", bg = colors.none, fg = colors.gray2 },
 	{ group = "TelescopeSelection", bg = colors.none, fg = colors.magneta },
 })

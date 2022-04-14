@@ -10,6 +10,7 @@ set hidden
 set mouse=a
 set number
 set ruler
+set cursorline
 set smartcase
 set ignorecase
 set noshowmode
@@ -83,6 +84,7 @@ nnoremap <silent> gf :edit <cfile><enter>
 
 " pls no
 nnoremap <silent> q <nop>
+nnoremap <silent> <leader>q <nop>
 
 " keep visual selection when indenting
 vnoremap <silent> < <gv
