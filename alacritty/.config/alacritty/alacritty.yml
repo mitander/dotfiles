@@ -14,19 +14,19 @@ scrolling:
 
 font:
   normal:
-    family: FiraCode Nerd Font
+    family: MesloLGSDZ Nerd Font Mono
     style: Regular
 
   bold:
-    family: FiraCode Nerd Font
+    family: MesloLGSDZ Nerd Font Mono
     style: Bold
 
   italic:
-    family: FiraCode Nerd Font
+    family: MesloLGSDZ Nerd Font Mono
     style: Italic
 
   bold_italic:
-    family: FiraCode Nerd Font
+    family: MesloLGSDZ Nerd Font Mono
     style: Bold Italic
 
   size: 11
@@ -34,7 +34,7 @@ font:
 
 colors:
   primary:
-    background: '#2a2a2a'
+    background: '#282828'
     foreground: '#e4e4e4'
 
   normal:
