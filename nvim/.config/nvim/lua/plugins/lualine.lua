@@ -3,15 +3,12 @@ if not status_ok then
 	return
 end
 
-local colors_ok, colors = pcall(require, "plugins.colors")
-if not colors_ok then
-	return
-end
-
 -- Customize jellybeans
 local custom_jellybeans = require("lualine.themes.jellybeans")
 
 -- clearer filename
+local colors = require("plugins.colors")
+
 custom_jellybeans.normal.c.fg = colors.white
 custom_jellybeans.normal.c.bg = colors.gray
 

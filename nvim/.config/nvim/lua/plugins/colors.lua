@@ -11,14 +11,12 @@ local M = {
 	none = "NONE",
 }
 
-function M.highlight(list)
-	for _, v in ipairs(list) do
-		vim.cmd("au ColorScheme * hi " .. v.group .. " guibg=" .. v.bg .. " guifg=" .. v.fg .. " ")
-	end
-end
+-- Colorscheme
+vim.cmd([[colorscheme jellybeans]])
 
 -- General vim highlights
-local vim_colors = {
+local util = require("plugins.util")
+util.highlight({
 	{ group = "CursorLine", bg = M.gray3, fg = M.none },
 	{ group = "Pmenu", bg = M.none, fg = M.white },
 	{ group = "Normal", bg = M.none, fg = M.none },
@@ -30,8 +28,6 @@ local vim_colors = {
 	{ group = "StatusLine", bg = M.none, fg = M.none },
 	{ group = "StatusLineNC", bg = M.none, fg = M.none },
 	{ group = "Comment", bg = M.none, fg = M.gray2 },
-}
-
-M.highlight(vim_colors)
+})
 
 return M

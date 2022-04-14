@@ -50,9 +50,6 @@ indent_blankline.setup({
 	char = "▏",
 })
 
-local colors_ok, colors = pcall(require, "plugins.colors")
-if not colors_ok then
-	return
-end
+local colors = require("plugins.colors")
 
 vim.cmd(string.format("autocmd BufRead * hi IndentBlanklineChar guibg=%s guifg=%s", colors.none, colors.gray))

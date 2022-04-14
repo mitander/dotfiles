@@ -6,12 +6,10 @@ end
 require("plugins.lsp.lsp-installer")
 require("plugins.lsp.handlers").setup()
 
-local colors_ok, colors = pcall(require, "plugins.colors")
-if not colors_ok then
-	return
-end
+local util = require("plugins.util")
+local colors = require("plugins.colors")
 
-colors.highlight({
+util.highlight({
 	{ group = "DiagnosticsHint", bg = colors.none, fg = colors.white },
 	{ group = "DiagnosticFloatingHint", bg = colors.none, fg = colors.white },
 	{ group = "DiagnosticSignHint", bg = colors.none, fg = colors.white },

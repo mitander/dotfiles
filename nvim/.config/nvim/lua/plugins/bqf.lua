@@ -3,16 +3,9 @@ if not status_ok then
 	return
 end
 
-local colors_ok, colors = pcall(require, "plugins.colors")
-if not colors_ok then
-	return
-end
-
-colors.highlight({ group = "BqfPreviewBorder", bg = colors.none, fg = colors.light_gray })
-
 bqf.setup({
 	auto_enable = true,
-	auto_resize_height = true, -- highly recommended enable
+	auto_resize_height = true,
 	preview = {
 		win_height = 12,
 		win_vheight = 12,
@@ -42,3 +35,8 @@ bqf.setup({
 		},
 	},
 })
+
+local util = require("plugins.util")
+local colors = require("plugins.colors")
+
+util.highlight({ group = "BqfPreviewBorder", bg = colors.none, fg = colors.light_gray })

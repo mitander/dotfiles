@@ -40,6 +40,10 @@ nvim_tree.setup({
 	open_on_tab = true,
 	hijack_cursor = false,
 	update_cwd = true,
+	update_focused_file = {
+		enable = true,
+		update_cwd = true,
+	},
 	diagnostics = {
 		enable = true,
 		icons = {
@@ -98,12 +102,10 @@ nvim_tree.setup({
 	},
 })
 
-local colors_ok, colors = pcall(require, "plugins.colors")
-if not colors_ok then
-	return
-end
+local util = require("plugins.util")
+local colors = require("plugins.colors")
 
-colors.highlight({
+util.highlight({
 	{ group = "IndentBlanklineChar", bg = colors.none, fg = colors.gray2 },
 	{ group = "NvimTreeSymlink", bg = colors.none, fg = colors.magneta },
 	{ group = "NvimTreeFolderName", bg = colors.none, fg = colors.white },

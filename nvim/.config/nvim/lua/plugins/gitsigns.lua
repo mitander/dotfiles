@@ -56,12 +56,10 @@ gitsigns.setup({
 	},
 })
 
-local colors_ok, colors = pcall(require, "plugins.colors")
-if not colors_ok then
-	return
-end
+local util = require("plugins.util")
+local colors = require("plugins.colors")
 
-colors.highlight({
+util.highlight({
 	{ group = "GitSignsAdd", bg = colors.none, fg = colors.green },
 	{ group = "GitSignsDelete", bg = colors.none, fg = colors.red },
 	{ group = "GitSignsChange", bg = colors.none, fg = colors.yellow },

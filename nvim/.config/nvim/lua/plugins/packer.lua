@@ -46,20 +46,12 @@ end
 
 packer.startup({
 	function(use)
-		-- Packer manages itself
 		use({ "wbthomason/packer.nvim" })
-
-		-- Plugins with config files
+		use({ "nanotech/jellybeans.vim" })
 		use({ "fatih/vim-go" })
 		use({ "ziglang/zig.vim" })
 		use({ "rust-lang/rust.vim" })
-		use({ "tpope/vim-fugitive" })
-		use({ "mbbill/undotree" })
-		use({ "rhysd/vim-clang-format" })
-		use({ "tpope/vim-commentary" })
-		use({ "airblade/vim-rooter" })
 		use({ "nvim-lua/plenary.nvim" })
-		use({ "simrat39/symbols-outline.nvim" })
 		use({ "nvim-lua/popup.nvim" })
 		use({ "nvim-lua/lsp-status.nvim" })
 		use({ "williamboman/nvim-lsp-installer" })
@@ -68,92 +60,121 @@ packer.startup({
 		use({ "L3MON4D3/LuaSnip" })
 		use({ "hrsh7th/cmp-nvim-lsp" })
 		use({ "saadparwaiz1/cmp_luasnip" })
-
+		use({
+			"airblade/vim-rooter",
+			config = function()
+				vim.g.rooter_targets = "/,*"
+				vim.g.rooter_silent_chdir = 1
+			end,
+		})
+		use({
+			"akinsho/bufferline.nvim",
+			after = "nvim-web-devicons",
+			config = function()
+				require("plugins.bufferline")
+				require("plugins.mappings").bufferline()
+			end,
+		})
+		use({
+			"tpope/vim-commentary",
+			config = function()
+				require("plugins.mappings").commentary()
+			end,
+		})
+		use({
+			"tpope/vim-fugitive",
+			config = function()
+				require("plugins.mappings").fugitive()
+			end,
+		})
+		use({
+			"mbbill/undotree",
+			config = function()
+				require("plugins.mappings").undotree()
+			end,
+		})
+		use({
+			"simrat39/symbols-outline.nvim",
+			config = function()
+				require("plugins.symbols-outline")
+				require("plugins.mappings").symbolsoutline()
+			end,
+		})
 		use({
 			"nvim-telescope/telescope.nvim",
 			config = function()
 				require("plugins.telescope")
+				require("plugins.mappings").telescope()
 			end,
 		})
-
-		-- Plugins with config files
+		use({
+			"lewis6991/gitsigns.nvim",
+			config = function()
+				require("plugins.gitsigns")
+				require("plugins.mappings").gitsigns()
+			end,
+		})
+		use({
+			"kyazdani42/nvim-tree.lua",
+			config = function()
+				require("plugins.nvim-tree")
+				require("plugins.mappings").nvimtree()
+			end,
+		})
 		use({
 			"neovim/nvim-lspconfig",
 			config = function()
 				require("plugins.lsp")
 			end,
 		})
-
 		use({
-			"lewis6991/gitsigns.nvim",
+			"ahmedkhalf/project.nvim",
 			config = function()
-				require("plugins.gitsigns")
+				require("plugins.project")
 			end,
 		})
-
-		use({
-			"nanotech/jellybeans.vim",
-			config = function()
-				require("plugins.colors")
-			end,
-		})
-
-		use({
-			"kyazdani42/nvim-tree.lua",
-			config = function()
-				require("plugins.nvim-tree")
-			end,
-		})
-
 		use({
 			"lewis6991/impatient.nvim",
 			config = function()
 				require("plugins.impatient")
 			end,
 		})
-
 		use({
 			"hrsh7th/nvim-cmp",
 			config = function()
 				require("plugins.cmp")
 			end,
 		})
-
 		use({
 			"jose-elias-alvarez/null-ls.nvim",
 			config = function()
 				require("plugins.null-ls")
 			end,
 		})
-
 		use({
 			"nathom/filetype.nvim",
 			config = function()
 				require("plugins.filetype")
 			end,
 		})
-
 		use({
 			"akinsho/toggleterm.nvim",
 			config = function()
 				require("plugins.toggleterm")
 			end,
 		})
-
 		use({
 			"nvim-lualine/lualine.nvim",
 			config = function()
 				require("plugins.lualine")
 			end,
 		})
-
 		use({
 			"kevinhwang91/nvim-bqf",
 			config = function()
 				require("plugins.bqf")
 			end,
 		})
-
 		use({
 			"nvim-treesitter/nvim-treesitter",
 			run = ":TSUpdate",
@@ -161,29 +182,18 @@ packer.startup({
 				require("plugins.treesitter")
 			end,
 		})
-
-		use({
-			"akinsho/bufferline.nvim",
-			after = "nvim-web-devicons",
-			config = function()
-				require("plugins.bufferline")
-			end,
-		})
-
 		use({
 			"aserowy/tmux.nvim",
 			config = function()
 				require("plugins.tmux")
 			end,
 		})
-
 		use({
 			"lukas-reineke/indent-blankline.nvim",
 			config = function()
 				require("plugins.indent")
 			end,
 		})
-
 		if PACKER_BOOTSTRAP then
 			require("packer").sync()
 		end

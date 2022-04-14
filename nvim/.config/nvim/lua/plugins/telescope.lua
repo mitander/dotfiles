@@ -7,9 +7,11 @@ local actions = require("telescope.actions")
 
 telescope.setup({
 	defaults = {
-		layout_strategy = "horizontal",
-		layout_config = { width = 0.8, height = 0.8 },
+		layout_strategy = "vertical",
+		layout_config = { width = 0.5, height = 0.5 },
 		path_display = { "truncate" },
+		previewer = false,
+		file_ignore_patterns = { "jpg", "jpeg", "ttf", "otf", "png*", "vendor", ".vscode", ".gitlab", "*cache*" },
 		mappings = {
 			i = {
 				["<C-n>"] = actions.cycle_history_next,
@@ -74,29 +76,37 @@ telescope.setup({
 	},
 	pickers = {
 		live_grep = {
-			file_ignore_patterns = { ".git/*", "vendor", ".vscode", ".gitlab", "*cache*" },
+			find_command = "rg,--files",
+			"--hidden",
+			"-g",
+			"!.git/**",
 			additional_args = function()
 				return { "--hidden" }
 			end,
 		},
 		git_files = {
-			file_ignore_patterns = { "jpg", "jpeg", "ttf", "otf", "png*" },
+			previewer = false,
 			additional_args = function()
 				return { "--smart-case" }
 			end,
 		},
+		buffers = {
+			previewer = false,
+		},
 	},
 })
 
-local colors_ok, colors = pcall(require, "plugins.colors")
-if not colors_ok then
-	return
-end
+require("telescope").load_extension("projects")
 
-colors.highlight({
+local util = require("plugins.util")
+local colors = require("plugins.colors")
+
+util.highlight({
 	{ group = "TelescopeBorder", bg = colors.none, fg = colors.green },
 	{ group = "TelescopePromptBorder", bg = colors.none, fg = colors.gray2 },
 	{ group = "TelescopeResultsBorder", bg = colors.none, fg = colors.gray2 },
 	{ group = "TelescopePreviewBorder", bg = colors.none, fg = colors.gray2 },
 	{ group = "TelescopeSelection", bg = colors.none, fg = colors.magneta },
 })
+
+require("plugins.mappings").telescope()
