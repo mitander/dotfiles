@@ -10,7 +10,6 @@ telescope.setup({
 		layout_strategy = "vertical",
 		layout_config = { width = 0.5, height = 0.5 },
 		path_display = { "truncate" },
-		previewer = false,
 		file_ignore_patterns = { "jpg", "jpeg", "ttf", "otf", "png*", "vendor", ".vscode", ".gitlab", "*cache*" },
 		mappings = {
 			i = {

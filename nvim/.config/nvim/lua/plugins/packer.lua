@@ -122,6 +122,13 @@ packer.startup({
 			end,
 		})
 		use({
+			"akinsho/toggleterm.nvim",
+			config = function()
+				require("plugins.toggleterm")
+				require("plugins.mappings").toggleterm()
+			end,
+		})
+		use({
 			"neovim/nvim-lspconfig",
 			config = function()
 				require("plugins.lsp")
@@ -155,12 +162,6 @@ packer.startup({
 			"nathom/filetype.nvim",
 			config = function()
 				require("plugins.filetype")
-			end,
-		})
-		use({
-			"akinsho/toggleterm.nvim",
-			config = function()
-				require("plugins.toggleterm")
 			end,
 		})
 		use({

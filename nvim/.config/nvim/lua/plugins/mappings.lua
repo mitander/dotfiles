@@ -35,7 +35,7 @@ function M.symbolsoutline()
 end
 
 function M.toggleterm()
-	util.map("n", "<leader>gg", "_lazygit_toggle()")
+	util.map("n", "<leader>gg", "lua _lazygit_toggle()")
 end
 
 function M.fugitive()
