@@ -43,7 +43,7 @@ let mapleader=" "
 map <space> <nop>
 
 " open config
-let $vimrc="$HOME/dotfiles/nvim/.config/nvim/init.vim"
+let $vimrc="~/dotfiles/nvim/.config/nvim/init.vim"
 nnoremap <silent><leader>c :tabnew $vimrc<enter>
 
 " clear highlight
@@ -88,11 +88,21 @@ cabbrev Q q
 cabbrev Wq wq
 cabbrev q q
 
-" autocommands
+" highlight on yank
 autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200})
+
+" remove trailing whitespace on save
 autocmd BufWritePre * :%s/\s\+$//e
+
+" better paste
 autocmd InsertLeave * set nopaste
+
+" quickfix binds
 autocmd FileType qf nnoremap <silent> <buffer> q :close<enter>
 autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
+
+" colorcolumn
 autocmd Filetype rust,zig,go,c,cpp setlocal colorcolumn=100
+
+" indent
 autocmd Filetype rust,zig,go,c,cpp setlocal tabstop=4 shiftwidth=4

@@ -10,7 +10,7 @@ null_ls.setup({
 	sources = {
 		formatting.clang_format,
 		formatting.gofmt,
-		formatting.zigfmt,
+		-- formatting.zigfmt,
 		formatting.rustfmt,
 		formatting.json_tool,
 		formatting.stylua,
@@ -20,4 +20,5 @@ null_ls.setup({
 			vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()")
 		end
 	end,
+	offset_encoding = "utf-8",
 })
