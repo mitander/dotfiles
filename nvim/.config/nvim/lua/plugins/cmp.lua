@@ -63,12 +63,9 @@ cmp.setup({
 		buffer = 1,
 		path = 1,
 	},
-	confirm_opts = {
-		behavior = cmp.ConfirmBehavior.Replace,
-		select = false,
-	},
-	-- documentation = {
-	-- 	border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+	-- confirm_opts = {
+	-- 	behavior = cmp.ConfirmBehavior.Replace,
+	-- 	select = true,
 	-- },
 	experimental = {
 		ghost_text = false,
@@ -86,8 +83,10 @@ cmp.setup({
 	mapping = {
 		["<C-k>"] = cmp.mapping.select_prev_item(),
 		["<C-j>"] = cmp.mapping.select_next_item(),
-		["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs(-1), { "i", "c" }),
-		["<C-f>"] = cmp.mapping(cmp.mapping.scroll_docs(1), { "i", "c" }),
+		["<C-p>"] = cmp.mapping.select_prev_item(),
+		["<C-n>"] = cmp.mapping.select_next_item(),
+		["<C-u>"] = cmp.mapping(cmp.mapping.scroll_docs(-1), { "i", "c" }),
+		["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs(1), { "i", "c" }),
 		["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
 		["<C-y>"] = cmp.config.disable,
 		["<C-e>"] = cmp.mapping({
