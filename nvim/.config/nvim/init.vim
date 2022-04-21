@@ -91,7 +91,6 @@ autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'V
 " remove trailing whitespace on save
 autocmd BufWritePre * :%s/\s\+$//e
 
-
 " better paste
 autocmd InsertLeave * set nopaste
 
