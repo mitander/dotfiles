@@ -58,8 +58,8 @@ colors:
     colors:
 
   selection:
-    text: '#5963a2'
-    background: '#f6f6f6'
+    text: '#282828'
+    background: '#e4e4e4'
 
   cursor:
     text: '0x000000'
