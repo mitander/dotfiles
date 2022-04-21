@@ -76,23 +76,21 @@ nnoremap <silent> k gk
 vnoremap <silent> < <gv
 vnoremap <silent> > >gv
 
-" unbind ex-mode
+" disable ex-mode
 nnoremap <silent> q <nop>
 
 " don't yank on paste
 xnoremap <silent> p pgvy
 
-" abbreviations
-cabbrev W w
-cabbrev Q q
-cabbrev Wq wq
-cabbrev q q
+" abbreviate quit/save commands
+cab W w | cab Q q |cab Wq wq | cab WQ WQ
 
 " highlight on yank
 autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200})
 
 " remove trailing whitespace on save
 autocmd BufWritePre * :%s/\s\+$//e
+
 
 " better paste
 autocmd InsertLeave * set nopaste
@@ -101,8 +99,9 @@ autocmd InsertLeave * set nopaste
 autocmd FileType qf nnoremap <silent> <buffer> q :close<enter>
 autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
 
-" colorcolumn
-autocmd Filetype rust,zig,go,c,cpp setlocal colorcolumn=100
-
-" indent
+" indentation
 autocmd Filetype rust,zig,go,c,cpp setlocal tabstop=4 shiftwidth=4
+
+" use cursorline in normal mode and colorcolumn in insert mode
+autocmd InsertEnter * setlocal nocul cc=100,101
+autocmd InsertLeave * setlocal cul cc=0

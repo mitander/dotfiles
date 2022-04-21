@@ -16,7 +16,7 @@ end
 
 function M.highlight(list)
 	for _, v in ipairs(list) do
-		vim.cmd("au ColorScheme * hi " .. v.group .. " guibg=" .. v.bg .. " guifg=" .. v.fg .. " ")
+		vim.cmd("au ColorScheme * hi " .. v.group .. " guibg=" .. v.bg .. " guifg=" .. v.fg .. " gui='NONE'")
 	end
 end
 

@@ -18,13 +18,14 @@ vim.cmd([[colorscheme jellybeans]])
 local util = require("plugins.util")
 util.highlight({
 	{ group = "CursorLine", bg = M.gray3, fg = M.none },
+	{ group = "Comment", bg = M.gray3, fg = M.none },
 	{ group = "Pmenu", bg = M.none, fg = M.white },
 	{ group = "Normal", bg = M.none, fg = M.none },
 	{ group = "LineNr", bg = M.none, fg = M.white },
 	{ group = "NonText", bg = M.none, fg = M.white },
 	{ group = "VertSplit", bg = M.none, fg = M.gray },
 	{ group = "SignColumn", bg = M.none, fg = M.none },
-	{ group = "ColorColumn", bg = M.gray, fg = M.gray },
+	{ group = "ColorColumn", bg = M.gray3, fg = M.none },
 	{ group = "StatusLine", bg = M.none, fg = M.none },
 	{ group = "StatusLineNC", bg = M.none, fg = M.none },
 	{ group = "Comment", bg = M.none, fg = M.gray2 },
