@@ -26,5 +26,7 @@ stow alacritty
 stow git
 
 # Install font
-sudo cp -r $PWD/fonts/FiraCodeNerdFont /usr/local/share/fonts/
+cd $PWD/fonts
+sudo unzip FiraCode.zip /usr/local/share/fonts/
+sudo unzip Meslo.zip /usr/local/share/fonts/
 fc-cache -f -v

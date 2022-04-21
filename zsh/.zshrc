@@ -26,6 +26,15 @@ alias gp="git push"
 alias gpp="git push --force"
 alias gr="git rebase -i"
 alias ge="git commit --amend --no-edit"
+alias gx="git commit --no-verify"
+
+# docker
+alias dc="docker-compose"
+alias dcd="docker-compose down"
+alias dcu="docker-compose up"
+alias dl= "docker logs"
+alias dps="docker ps"
+alias dpp="docker-compose pull --parallel"
 
 # linux
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
