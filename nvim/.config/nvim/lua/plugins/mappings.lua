@@ -53,6 +53,7 @@ end
 function M.bufferline()
 	util.map("n", "<leader>q", "BufferLineCloseRight<enter> <cmd>BufferLineCloseLeft")
 end
+
 function M.gitsigns()
 	util.map("n", "gp", "Gitsigns preview_hunk")
 	util.map("n", "g.", "Gitsigns toggle_signs")

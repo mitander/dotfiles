@@ -148,6 +148,7 @@ packer.startup({
 		-- Fuzzy previewer
 		use({
 			"nvim-telescope/telescope.nvim",
+			commit = "831f76a809d9f09724d9f3825a3660ed714470d9",
 			config = function()
 				require("plugins.telescope")
 				require("plugins.mappings").telescope()
