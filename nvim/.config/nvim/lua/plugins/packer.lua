@@ -57,41 +57,10 @@ packer.startup({
 		-- Colorscheme
 		use({ "nanotech/jellybeans.vim" })
 
-		-- Go development
+		-- Language plugins
 		use({ "fatih/vim-go" })
-
-		-- Zig development
 		use({ "ziglang/zig.vim" })
-
-		-- Rust development
 		use({ "rust-lang/rust.vim" })
-
-		-- async functions
-		use({ "nvim-lua/plenary.nvim" })
-
-		-- Popup api
-		use({ "nvim-lua/popup.nvim" })
-
-		-- Lsp status api
-		use({ "nvim-lua/lsp-status.nvim" })
-
-		-- Manage language servers
-		use({ "williamboman/nvim-lsp-installer" })
-
-		-- Snippet engine
-		use({ "SirVer/ultisnips" })
-
-		-- Snippet engine for lua
-		use({ "L3MON4D3/LuaSnip" })
-
-		-- Icons
-		use({ "kyazdani42/nvim-web-devicons" })
-
-		-- Completion lsp
-		use({ "hrsh7th/cmp-nvim-lsp" })
-
-		-- Luasnip completion
-		use({ "saadparwaiz1/cmp_luasnip" })
 
 		-- Use project root as work directory
 		use({
@@ -105,11 +74,11 @@ packer.startup({
 		-- Statusline for buffers
 		use({
 			"akinsho/bufferline.nvim",
-			after = "nvim-web-devicons",
 			config = function()
 				require("plugins.bufferline")
 				require("plugins.mappings").bufferline()
 			end,
+			requires = { "kyazdani42/nvim-web-devicons" },
 		})
 
 		-- Easier commenting
@@ -143,16 +112,21 @@ packer.startup({
 				require("plugins.symbols-outline")
 				require("plugins.mappings").symbolsoutline()
 			end,
+			requires = { "kyazdani42/nvim-web-devicons" },
 		})
 
 		-- Fuzzy previewer
 		use({
 			"nvim-telescope/telescope.nvim",
-			commit = "831f76a809d9f09724d9f3825a3660ed714470d9",
+			commit = "831f76a809d9f09724d9f3825a3660ed714470d9", -- TODO: use latest when possible
 			config = function()
 				require("plugins.telescope")
 				require("plugins.mappings").telescope()
 			end,
+			requires = {
+				{ "kyazdani42/nvim-web-devicons" },
+				{ "nvim-lua/plenary.nvim" },
+			},
 		})
 
 		-- Git signcolumn
@@ -162,6 +136,7 @@ packer.startup({
 				require("plugins.gitsigns")
 				require("plugins.mappings").gitsigns()
 			end,
+			requires = { "nvim-lua/plenary.nvim" },
 		})
 
 		-- File navigatior
@@ -171,6 +146,7 @@ packer.startup({
 				require("plugins.nvim-tree")
 				require("plugins.mappings").nvimtree()
 			end,
+			requires = { "kyazdani42/nvim-web-devicons" },
 		})
 
 		-- Toggleterm with Lazygit
@@ -188,6 +164,10 @@ packer.startup({
 			config = function()
 				require("plugins.lsp")
 			end,
+			requires = {
+				{ "nvim-lua/lsp-status.nvim" },
+				{ "williamboman/nvim-lsp-installer" },
+			},
 		})
 
 		-- Project management
@@ -212,6 +192,16 @@ packer.startup({
 			config = function()
 				require("plugins.cmp")
 			end,
+			requires = {
+				{ "SirVer/ultisnips" },
+				{ "L3MON4D3/LuaSnip" },
+				{ "hrsh7th/cmp-nvim-lsp" },
+				{ "saadparwaiz1/cmp_luasnip" },
+				{ "kyazdani42/nvim-web-devicons" },
+				{ "hrsh7th/cmp-buffer" },
+				{ "hrsh7th/cmp-path" },
+				{ "hrsh7th/cmp-cmdline" },
+			},
 		})
 
 		-- Formatting
@@ -230,15 +220,16 @@ packer.startup({
 			end,
 		})
 
-		-- Status line
+		-- Statusline
 		use({
 			"nvim-lualine/lualine.nvim",
 			config = function()
 				require("plugins.lualine")
 			end,
+			requires = { "kyazdani42/nvim-web-devicons" },
 		})
 
-		-- Nicer quickfix window
+		-- Better quickfix window
 		use({
 			"kevinhwang91/nvim-bqf",
 			config = function()
@@ -263,7 +254,7 @@ packer.startup({
 			end,
 		})
 
-		-- Indentation markings
+		-- Show indentation
 		use({
 			"lukas-reineke/indent-blankline.nvim",
 			config = function()
@@ -271,7 +262,6 @@ packer.startup({
 			end,
 		})
 
-		-- If packer was bootstrapped - sync.
 		if PACKER_BOOTSTRAP then
 			require("packer").sync()
 		end
