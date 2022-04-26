@@ -71,7 +71,7 @@ packer.startup({
 			end,
 		})
 
-		-- Statusline for buffers
+		-- Statusline for buffers/tabs
 		use({
 			"akinsho/bufferline.nvim",
 			config = function()
