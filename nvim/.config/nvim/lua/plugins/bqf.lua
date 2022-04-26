@@ -38,5 +38,4 @@ bqf.setup({
 
 local util = require("plugins.util")
 local colors = require("plugins.colors")
-
 util.highlight({ group = "BqfPreviewBorder", bg = colors.none, fg = colors.light_gray })

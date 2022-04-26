@@ -12,7 +12,7 @@ filetype.setup({
 			MyBackupFile = "lua",
 		},
 		complex = {
-			[".*git/config"] = "gitconfig", -- Included in the plugin
+			[".*git/config"] = "gitconfig",
 		},
 
 		function_extensions = {
