@@ -9,6 +9,7 @@ super + shift  + Return
 # ~dmenu~ (super-space)
 super + @space
     dmenu_run
+
 # ~sxhkd|reload~ (super-escape)
 super + Escape
 	pkill -USR1 -x sxhkd
@@ -32,6 +33,7 @@ super + {_,shift +}q
 # ~window|state~ (super-t:tiling, super-shift-t:padding, super-f:fullscreen)
 super + {t,p,g,f}
 	bspc node -t {tiled,pseudo_tiled,floating,fullscreen}
+
 # ~node|focus~ (
 super + {_,shift + }{h,j,k,l}
 	bspc node -{f,s} {west,south,north,east}
@@ -45,6 +47,7 @@ super + shift + m
     exec spotify
 
 # ~desktop|change~
+
 # Focus or send to the given desktop
 super + {_,shift + }{1-9,0}
 	bspc {desktop -f,node -d} '^{1-9,10}'
