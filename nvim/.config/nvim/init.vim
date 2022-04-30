@@ -83,7 +83,11 @@ nnoremap <silent> q <nop>
 xnoremap <silent> p pgvy
 
 " abbreviate quit/save commands
-cab W w | cab Q q | cab Wq wq | cab wQ wq | cab WQ wq
+cab W w
+cab Q q
+cab Wq wq
+cab wQ wq
+cab WQ wq
 
 " highlight on yank
 autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200})
