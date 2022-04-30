@@ -18,7 +18,7 @@ end
 
 function M.telescope()
 	vim.cmd([[command! Files exec (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files']])
-	util.map("n", "<c-p>", "Files ")
+	util.map("n", "<c-p>", "Files")
 	util.map("n", "<c-f>", "Telescope live_grep")
 	util.map("n", "<c-b>", "Telescope buffers")
 	util.map("n", "<leader>p", "Telescope projects")
@@ -47,7 +47,7 @@ function M.undotree()
 end
 
 function M.commentary()
-	vim.cmd([[map <silent> <leader>/ :Commentary<enter>]])
+	vim.cmd([[map <silent> <space>/ :Commentary<enter>]]) -- TODO: find out why '<leader>/' here isn't working
 end
 
 function M.bufferline()
