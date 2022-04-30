@@ -62,6 +62,14 @@ packer.startup({
 		use({ "ziglang/zig.vim" })
 		use({ "rust-lang/rust.vim" })
 
+		-- Show indentation
+		use({
+			"lukas-reineke/indent-blankline.nvim",
+			config = function()
+				require("plugins.indent")
+			end,
+		})
+
 		-- Use project root as work directory
 		use({
 			"airblade/vim-rooter",
@@ -81,19 +89,19 @@ packer.startup({
 			requires = { "kyazdani42/nvim-web-devicons" },
 		})
 
-		-- Easier commenting
-		use({
-			"tpope/vim-commentary",
-			config = function()
-				require("plugins.mappings").commentary()
-			end,
-		})
-
 		-- Git commands
 		use({
 			"tpope/vim-fugitive",
 			config = function()
 				require("plugins.mappings").fugitive()
+			end,
+		})
+
+		-- Easier commenting
+		use({
+			"tpope/vim-commentary",
+			config = function()
+				require("plugins.mappings").commentary()
 			end,
 		})
 
@@ -118,7 +126,7 @@ packer.startup({
 		-- Fuzzy previewer
 		use({
 			"nvim-telescope/telescope.nvim",
-			commit = "831f76a809d9f09724d9f3825a3660ed714470d9", -- TODO: use latest when possible
+			commit = "831f76a809d9f09724d9f3825a3660ed714470d9", -- TODO: upstream broken
 			config = function()
 				require("plugins.telescope")
 				require("plugins.mappings").telescope()
@@ -142,6 +150,7 @@ packer.startup({
 		-- File navigatior
 		use({
 			"kyazdani42/nvim-tree.lua",
+			commit = "ce2cf7131f58cef26262c1932ba543d009dc99f7", -- TODO: upstream broken
 			config = function()
 				require("plugins.nvim-tree")
 				require("plugins.mappings").nvimtree()
@@ -241,6 +250,7 @@ packer.startup({
 		use({
 			"nvim-treesitter/nvim-treesitter",
 			run = ":TSUpdate",
+			commit = "94255915e659b83e8c57fd2ec0d6791995326f66", -- TODO: upstream broken
 			config = function()
 				require("plugins.treesitter")
 			end,
@@ -251,14 +261,6 @@ packer.startup({
 			"aserowy/tmux.nvim",
 			config = function()
 				require("plugins.tmux")
-			end,
-		})
-
-		-- Show indentation
-		use({
-			"lukas-reineke/indent-blankline.nvim",
-			config = function()
-				require("plugins.indent")
 			end,
 		})
 
