@@ -1,5 +1,15 @@
--- following options are the default
--- each of these are documented in `:help nvim-tree.OPTION_NAME`
+local status_ok, nvim_tree = pcall(require, "nvim-tree")
+if not status_ok then
+	return
+end
+
+local config_status_ok, nvim_tree_config = pcall(require, "nvim-tree.config")
+if not config_status_ok then
+	return
+end
+
+local tree_cb = nvim_tree_config.nvim_tree_callback
+
 vim.g.nvim_tree_icons = {
 	default = "",
 	symlink = "",
@@ -20,18 +30,6 @@ vim.g.nvim_tree_icons = {
 		symlink = "",
 	},
 }
-
-local status_ok, nvim_tree = pcall(require, "nvim-tree")
-if not status_ok then
-	return
-end
-
-local config_status_ok, nvim_tree_config = pcall(require, "nvim-tree.config")
-if not config_status_ok then
-	return
-end
-
-local tree_cb = nvim_tree_config.nvim_tree_callback
 
 nvim_tree.setup({
 	disable_netrw = true,
@@ -62,7 +60,7 @@ nvim_tree.setup({
 		custom = {},
 	},
 	view = {
-		width = 30,
+		width = 50,
 		height = 30,
 		hide_root_folder = false,
 		side = "left",
@@ -73,9 +71,9 @@ nvim_tree.setup({
 				{ key = { "l", "<CR>", "o" }, cb = tree_cb("edit") },
 				{ key = { "h", "<BS>" }, cb = tree_cb("close_node") },
 				{ key = "h", cb = tree_cb("close_node") },
-				{ key = "<C-v>", cb = tree_cb("vsplit") },
-				{ key = "<C-s>", cb = tree_cb("split") },
-				{ key = "<C-t>", cb = tree_cb("tab") },
+				{ key = "<c-v>", cb = tree_cb("vsplit") },
+				{ key = "<c-s>", cb = tree_cb("split") },
+				{ key = "<c-t>", cb = tree_cb("tab") },
 			},
 		},
 		number = false,
@@ -97,7 +95,7 @@ nvim_tree.setup({
 	},
 	actions = {
 		open_file = {
-			quit_on_open = true,
+			quit_on_open = false,
 		},
 	},
 })
@@ -106,7 +104,6 @@ local util = require("plugins.util")
 local colors = require("plugins.colors")
 
 util.highlight({
-	{ group = "IndentBlanklineChar", bg = colors.none, fg = colors.gray2 },
 	{ group = "NvimTreeSymlink", bg = colors.none, fg = colors.magneta },
 	{ group = "NvimTreeFolderName", bg = colors.none, fg = colors.white },
 	{ group = "NvimTreeRootFolder", bg = colors.none, fg = colors.gray },
