@@ -4,7 +4,17 @@ if not status_ok then
 end
 
 configs.setup({
-	ensure_installed = "go", "zig", "rust", "lua", "vim", "python", "c", "c++", "javascript", "typescript",
+	ensure_installed = "go",
+	"zig",
+	"rust",
+	"lua",
+	"vim",
+	"python",
+	"c",
+	"c++",
+	"javascript",
+	"typescript",
+
 	sync_install = false,
 	ignore_install = { "" },
 	autopairs = {
