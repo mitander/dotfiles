@@ -29,6 +29,7 @@ util.highlight({
 	{ group = "StatusLine", bg = M.none, fg = M.none },
 	{ group = "StatusLineNC", bg = M.none, fg = M.none },
 	{ group = "Comment", bg = M.none, fg = M.gray2 },
+	{ group = "IndentBlanklineChar", bg = M.none, fg = M.gray },
 })
 
 return M
