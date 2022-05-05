@@ -2,7 +2,7 @@ window:
   title: Alacritty
 
   padding:
-    x: 5
+    x: 3
     y: 3
 
   class:
@@ -10,7 +10,7 @@ window:
     general: Alacritty
 
 scrolling:
-  history: 5000
+  history: 10000
 
 font:
   normal:
@@ -68,13 +68,13 @@ colors:
 key_bindings:
   - { key: V,      mods: Control|Shift, action: Paste                      }
   - { key: C,      mods: Control|Shift, action: Copy                       }
-  - { key: Insert, mods: Shift,         action: PasteSelection             }
   - { key: Key0,   mods: Control,       action: ResetFontSize              }
   - { key: Equals, mods: Control,       action: IncreaseFontSize           }
   - { key: Minus,  mods: Control,       action: DecreaseFontSize           }
-  - { key: Paste,                       action: Paste                      }
-  - { key: Copy,                        action: Copy                       }
   - { key: L,      mods: Control,       action: ClearLogNotice             }
   - { key: U,      mods: Control,       action: ScrollPageUp,   mode: ~Alt }
   - { key: D,      mods: Control,       action: ScrollPageDown, mode: ~Alt }
   - { key: L,      mods: Control,       chars: "\x0c"                      }
+  - { key: Insert, mods: Shift,         action: PasteSelection             }
+  - { key: Paste,                       action: Paste                      }
+  - { key: Copy,                        action: Copy                       }
