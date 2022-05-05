@@ -14,9 +14,7 @@ configs.setup({
 	"c++",
 	"javascript",
 	"typescript",
-
 	sync_install = false,
-	ignore_install = { "" },
 	autopairs = {
 		enable = true,
 	},
@@ -25,7 +23,7 @@ configs.setup({
 		disable = { "" },
 		additional_vim_regex_highlighting = true,
 	},
-	indent = { enable = true, disable = { "yaml" } },
+	indent = { enable = true, disable = { "yaml", "json" } },
 	context_commentstring = {
 		enable = true,
 		enable_autocmd = false,
