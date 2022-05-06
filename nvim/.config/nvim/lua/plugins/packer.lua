@@ -126,7 +126,6 @@ packer.startup({
 		-- Fuzzy previewer
 		use({
 			"nvim-telescope/telescope.nvim",
-			commit = "831f76a809d9f09724d9f3825a3660ed714470d9", -- TODO: upstream broken
 			config = function()
 				require("plugins.telescope")
 				require("plugins.mappings").telescope()
@@ -150,7 +149,6 @@ packer.startup({
 		-- File navigatior
 		use({
 			"kyazdani42/nvim-tree.lua",
-			commit = "ce2cf7131f58cef26262c1932ba543d009dc99f7", -- TODO: upstream broken
 			config = function()
 				require("plugins.nvim-tree")
 				require("plugins.mappings").nvimtree()
@@ -250,7 +248,6 @@ packer.startup({
 		use({
 			"nvim-treesitter/nvim-treesitter",
 			run = ":TSUpdate",
-			commit = "94255915e659b83e8c57fd2ec0d6791995326f66", -- TODO: upstream broken
 			config = function()
 				require("plugins.treesitter")
 			end,
