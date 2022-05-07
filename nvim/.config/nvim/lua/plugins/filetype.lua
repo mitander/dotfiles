@@ -14,7 +14,6 @@ filetype.setup({
 		complex = {
 			[".*git/config"] = "gitconfig",
 		},
-
 		function_extensions = {
 			["cpp"] = function()
 				vim.bo.filetype = "cpp"
@@ -35,7 +34,6 @@ filetype.setup({
 				vim.cmd("iabbrev $ $$")
 			end,
 		},
-
 		shebang = {
 			dash = "sh",
 		},
