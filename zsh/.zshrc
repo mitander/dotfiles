@@ -92,7 +92,6 @@ bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
-export KEYTIMEOUT=1
 
 # settings
 export EDITOR="nvim"
@@ -101,6 +100,7 @@ export BROWSER="firefox"
 export PAGER="nvim +Man!"
 export MANPAGER="$PAGER"
 export MANWIDTH="999"
+export KEYTIMEOUT=1
 
 # man page color
 export LESS_TERMCAP_mb=$'\e[1;34m'
