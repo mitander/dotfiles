@@ -40,7 +40,7 @@ function M.setup()
 end
 
 local function lsp_highlight_document(client)
-	if client.resolved_capabilities.document_highlight then
+	if client.server_capabilities.document_highlight then
 		vim.api.nvim_exec(
 			[[
               augroup lsp_document_highlight
@@ -65,7 +65,7 @@ local function disable_formatting(client)
 	}
 	for _, client_name in ipairs(disabled_clients) do
 		if client.name == client_name then
-			client.resolved_capabilities.document_formatting = false
+			client.server_capabilities.document_formatting = false
 		end
 	end
 end
