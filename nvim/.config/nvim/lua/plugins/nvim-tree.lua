@@ -83,16 +83,6 @@ nvim_tree.setup({
 		cmd = "trash",
 		require_confirm = true,
 	},
-	git_hl = 1,
-	disable_window_picker = 1,
-	root_folder_modifier = ":t",
-	show_icons = {
-		git = 1,
-		folders = 1,
-		files = 1,
-		folder_arrows = 1,
-		tree_width = 30,
-	},
 	actions = {
 		open_file = {
 			quit_on_open = false,
