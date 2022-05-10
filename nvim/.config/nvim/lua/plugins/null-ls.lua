@@ -10,7 +10,7 @@ null_ls.setup({
 	sources = {
 		formatting.clang_format,
 		formatting.gofmt,
-		-- formatting.zigfmt,
+		formatting.zigfmt,
 		formatting.rustfmt,
 		formatting.json_tool,
 		formatting.stylua,

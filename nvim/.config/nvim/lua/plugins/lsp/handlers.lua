@@ -59,7 +59,7 @@ local function disable_formatting(client)
 		"clangd",
 		"gopls",
 		"rust_analyzer",
-		-- "zls",
+		"zls",
 		"sumneko_lua",
 		"jsonls",
 	}
