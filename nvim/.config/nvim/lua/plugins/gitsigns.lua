@@ -33,8 +33,8 @@ gitsigns.setup({
 	current_line_blame = false,
 	current_line_blame_opts = {
 		virt_text = true,
-		virt_text_pos = "eol",
-		delay = 1000,
+		virt_text_pos = "right_align",
+		delay = 0,
 		ignore_whitespace = false,
 	},
 	current_line_blame_formatter_opts = {
@@ -66,4 +66,5 @@ util.highlight({
 	{ group = "DiffAdd", bg = colors.none, fg = colors.green },
 	{ group = "DiffChange", bg = colors.none, fg = colors.red },
 	{ group = "DiffDelete", bg = colors.none, fg = colors.yellow },
+    { group = "GitSignsCurrentLineBlame", bg = colors.none, fg = colors.gray2 }
 })

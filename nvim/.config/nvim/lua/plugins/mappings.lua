@@ -57,6 +57,7 @@ end
 function M.gitsigns()
 	util.map("n", "gp", "Gitsigns preview_hunk")
 	util.map("n", "g.", "Gitsigns toggle_signs")
+	util.map("n", "g,", "Gitsigns toggle_current_line_blame")
 	util.map("n", "gl", "Gitsigns blame_line")
 end
 
