@@ -1,16 +1,33 @@
-local status_ok, lsp_installer = pcall(require, "nvim-lsp-installer")
-if not status_ok then
+local handlers = require("plugins.lsp.handlers")
+local mappings = require("plugins.mappings")
+local cmp = require('cmp_nvim_lsp')
+
+local status_installer, lsp_installer = pcall(require, "nvim-lsp-installer")
+if not status_installer then
 	return
 end
 
-lsp_installer.on_server_ready(function(server)
-	local opts = server:get_default_options()
-	opts.on_attach = require("plugins.lsp.handlers").on_attach
-	opts.capabilities = require("plugins.lsp.handlers").capabilities
+local status_config, lspconfig = pcall(require, "lspconfig")
+if not status_config then
+	return
+end
 
-	local present, av_overrides = pcall(require, "plugins.lsp.server-settings." .. server.name)
-	if present then
-		opts = vim.tbl_deep_extend("force", av_overrides, opts)
-	end
-	server.setup(server, opts)
-end)
+-- Capabilities
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.offsetEncoding = { "utf-16" }
+
+-- TODO: Figure out why we're getting this error when opening lua files:
+-- 'Spawning language server with cmd: `lua-language-server` failed. The language server is either not installed, missing from PATH, or not executable.'
+for _, server in ipairs(lsp_installer.get_installed_servers()) do
+  lspconfig[server.name].setup{
+    on_attach = function(client, bufnr)
+        mappings.lsp(bufnr)
+        handlers.lsp_highlight_document(client)
+        handlers.disable_formatting(client)
+    end,
+    flags = {
+      debounce_text_changes = 150,
+    },
+    capabilities = cmp.update_capabilities(capabilities)
+  }
+end

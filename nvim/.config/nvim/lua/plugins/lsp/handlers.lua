@@ -39,7 +39,7 @@ function M.setup()
 	})
 end
 
-local function lsp_highlight_document(client)
+function M.lsp_highlight_document(client)
 	if client.server_capabilities.document_highlight then
 		vim.api.nvim_exec(
 			[[
@@ -54,7 +54,7 @@ local function lsp_highlight_document(client)
 	end
 end
 
-local function disable_formatting(client)
+function M.disable_formatting(client)
 	local disabled_clients = {
 		"clangd",
 		"gopls",
@@ -69,20 +69,5 @@ local function disable_formatting(client)
 		end
 	end
 end
-
-M.on_attach = function(client, bufnr)
-	require("plugins.mappings").lsp(bufnr)
-	lsp_highlight_document(client)
-	disable_formatting(client)
-end
-
-local status_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
-if not status_ok then
-	return
-end
-
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.offsetEncoding = { "utf-16" }
-M.capabilities = cmp_nvim_lsp.update_capabilities(capabilities)
 
 return M
