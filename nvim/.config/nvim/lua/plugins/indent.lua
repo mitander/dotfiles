@@ -49,9 +49,3 @@ indent_blankline.setup({
 	show_first_indent_level = true,
 	char = "▏",
 })
-
--- TODO: This isn't working, it's reached by the function is never called.
---
--- local colors = require("plugins.colors")
--- local util = require("plugins.util")
--- util.highlight({ group = "IndentBlanklineChar", bg = colors.none, fg = colors.red })
