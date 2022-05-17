@@ -23,6 +23,7 @@ local config = {
 		component_separators = "",
 		section_separators = "",
 		theme = custom_jellybeans,
+        globalstatus = true,
 	},
 	sections = {
 		lualine_a = { "mode" },
