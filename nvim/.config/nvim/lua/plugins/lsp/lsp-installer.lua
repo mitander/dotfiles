@@ -16,14 +16,13 @@ end
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities.offsetEncoding = { "utf-16" }
 
--- TODO: Figure out why we're getting this error when opening lua files:
--- 'Spawning language server with cmd: `lua-language-server` failed. The language server is either not installed, missing from PATH, or not executable.'
 for _, server in ipairs(lsp_installer.get_installed_servers()) do
   lspconfig[server.name].setup{
     on_attach = function(client, bufnr)
         mappings.lsp(bufnr)
         handlers.lsp_highlight_document(client)
         handlers.disable_formatting(client)
+
     end,
     flags = {
       debounce_text_changes = 150,
