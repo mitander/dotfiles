@@ -1,5 +1,5 @@
-local status_ok, project = pcall(require, "project_nvim")
-if not status_ok then
+local ok, project = pcall(require, "project_nvim")
+if not ok then
 	return
 end
 

@@ -18,8 +18,8 @@ if fn.empty(fn.glob(packer_install)) > 0 then
 	print("Packer installed!\n")
 end
 
-local status_ok, packer = pcall(require, "packer")
-if not status_ok then
+local ok, packer = pcall(require, "packer")
+if not ok then
 	return
 end
 

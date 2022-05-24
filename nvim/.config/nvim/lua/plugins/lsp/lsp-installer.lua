@@ -2,13 +2,13 @@ local handlers = require("plugins.lsp.handlers")
 local mappings = require("plugins.mappings")
 local cmp = require('cmp_nvim_lsp')
 
-local status_installer, lsp_installer = pcall(require, "nvim-lsp-installer")
-if not status_installer then
+local lspinstall_ok, lspinstall = pcall(require, "nvim-lsp-installer")
+if not lspinstall_ok then
 	return
 end
 
-local status_config, lspconfig = pcall(require, "lspconfig")
-if not status_config then
+local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
+if not lspconfig_ok then
 	return
 end
 
@@ -16,7 +16,7 @@ end
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities.offsetEncoding = { "utf-16" }
 
-for _, server in ipairs(lsp_installer.get_installed_servers()) do
+for _, server in ipairs(lspinstall.get_installed_servers()) do
   lspconfig[server.name].setup{
     on_attach = function(client, bufnr)
         mappings.lsp(bufnr)

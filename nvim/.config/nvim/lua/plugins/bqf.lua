@@ -1,5 +1,5 @@
-local status_ok, bqf = pcall(require, "bqf")
-if not status_ok then
+local ok, bqf = pcall(require, "bqf")
+if not ok then
 	return
 end
 

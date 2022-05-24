@@ -1,5 +1,5 @@
-local status_ok, tmux = pcall(require, "tmux")
-if not status_ok then
+local tmux_ok, tmux = pcall(require, "tmux")
+if not tmux_ok then
 	return
 end
 
