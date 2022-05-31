@@ -1,0 +1,20 @@
+command alias whoami po @(__PRETTY_FUNCTION__)
+
+command alias pi print (int)
+command alias pf print (float)
+
+command alias b breakpoint set
+command alias d breakpoint delete
+command alias bd breakpoint disable
+command alias be breakpoint enable
+command alias bcmd breakpoint command add
+command alias bcmd breakpoint command list
+
+command alias return thread return
+
+# Reveal
+# http://blog.ittybittyapps.com/blog/2013/11/07/integrating-reveal-without-modifying-your-xcode-project/
+command alias reveal_load_sim expr (void*)dlopen("/Applications/Reveal.app/Contents/SharedSupport/iOS-Libraries/libReveal.dylib", 0x2);
+command alias reveal_load_dev expr (void*)dlopen([(NSString*)[(NSBundle*)[NSBundle mainBundle] pathForResource:@"libReveal" ofType:@"dylib"] cStringUsingEncoding:0x4], 0x2);
+command alias reveal_start expr (void)[(NSNotificationCenter*)[NSNotificationCenter defaultCenter] postNotificationName:@"IBARevealRequestStart" object:nil];
+command alias reveal_stop expr (void)[(NSNotificationCenter*)[NSNotificationCenter defaultCenter] postNotificationName:@"IBARevealRequestStop" object:nil];
