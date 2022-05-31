@@ -79,6 +79,9 @@ HISTFILE=$HOME/.zsh_history
 setopt inc_append_history
 setopt sharehistory
 
+# fix zsh globbing expr
+setopt +o nomatch
+
 # autocomplete
 autoload -U compinit
 zstyle ':completion:*' menu select
