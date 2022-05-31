@@ -6,7 +6,7 @@ end
 local formatting = null_ls.builtins.formatting
 
 null_ls.setup({
-    debug = false,
+    debug = true,
     sources = {
         formatting.clang_format,
         formatting.gofmt,
@@ -15,10 +15,8 @@ null_ls.setup({
         formatting.json_tool,
         formatting.stylua,
     },
-    on_attach = function(client)
-        if client.server_capabilities.document_formatting then
-            vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_seq_sync()")
-        end
+    on_attach = function()
+        vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.format() async=true")
     end,
     offset_encoding = "utf-8",
 })
