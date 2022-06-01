@@ -17,6 +17,10 @@ custom_jellybeans.normal.a.bg = colors.magneta
 custom_jellybeans.insert.a.bg = colors.magneta
 custom_jellybeans.visual.a.bg = colors.magneta
 
+custom_jellybeans.normal.a.fg = colors.black
+custom_jellybeans.insert.a.fg = colors.black
+custom_jellybeans.visual.a.fg = colors.black
+
 local config = {
     options = {
         disabled_filetypes = { "NvimTree" },
