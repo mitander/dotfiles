@@ -61,4 +61,8 @@ function M.gitsigns()
     util.map("n", "gl", "Gitsigns blame_line")
 end
 
+function M.tmux()
+	util.map("n", "<leader><space>", "!tmux select-pane -l && tmux send up enter && tmux select-pane -l<enter>")
+end
+
 return M

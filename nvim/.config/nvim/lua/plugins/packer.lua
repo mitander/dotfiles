@@ -253,13 +253,14 @@ packer.startup({
             end,
         })
 
-        -- Tmux interaction
-        use({
-            "aserowy/tmux.nvim",
-            config = function()
-                require("plugins.tmux")
-            end,
-        })
+		-- Tmux interaction
+		use({
+			"aserowy/tmux.nvim",
+			config = function()
+				require("plugins.tmux")
+				require("plugins.mappings").tmux()
+			end,
+		})
 
         if PACKER_BOOTSTRAP then
             require("packer").sync()
