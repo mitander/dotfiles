@@ -1,6 +1,6 @@
 local ok, lualine = pcall(require, "lualine")
 if not ok then
-    return
+	return
 end
 
 -- Customize jellybeans
@@ -22,31 +22,31 @@ custom_jellybeans.insert.a.fg = colors.black
 custom_jellybeans.visual.a.fg = colors.black
 
 local config = {
-    options = {
-        disabled_filetypes = { "NvimTree" },
-        component_separators = "",
-        section_separators = "",
-        theme = custom_jellybeans,
-        globalstatus = true,
-    },
-    sections = {
-        lualine_a = { "mode" },
-        lualine_b = { "branch", "diagnostics" },
-        lualine_c = { { "filename", path = 1 } },
-        lualine_x = { "encoding", "fileformat", "filetype" },
-        lualine_y = { "progress" },
-        lualine_z = { "location" },
-    },
-    inactive_sections = {
-        lualine_a = { "mode" },
-        lualine_b = { "branch", "diagnostics" },
-        lualine_c = { "filename" },
-        lualine_x = { "encoding", "fileformat", "filetype" },
-        lualine_y = { "progress" },
-        lualine_z = { "location" },
-    },
-    tabline = {},
-    extensions = {},
+	options = {
+		disabled_filetypes = { "NvimTree" },
+		component_separators = "",
+		section_separators = "",
+		theme = custom_jellybeans,
+		globalstatus = true,
+	},
+	sections = {
+		lualine_a = { "mode" },
+		lualine_b = { "branch", "diagnostics" },
+		lualine_c = { { "filename", path = 1 } },
+		lualine_x = { "encoding", "fileformat", "filetype" },
+		lualine_y = { "progress" },
+		lualine_z = { "location" },
+	},
+	inactive_sections = {
+		lualine_a = { "mode" },
+		lualine_b = { "branch", "diagnostics" },
+		lualine_c = { "filename" },
+		lualine_x = { "encoding", "fileformat", "filetype" },
+		lualine_y = { "progress" },
+		lualine_z = { "location" },
+	},
+	tabline = {},
+	extensions = {},
 }
 
 lualine.setup(config)
