@@ -16,7 +16,7 @@ alias tm="tmux attach -t coffee || tmux new -s coffee"
 alias tls="tmux ls"
 
 # git
-alias lg="lazygit"
+alias gg="lazygit"
 alias gs="git status"
 alias gl="git log --oneline --graph --color=always --abbrev-commit --date=short |less -REX"
 alias gc="git commit"
