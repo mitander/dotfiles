@@ -8,7 +8,7 @@ local actions = require("telescope.actions")
 telescope.setup({
     defaults = {
         layout_strategy = "vertical",
-        layout_config = { width = 0.5, height = 0.5 },
+        layout_config = { width = 0.8, height = 0.8 },
         path_display = { "truncate" },
         file_ignore_patterns = { "jpg", "jpeg", "ttf", "otf", "png*", "vendor", ".vscode", ".gitlab", "*cache*" },
         mappings = {
