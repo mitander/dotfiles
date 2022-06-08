@@ -28,6 +28,11 @@ alias gr="git rebase -i"
 alias ge="git commit --amend --no-edit"
 alias gx="git commit --no-verify"
 
+# directory mappings
+alias p="cd ~/c/p"
+alias c="cd ~/c"
+alias d="cd ~/dotfiles"
+
 # docker
 alias dc="docker-compose"
 alias dcd="docker-compose down"
