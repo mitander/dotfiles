@@ -136,6 +136,9 @@ packer.startup({
 			},
 		})
 
+		-- Telescope fzf
+		use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
+
 		-- Git signcolumn
 		use({
 			"lewis6991/gitsigns.nvim",

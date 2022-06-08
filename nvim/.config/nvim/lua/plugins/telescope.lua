@@ -10,7 +10,18 @@ telescope.setup({
 		layout_strategy = "vertical",
 		layout_config = { width = 0.8, height = 0.8 },
 		path_display = { "truncate" },
-		file_ignore_patterns = { "jpg", "jpeg", "ttf", "otf", "png*", "vendor", ".vscode", ".gitlab", "*cache*" },
+		file_ignore_patterns = {
+			"jpg",
+			"jpeg",
+			"ttf",
+			"otf",
+			"png*",
+			"vendor",
+			".vscode",
+			".gitlab",
+			"*cache*",
+			".git",
+		},
 		mappings = {
 			i = {
 				["<C-n>"] = actions.cycle_history_next,
@@ -96,6 +107,7 @@ telescope.setup({
 })
 
 require("telescope").load_extension("projects")
+require("telescope").load_extension("fzf")
 
 local util = require("plugins.util")
 local colors = require("plugins.colors")

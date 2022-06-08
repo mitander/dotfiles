@@ -19,7 +19,7 @@ end
 function M.telescope()
 	vim.cmd([[command! Files exec (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files']])
 	util.map("n", "<c-p>", "Files")
-	util.map("n", "<c-f>", "Telescope live_grep")
+	util.map("n", "<c-f>", "Telescope find_files hidden=true")
 	util.map("n", "<c-b>", "Telescope buffers")
 	util.map("n", "<leader>p", "Telescope projects")
 	util.map("n", "<leader>gs", "Telescope git_status")
