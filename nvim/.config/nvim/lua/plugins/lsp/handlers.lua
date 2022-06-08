@@ -1,4 +1,8 @@
+local mappings = require("plugins.mappings")
+
 local M = {}
+
+M.capabilities = vim.lsp.protocol.make_client_capabilities()
 
 function M.setup()
 	local signs = {
@@ -39,7 +43,7 @@ function M.setup()
 	})
 end
 
-function M.lsp_highlight_document(client)
+function M.on_attach(client, bufnr)
 	if client.server_capabilities.document_highlight then
 		vim.api.nvim_exec(
 			[[
@@ -52,22 +56,8 @@ function M.lsp_highlight_document(client)
 			false
 		)
 	end
-end
 
-function M.disable_formatting(client)
-	local disabled_clients = {
-		"clangd",
-		"gopls",
-		"rust_analyzer",
-		"zls",
-		"sumneko_lua",
-		"jsonls",
-	}
-	for _, client_name in ipairs(disabled_clients) do
-		if client.name == client_name then
-			client.server_capabilities.document_formatting = false
-		end
-	end
+	mappings.lsp(bufnr)
 end
 
 return M
