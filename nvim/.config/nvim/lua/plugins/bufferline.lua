@@ -126,7 +126,7 @@ bufferline.setup({
 		},
 		modified_visible = {
 			guifg = colors.yellow,
-			guibg = colors.gray,
+			guibg = colors.none,
 		},
 		modified_selected = {
 			guifg = colors.green,
@@ -140,7 +140,7 @@ bufferline.setup({
 		},
 		separator_visible = {
 			guifg = colors.gray,
-			guibg = colors.gray,
+			guibg = colors.none,
 		},
 		separator_selected = {
 			guifg = colors.gray,
