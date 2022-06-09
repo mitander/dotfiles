@@ -2,9 +2,7 @@ local mappings = require("plugins.mappings")
 
 local M = {}
 
-M.capabilities = vim.lsp.protocol.make_client_capabilities()
-
-function M.setup()
+M.setup = function()
 	local signs = {
 		{ name = "DiagnosticSignError", text = "" },
 		{ name = "DiagnosticSignWarn", text = "" },
@@ -43,7 +41,9 @@ function M.setup()
 	})
 end
 
-function M.on_attach(client, bufnr)
+M.capabilities = vim.lsp.protocol.make_client_capabilities()
+
+M.on_attach = function(client, bufnr)
 	if client.server_capabilities.document_highlight then
 		vim.api.nvim_exec(
 			[[
@@ -56,7 +56,6 @@ function M.on_attach(client, bufnr)
 			false
 		)
 	end
-
 	mappings.lsp(bufnr)
 end
 

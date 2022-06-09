@@ -32,7 +32,8 @@ set splitbelow splitright
 set shell=/bin/zsh
 set signcolumn=yes
 set path+=**
-set tabstop=4 shiftwidth=4
+set tabstop=4
+set shiftwidth=4
 set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile

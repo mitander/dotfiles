@@ -2,7 +2,7 @@ local util = require("plugins.util")
 
 local M = {}
 
-function M.lsp(bufnr)
+M.lsp = function(bufnr)
 	util.map_buf(bufnr, "n", "gD", "lua vim.lsp.buf.declaration()")
 	util.map_buf(bufnr, "n", "gd", "lua vim.lsp.buf.definition()")
 	util.map_buf(bufnr, "n", "gr", "Telescope lsp_references")
@@ -16,7 +16,7 @@ function M.lsp(bufnr)
 	util.map_buf(bufnr, "n", "ga", "lua vim.lsp.buf.code_action()")
 end
 
-function M.telescope()
+M.telescope = function()
 	vim.cmd([[command! Files exec (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files']])
 	util.map("n", "<c-p>", "Files")
 	util.map("n", "<c-f>", "Telescope find_files hidden=true")
@@ -26,42 +26,42 @@ function M.telescope()
 	util.map("n", "<leader>gl", "Telescope git_commits")
 end
 
-function M.nvimtree()
+M.nvimtree = function()
 	util.map("n", "<c-n>", "NvimTreeToggle")
 end
 
-function M.symbolsoutline()
+M.symbolsoutline = function()
 	util.map("n", "<leader>ss", "SymbolsOutline")
 end
 
-function M.toggleterm()
+M.toggleterm = function()
 	util.map("n", "<leader>gg", "lua _lazygit_toggle()")
 end
 
-function M.fugitive()
+M.fugitive = function()
 	util.map("n", "gb", "Git blame")
 end
 
-function M.undotree()
+M.undotree = function()
 	util.map("n", "<leader>u", "UndotreeToggle")
 end
 
-function M.commentary()
+M.commentary = function()
 	vim.cmd([[map <silent> <space>/ :Commentary<enter>]]) -- TODO: find out why '<leader>/' here isn't working
 end
 
-function M.bufferline()
+M.bufferline = function()
 	util.map("n", "<leader>q", "BufferLineCloseRight<enter> <cmd>BufferLineCloseLeft")
 end
 
-function M.gitsigns()
+M.gitsigns = function()
 	util.map("n", "gp", "Gitsigns preview_hunk")
 	util.map("n", "g.", "Gitsigns toggle_signs")
 	util.map("n", "g,", "Gitsigns toggle_current_line_blame")
 	util.map("n", "gl", "Gitsigns blame_line")
 end
 
-function M.tmux()
+M.tmux = function()
 	util.map("n", "<leader><space>", "!tmux select-pane -l && tmux send up enter && tmux select-pane -l<enter>")
 end
 
