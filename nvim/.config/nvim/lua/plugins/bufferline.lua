@@ -59,7 +59,7 @@ bufferline.setup({
 
 		-- Diagnostics
 		error = {
-			guifg = colors.red,
+			guifg = colors.white,
 			guibg = colors.gray,
 		},
 		error_diagnostic = {
@@ -67,11 +67,11 @@ bufferline.setup({
 			guibg = colors.gray,
 		},
 		error_selected = {
-			guifg = colors.red,
+			guifg = colors.white,
 			guibg = colors.none,
 		},
 		warning = {
-			guifg = colors.yellow,
+			guifg = colors.white,
 			guibg = colors.gray,
 		},
 		warning_diagnostic = {
@@ -79,7 +79,7 @@ bufferline.setup({
 			guibg = colors.gray,
 		},
 		warning_selected = {
-			guifg = colors.yellow,
+			guifg = colors.white,
 			guibg = colors.none,
 		},
 		warning_visible = {
