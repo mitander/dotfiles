@@ -83,6 +83,9 @@ nnoremap <silent> q <nop>
 " don't yank on paste
 xnoremap <silent> p pgvy
 
+" toggle colorcolumn
+nnoremap <silent> <leader>. :execute "set cc=" . (&colorcolumn == "" ? "99,100" : "")<enter>
+
 " abbreviate quit/save commands
 cab W w
 cab Q q
@@ -106,6 +109,6 @@ autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
 " indentation
 autocmd Filetype rust,zig,go,c,cpp setlocal tabstop=4 shiftwidth=4
 
-" use cursorline in normal mode and colorcolumn in insert mode
-autocmd InsertEnter * setlocal nocul cc=100,101
-autocmd InsertLeave * setlocal cul cc=0
+" hide cursorline in insert mode
+autocmd InsertEnter * setlocal nocul
+autocmd InsertLeave * setlocal cul
