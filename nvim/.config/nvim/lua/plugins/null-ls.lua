@@ -7,7 +7,7 @@ local formatting = null_ls.builtins.formatting
 
 null_ls.setup({
 	debug = true,
-	offset_encoding = "utf-16",
+	offset_encoding = "utf-8",
 	sources = {
 		formatting.clang_format,
 		formatting.gofmt,
