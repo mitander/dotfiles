@@ -69,6 +69,13 @@ nnoremap <silent> <s-down> :resize +5<enter>
 nnoremap <silent> <s-left> :vertical resize +5<enter>
 nnoremap <silent> <s-right> :vertical resize -5<enter>
 
+" read man entry on hovered word
+nnoremap <silent> <leader>m :exec OpenMan()<enter>
+fu OpenMan()
+   let l:Command = expand("<cword>")
+   execute ":Man " . l:Command
+endfu
+
 " better line navigation
 nnoremap <silent> j gj
 nnoremap <silent> k gk
