@@ -60,5 +60,9 @@ for _, server in ipairs(servers) do
 		opts = vim.tbl_deep_extend("force", rust_analyzer, opts)
 	end
 
+	if server == "clangd" then
+		opts.capabilities.offsetEncoding = { "utf-16" }
+	end
+
 	lspconfig[server].setup(opts)
 end
