@@ -21,6 +21,14 @@ custom_jellybeans.normal.a.fg = colors.black
 custom_jellybeans.insert.a.fg = colors.black
 custom_jellybeans.visual.a.fg = colors.black
 
+-- git colors
+custom_jellybeans.normal.b.bg = colors.gray
+custom_jellybeans.insert.b.bg = colors.gray
+custom_jellybeans.visual.b.bg = colors.gray
+custom_jellybeans.normal.b.fg = colors.yellow
+custom_jellybeans.insert.b.fg = colors.yellow
+custom_jellybeans.visual.b.fg = colors.yellow
+
 local config = {
 	options = {
 		disabled_filetypes = { "NvimTree" },
