@@ -91,7 +91,7 @@ nnoremap <silent> q <nop>
 xnoremap <silent> p pgvy
 
 " toggle colorcolumn
-nnoremap <silent> <leader>. :execute "set cc=" . (&colorcolumn == "" ? "99,100" : "")<enter>
+nnoremap <silent> <leader>. :execute "set cc=" . (&colorcolumn == "" ? "100,101" : "")<enter>
 
 " abbreviate quit/save commands
 cab W w
