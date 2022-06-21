@@ -13,9 +13,9 @@ custom_jellybeans.normal.c.fg = colors.white
 custom_jellybeans.normal.c.bg = colors.gray
 
 -- same color for all modes
-custom_jellybeans.normal.a.bg = colors.magneta
-custom_jellybeans.insert.a.bg = colors.magneta
-custom_jellybeans.visual.a.bg = colors.magneta
+custom_jellybeans.normal.a.bg = colors.blue
+custom_jellybeans.insert.a.bg = colors.blue
+custom_jellybeans.visual.a.bg = colors.blue
 
 custom_jellybeans.normal.a.fg = colors.black
 custom_jellybeans.insert.a.fg = colors.black
@@ -25,9 +25,9 @@ custom_jellybeans.visual.a.fg = colors.black
 custom_jellybeans.normal.b.bg = colors.gray
 custom_jellybeans.insert.b.bg = colors.gray
 custom_jellybeans.visual.b.bg = colors.gray
-custom_jellybeans.normal.b.fg = colors.yellow
-custom_jellybeans.insert.b.fg = colors.yellow
-custom_jellybeans.visual.b.fg = colors.yellow
+custom_jellybeans.normal.b.fg = colors.magneta
+custom_jellybeans.insert.b.fg = colors.magneta
+custom_jellybeans.visual.b.fg = colors.magneta
 
 local config = {
 	options = {

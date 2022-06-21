@@ -97,9 +97,9 @@ local util = require("plugins.util")
 local colors = require("plugins.colors")
 
 util.highlight({
-	{ group = "NvimTreeSymlink", bg = colors.none, fg = colors.magneta },
+	{ group = "NvimTreeSymlink", bg = colors.none, fg = colors.blue },
 	{ group = "NvimTreeFolderName", bg = colors.none, fg = colors.white },
-	{ group = "NvimTreeRootFolder", bg = colors.none, fg = colors.magneta },
+	{ group = "NvimTreeRootFolder", bg = colors.none, fg = colors.blue },
 	{ group = "LspDiagnosticsError", bg = colors.none, fg = colors.red },
 	{ group = "LspDiagnosticsWarning", bg = colors.none, fg = colors.yellow },
 	{ group = "LspDiagnosticsInformation", bg = colors.none, fg = colors.white },

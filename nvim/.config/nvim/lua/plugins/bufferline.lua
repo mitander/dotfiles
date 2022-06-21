@@ -39,7 +39,7 @@ bufferline.setup({
 
 		-- Indicator
 		indicator_selected = {
-			guifg = colors.magneta,
+			guifg = colors.blue,
 			guibg = colors.none,
 		},
 

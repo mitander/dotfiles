@@ -117,8 +117,8 @@ local util = require("plugins.util")
 local colors = require("plugins.colors")
 
 util.highlight({
-	{ group = "TelescopeBorder", bg = colors.none, fg = colors.magneta },
-	{ group = "TelescopeSelection", bg = colors.none, fg = colors.magneta },
+	{ group = "TelescopeBorder", bg = colors.none, fg = colors.blue },
+	{ group = "TelescopeSelection", bg = colors.none, fg = colors.blue },
 	{ group = "TelescopePromptBorder", bg = colors.none, fg = colors.gray2 },
 	{ group = "TelescopeResultsBorder", bg = colors.none, fg = colors.gray2 },
 	{ group = "TelescopePreviewBorder", bg = colors.none, fg = colors.gray2 },
