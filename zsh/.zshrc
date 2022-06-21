@@ -127,13 +127,9 @@ export XDG_DOWNLOAD_DIR=$HOME/Downloads
 export PATH=$PATH:/usr/bin
 export PATH=$PATH:/usr/local/bin
 export PATH=$PATH:$HOME/.local/bin
-export PATH=$PATH:$HOME/.bashmatic/bin
 
 # load custom paths
 [ -r ~/.custom.zsh ] && source ~/.custom.zsh
 
 # load z
 [ -f ~/.config/z/z.sh ] && source ~/.config/z/z.sh
-
-# load bashmatic
-[ -f ~/.bashmatic/init.sh ] && source ~/.bashmatic/init.sh
