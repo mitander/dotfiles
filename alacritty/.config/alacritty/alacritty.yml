@@ -64,8 +64,8 @@ colors:
     background: '#e4e4e4'
 
   cursor:
-    text: '0x000000'
-    cursor: '0xffffff'
+    text: '#2a2e2e'
+    cursor: '#d8ad4c'
 
 key_bindings:
   - { key: V,      mods: Control|Shift, action: Paste                      }
