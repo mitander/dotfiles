@@ -4,52 +4,46 @@ if not ok then
 end
 
 -- Customize jellybeans
-local custom_jellybeans = require("lualine.themes.jellybeans")
-
--- clearer filename
+local jelly = require("lualine.themes.jellybeans")
 local colors = require("plugins.colors")
 
-custom_jellybeans.normal.c.fg = colors.white
-custom_jellybeans.normal.c.bg = colors.gray
-
 -- same color for all modes
-custom_jellybeans.normal.a.bg = colors.blue
-custom_jellybeans.insert.a.bg = colors.blue
-custom_jellybeans.visual.a.bg = colors.blue
+jelly.normal.a.bg = colors.blue
+jelly.insert.a.bg = colors.blue
+jelly.visual.a.bg = colors.blue
 
-custom_jellybeans.normal.a.fg = colors.black
-custom_jellybeans.insert.a.fg = colors.black
-custom_jellybeans.visual.a.fg = colors.black
+jelly.normal.a.fg = colors.black
+jelly.insert.a.fg = colors.black
+jelly.visual.a.fg = colors.black
 
--- git colors
-custom_jellybeans.normal.b.bg = colors.gray
-custom_jellybeans.insert.b.bg = colors.gray
-custom_jellybeans.visual.b.bg = colors.gray
-custom_jellybeans.normal.b.fg = colors.magneta
-custom_jellybeans.insert.b.fg = colors.magneta
-custom_jellybeans.visual.b.fg = colors.magneta
+-- filename
+jelly.normal.b.bg = colors.gray
+jelly.insert.b.bg = colors.gray
+jelly.visual.b.bg = colors.gray
+jelly.normal.b.fg = colors.white
+jelly.insert.b.fg = colors.white
+jelly.visual.b.fg = colors.white
 
 local config = {
 	options = {
-		disabled_filetypes = { "toggleterm" },
 		component_separators = "",
 		section_separators = "",
-		theme = custom_jellybeans,
+		theme = jelly,
 		globalstatus = true,
 	},
 	sections = {
 		lualine_a = { "mode" },
-		lualine_b = { "branch", "diagnostics" },
-		lualine_c = { { "filename", path = 1 } },
-		lualine_x = { "encoding", "fileformat", "filetype" },
+		lualine_b = { { "filename", path = 1 } },
+		lualine_c = {},
+		lualine_x = { "branch", "diagnostics" },
 		lualine_y = { "progress" },
 		lualine_z = { "location" },
 	},
 	inactive_sections = {
 		lualine_a = { "mode" },
-		lualine_b = { "branch", "diagnostics" },
-		lualine_c = { "filename" },
-		lualine_x = { "encoding", "fileformat", "filetype" },
+		lualine_b = { { "filename", path = 1 } },
+		lualine_c = {},
+		lualine_x = { "branch", "diagnostics" },
 		lualine_y = { "progress" },
 		lualine_z = { "location" },
 	},
