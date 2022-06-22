@@ -16,14 +16,14 @@ bufferline.setup({
 		show_buffer_icons = false,
 		max_name_length = 14,
 		max_prefix_length = 13,
-		tab_size = 20,
+		tab_size = 15,
 		show_tab_indicators = false,
 		enforce_regular_tabs = false,
 		separator_style = "thin",
 		always_show_bufferline = true,
 		diagnostics = "nvim_lsp",
 		diagnostics_indicator = function(count)
-			return "[" .. count .. "]"
+			return "~" .. count .. ""
 		end,
 	},
 
