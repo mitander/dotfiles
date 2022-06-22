@@ -37,6 +37,7 @@ set shiftwidth=4
 set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
+set cc=100
 syntax on
 
 " leader

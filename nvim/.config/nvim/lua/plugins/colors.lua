@@ -2,14 +2,14 @@ local M = {
 	black = "#30302c",
 	red = "#cf6a4c",
 	green = "#99ad6a",
-	yellow = "#d8ad4c",
+	yellow = "#fad07a",
 	blue = "#8197bf",
 	magneta = "#8787af",
 	cyan = "#71b9f8",
 	white = "#e8e8de",
 	gray = "#4a4a4f",
 	gray2 = "#b0b0b0",
-	gray3 = "#38383d",
+	gray3 = "#36363b",
 	none = "NONE",
 }
 
@@ -19,7 +19,8 @@ vim.cmd([[colorscheme jellybeans]])
 -- General vim highlights
 local util = require("plugins.util")
 util.highlight({
-	{ group = "CursorLine", bg = M.gray3, fg = M.none },
+	{ group = "CursorLineNr", bg = M.none, fg = M.yellow },
+	{ group = "CursorLine", bg = M.none, fg = M.none },
 	{ group = "Comment", bg = M.gray3, fg = M.none },
 	{ group = "Pmenu", bg = M.gray3, fg = M.white },
 	{ group = "Normal", bg = M.none, fg = M.none },
