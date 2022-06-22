@@ -31,7 +31,7 @@ custom_jellybeans.visual.b.fg = colors.magneta
 
 local config = {
 	options = {
-		disabled_filetypes = { "NvimTree" },
+		disabled_filetypes = { "toggleterm" },
 		component_separators = "",
 		section_separators = "",
 		theme = custom_jellybeans,
