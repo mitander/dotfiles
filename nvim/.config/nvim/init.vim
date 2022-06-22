@@ -14,6 +14,7 @@ set cursorline
 set smartcase
 set ignorecase
 set noshowmode
+set noshowcmd
 set scrolloff=8
 set updatetime=200
 set shortmess+=c
