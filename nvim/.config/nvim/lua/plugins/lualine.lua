@@ -5,7 +5,11 @@ end
 
 -- Customize jellybeans
 local jelly = require("lualine.themes.jellybeans")
+
 local colors = require("plugins.colors")
+
+jelly.normal.c.fg = colors.white
+jelly.normal.c.bg = colors.gray
 
 -- same color for all modes
 jelly.normal.a.bg = colors.blue
