@@ -22,7 +22,7 @@ util.highlight({
 	{ group = "CursorLineNr", bg = M.none, fg = M.yellow },
 	{ group = "CursorLine", bg = M.none, fg = M.none },
 	{ group = "Comment", bg = M.gray3, fg = M.none },
-	{ group = "Pmenu", bg = M.gray3, fg = M.white },
+	{ group = "Pmenu", bg = M.none, fg = M.white },
 	{ group = "Normal", bg = M.none, fg = M.none },
 	{ group = "LineNr", bg = M.none, fg = M.white },
 	{ group = "NonText", bg = M.none, fg = M.white },
