@@ -79,16 +79,6 @@ packer.startup({
 			end,
 		})
 
-		-- Statusline for buffers/tabs
-		use({
-			"akinsho/bufferline.nvim",
-			config = function()
-				require("plugins.bufferline")
-				require("plugins.mappings").bufferline()
-			end,
-			requires = { "kyazdani42/nvim-web-devicons" },
-		})
-
 		-- Git commands
 		use({
 			"tpope/vim-fugitive",

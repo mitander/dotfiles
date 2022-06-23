@@ -1,5 +1,6 @@
 " initialize plugins with packer
 lua require("plugins.packer")
+lua require("plugins.tabs")
 
 " options
 set noswapfile
@@ -39,6 +40,7 @@ set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
 set cc=100
+set winbar=%{expand('%:p:h:t')}/%t
 syntax on
 
 " leader
@@ -57,9 +59,10 @@ nnoremap <silent> <c-w><C-h> gT
 nnoremap <silent> <c-w><C-l> gt
 
 " buffer navigation
-nnoremap <silent> <s-h> :bprev <enter>
-nnoremap <silent> <s-l> :bnext <enter>
-nnoremap <silent> <s-q> :bd <enter>
+nnoremap <silent> <s-h> :tabp <enter>
+nnoremap <silent> <s-l> :tabn <enter>
+nnoremap <silent> <s-q> :tabc <enter>
+nnoremap <silent> <c-t> :tabe <enter>
 
 " rotate split layout
 nnoremap <silent> <c-w>s :wincmd L <enter>

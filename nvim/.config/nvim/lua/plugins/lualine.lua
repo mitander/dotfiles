@@ -37,7 +37,7 @@ local config = {
 	},
 	sections = {
 		lualine_a = { "mode" },
-		lualine_b = { { "filename", path = 1 } },
+		lualine_b = {},
 		lualine_c = {},
 		lualine_x = { "branch", "diagnostics" },
 		lualine_y = { "progress" },
@@ -45,7 +45,7 @@ local config = {
 	},
 	inactive_sections = {
 		lualine_a = { "mode" },
-		lualine_b = { { "filename", path = 1 } },
+		lualine_b = {},
 		lualine_c = {},
 		lualine_x = { "branch", "diagnostics" },
 		lualine_y = { "progress" },
