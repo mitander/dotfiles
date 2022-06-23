@@ -59,11 +59,11 @@ M.gitsigns = function()
 	util.map("n", "g.", "Gitsigns toggle_signs")
 	util.map("n", "g,", "Gitsigns toggle_current_line_blame")
 	util.map("n", "gl", "Gitsigns blame_line")
-	util.map("n", "<bs>", "Gitsigns reset_hunk")
+	util.map("n", "<leader><bs>", "Gitsigns reset_hunk")
 end
 
 M.tmux = function()
-	util.map("n", "<leader><space>", "!tmux select-pane -l && tmux send up enter && tmux select-pane -l<enter>")
+	util.map("n", "<leader><enter>", "!tmux select-pane -l && tmux send up enter && tmux select-pane -l<enter>")
 end
 
 return M
