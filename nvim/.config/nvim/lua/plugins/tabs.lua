@@ -83,6 +83,6 @@ local colors = require("plugins.colors")
 local util = require("plugins.util")
 util.highlight({
 	{ group = "TabLineFill", bg = colors.gray, fg = colors.none },
-	{ group = "TabLine", bg = colors.gray, fg = colors.none },
+	{ group = "TabLine", bg = colors.gray, fg = colors.gray2 },
 	{ group = "TabLineSel", bg = colors.none, fg = colors.white },
 })

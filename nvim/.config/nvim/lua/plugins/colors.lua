@@ -7,9 +7,9 @@ local M = {
 	magneta = "#8787af",
 	cyan = "#71b9f8",
 	white = "#e8e8de",
-	gray = "#4a4a4f",
-	gray2 = "#b0b0b0",
-	gray3 = "#36363b",
+	gray = "#36363b",
+	gray2 = "#9c9c9c",
+	gray3 = "#39393e",
 	none = "NONE",
 }
 
@@ -29,8 +29,8 @@ util.highlight({
 	{ group = "VertSplit", bg = M.none, fg = M.gray },
 	{ group = "SignColumn", bg = M.none, fg = M.none },
 	{ group = "ColorColumn", bg = M.gray3, fg = M.none },
-	{ group = "StatusLine", bg = M.gray, fg = M.yellow },
-	{ group = "StatusLineNC", bg = M.gray, fg = M.white },
+	{ group = "StatusLine", bg = M.gray, fg = M.white },
+	{ group = "StatusLineNC", bg = M.gray, fg = M.gray2 },
 	{ group = "Comment", bg = M.none, fg = M.gray2 },
 	{ group = "IndentBlanklineChar", bg = M.none, fg = M.gray },
 })

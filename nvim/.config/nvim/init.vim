@@ -39,7 +39,8 @@ set shiftwidth=4
 set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
-set statusline=%{expand('%:p:h:t')}/%t
+set statusline=%{expand('%:p:h:t')}/%t%m%r%h%=\ %l,%v\ %p%%
+set laststatus=2
 syntax on
 
 " leader
@@ -95,7 +96,6 @@ nnoremap <silent> q <nop>
 xnoremap <silent> p pgvy
 
 " toggle colorcolumn
-nnoremap <silent> <leader>. :execute "set cc=" . (&colorcolumn == "" ? "100,101" : "")<enter>
 nnoremap <silent> <leader>. :execute "set cc=" . (&colorcolumn == "" ? "100" : "")<enter>
 
 " abbreviate quit/save commands
