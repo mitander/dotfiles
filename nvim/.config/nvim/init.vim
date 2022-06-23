@@ -14,7 +14,7 @@ set ruler
 set cursorline
 set smartcase
 set ignorecase
-set noshowmode
+set showmode
 set noshowcmd
 set scrolloff=8
 set updatetime=200
@@ -40,7 +40,7 @@ set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
 set cc=100
-set winbar=%{expand('%:p:h:t')}/%t
+set statusline=%{expand('%:p:h:t')}/%t
 syntax on
 
 " leader

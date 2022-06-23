@@ -19,8 +19,6 @@ vim.cmd([[colorscheme jellybeans]])
 -- General vim highlights
 local util = require("plugins.util")
 util.highlight({
-	{ group = "Winbar", bg = M.none, fg = M.yellow },
-	{ group = "WinbarNC", bg = M.none, fg = M.gray },
 	{ group = "CursorLineNr", bg = M.none, fg = M.yellow },
 	{ group = "CursorLine", bg = M.none, fg = M.none },
 	{ group = "Comment", bg = M.gray3, fg = M.none },
@@ -31,8 +29,8 @@ util.highlight({
 	{ group = "VertSplit", bg = M.none, fg = M.gray },
 	{ group = "SignColumn", bg = M.none, fg = M.none },
 	{ group = "ColorColumn", bg = M.gray3, fg = M.none },
-	{ group = "StatusLine", bg = M.none, fg = M.none },
-	{ group = "StatusLineNC", bg = M.none, fg = M.none },
+	{ group = "StatusLine", bg = M.gray, fg = M.yellow },
+	{ group = "StatusLineNC", bg = M.gray, fg = M.white },
 	{ group = "Comment", bg = M.none, fg = M.gray2 },
 	{ group = "IndentBlanklineChar", bg = M.none, fg = M.gray },
 })
