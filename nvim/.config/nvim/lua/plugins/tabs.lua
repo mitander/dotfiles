@@ -11,7 +11,7 @@ local options = {
 	index_separators = { left = " ", right = " " },
 }
 
-local winlist = { }
+local winlist = {}
 
 local function tabline(opts)
 	local str = " "
@@ -46,27 +46,27 @@ local function tabline(opts)
 		end
 
 		if opts.show_cwd then
-            if index == fn.tabpagenr() then
-                local idx = 0
-                local res = {}
-                local cwd = fn.getcwd(winnr, index)
+			if index == fn.tabpagenr() then
+				local idx = 0
+				local res = {}
+				local cwd = fn.getcwd(winnr, index)
 
-                for s in string.gmatch(cwd, "[^"..'/'.."]+") do
-                    res[idx] = s
-                    idx = idx + 1
-                end
+				for s in string.gmatch(cwd, "[^" .. "/" .. "]+") do
+					res[idx] = s
+					idx = idx + 1
+				end
 
-                winlist[index] = res[#res]
-                str = str .. winlist[index]
-            else
-                if winlist[index] == nil then
-                    print("NULL")
-                else
-                    str = str .. winlist[index]
-                end
-            end
+				winlist[index] = res[#res]
+				str = str .. winlist[index]
+			else
+				if winlist[index] == nil then
+					print("NULL")
+				else
+					str = str .. winlist[index]
+				end
+			end
 		end
-        str = str .. " "
+		str = str .. " "
 	end
 
 	str = str .. "%#TabLineFill#"
@@ -79,8 +79,10 @@ end
 
 vim.o.tabline = "%!v:lua.tabline()"
 vim.o.showtabline = 1
+
 local colors = require("plugins.colors")
 local util = require("plugins.util")
+
 util.highlight({
 	{ group = "TabLineFill", bg = colors.gray, fg = colors.none },
 	{ group = "TabLine", bg = colors.gray, fg = colors.gray2 },
