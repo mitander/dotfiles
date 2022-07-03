@@ -39,7 +39,6 @@ set shiftwidth=4
 set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
-set statusline=%{expand('%:p:h:t')}/%t%m%r%h%=\ %l,%v\ %p%%
 set laststatus=2
 syntax on
 

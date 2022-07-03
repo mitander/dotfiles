@@ -8,18 +8,19 @@ local jelly = require("lualine.themes.jellybeans")
 
 local colors = require("plugins.colors")
 
+-- Bar colors
 jelly.normal.c.fg = colors.white
 jelly.normal.c.bg = colors.gray
 
--- same color for all modes
+-- Git colors
 jelly.normal.a.bg = colors.gray
 jelly.insert.a.bg = colors.gray
 jelly.visual.a.bg = colors.gray
-jelly.normal.a.fg = colors.white
-jelly.insert.a.fg = colors.white
-jelly.visual.a.fg = colors.white
+jelly.normal.a.fg = colors.yellow
+jelly.insert.a.fg = colors.yellow
+jelly.visual.a.fg = colors.yellow
 
--- filename
+-- Filename colors
 jelly.normal.b.bg = colors.gray
 jelly.insert.b.bg = colors.gray
 jelly.visual.b.bg = colors.gray
@@ -36,16 +37,16 @@ local config = {
 	},
 	sections = {
 		lualine_a = { "branch", "diagnostics" },
-		lualine_b = {{ "filename", path = 1 }},
-		lualine_c = {  },
-		lualine_x = {  },
+		lualine_b = { { "filename", path = 1 } },
+		lualine_c = {},
+		lualine_x = {},
 		lualine_y = { "location" },
 		lualine_z = { "progress" },
 	},
 	inactive_sections = {
 		lualine_a = { "branch", "diagnostics" },
-		lualine_b = {{ "filename", path = 1 }},
-		lualine_c = {  },
+		lualine_b = { { "filename", path = 1 } },
+		lualine_c = {},
 		lualine_x = {},
 		lualine_y = { "location" },
 		lualine_z = { "progress" },
