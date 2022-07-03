@@ -3,10 +3,10 @@ command alias whoami po @(__PRETTY_FUNCTION__)
 command alias pi print (int)
 command alias pf print (float)
 
-command alias b breakpoint set
-command alias d breakpoint delete
-command alias bd breakpoint disable
-command alias be breakpoint enable
+command alias bs breakpoint set
+command alias bd breakpoint delete
+command alias bde breakpoint disable
+command alias ben breakpoint enable
 command alias bcmd breakpoint command add
 command alias bcmd breakpoint command list
 
