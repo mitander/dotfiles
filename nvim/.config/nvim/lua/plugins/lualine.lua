@@ -3,6 +3,9 @@ if not ok then
 	return
 end
 
+-- Previously set statusline (in case of removing lualine)
+-- set statusline=%{expand('%:p:h:t')}/%t%m%r%h%=\ %l,%v\ %p%%
+
 -- Customize jellybeans
 local jelly = require("lualine.themes.jellybeans")
 
