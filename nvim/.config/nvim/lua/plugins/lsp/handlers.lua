@@ -2,16 +2,16 @@ local mappings = require("plugins.mappings")
 
 local M = {}
 
-local border = {
-	{ "╔" },
-	{ "═" },
-	{ "╗" },
-	{ "║" },
-	{ "╝" },
-	{ "═" },
-	{ "╚" },
-	{ "║" },
-}
+-- local border = {
+-- 	{ "╔" },
+-- 	{ "═" },
+-- 	{ "╗" },
+-- 	{ "║" },
+-- 	{ "╝" },
+-- 	{ "═" },
+-- 	{ "╚" },
+-- 	{ "║" },
+-- }
 
 M.setup = function()
 	local signs = {
@@ -36,16 +36,19 @@ M.setup = function()
 		float = {
 			focusable = false,
 			style = "minimal",
-			border = border,
+			border = "single",
 			source = "always",
 			header = "",
 			prefix = "",
 		},
 	})
 
-	vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = border })
+	vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single" })
 
-	vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = border })
+	vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
+		vim.lsp.handlers.signature_help,
+		{ border = "single" }
+	)
 end
 
 M.capabilities = vim.lsp.protocol.make_client_capabilities()
