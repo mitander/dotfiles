@@ -10,6 +10,7 @@ local M = {
 	gray = "#36363b",
 	gray2 = "#9c9c9c",
 	gray3 = "#39393e",
+	gray4 = "#4c4c52",
 	none = "NONE",
 }
 
@@ -33,7 +34,7 @@ util.highlight({
 	{ group = "StatusLine", bg = M.gray, fg = M.white },
 	{ group = "StatusLineNC", bg = M.gray, fg = M.gray2 },
 	{ group = "Comment", bg = M.none, fg = M.gray2 },
-	{ group = "IndentBlanklineChar", bg = M.none, fg = M.gray },
+	{ group = "IndentBlanklineChar", bg = M.none, fg = M.gray4 },
 })
 
 return M
