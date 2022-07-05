@@ -31,6 +31,14 @@ jelly.normal.b.fg = colors.white
 jelly.insert.b.fg = colors.white
 jelly.visual.b.fg = colors.white
 
+-- Inactive section colors
+jelly.inactive.a.bg = colors.gray
+jelly.inactive.a.fg = colors.white
+jelly.inactive.b.bg = colors.gray
+jelly.inactive.b.fg = colors.white
+jelly.inactive.c.bg = colors.gray
+jelly.inactive.c.fg = colors.white
+
 local config = {
 	options = {
 		component_separators = "",
@@ -39,17 +47,17 @@ local config = {
 		globalstatus = true,
 	},
 	sections = {
-		lualine_a = { "branch", "diagnostics" },
-		lualine_b = { { "filename", path = 1 } },
-		lualine_c = {},
+		lualine_a = { "mode" },
+		lualine_b = { "diagnostics" },
+		lualine_c = { { "filename", path = 1 } },
 		lualine_x = { "location" },
 		lualine_y = { "progress" },
 		lualine_z = { "filetype" },
 	},
 	inactive_sections = {
-		lualine_a = { "branch", "diagnostics" },
-		lualine_b = { { "filename", path = 1 } },
-		lualine_c = {},
+		lualine_a = {},
+		lualine_b = {},
+		lualine_c = { { "filename", path = 1 } },
 		lualine_x = { "location" },
 		lualine_y = { "progress" },
 		lualine_z = { "filetype" },

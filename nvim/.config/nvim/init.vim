@@ -14,7 +14,7 @@ set ruler
 set cursorline
 set smartcase
 set ignorecase
-set showmode
+set noshowmode
 set noshowcmd
 set scrolloff=8
 set updatetime=200
