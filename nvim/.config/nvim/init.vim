@@ -29,7 +29,8 @@ set scrolloff=8
 set virtualedit=block
 set wildignore+=*.o,*.obj
 set switchbuf=useopen,usetab
-set splitbelow splitright
+set splitbelow
+set splitright
 set shell=/bin/zsh
 set signcolumn=yes
 set path+=**
