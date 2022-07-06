@@ -21,7 +21,6 @@ set updatetime=200
 set shortmess+=c
 set background=dark
 set smartindent
-set expandtab
 set autoread
 set wildmode=longest:full,full
 set wildmenu
