@@ -107,7 +107,6 @@ telescope.setup({
 })
 
 require("telescope").load_extension("projects")
-require("telescope").load_extension("fzf")
 
 local util = require("plugins.util")
 local colors = require("plugins.colors")
