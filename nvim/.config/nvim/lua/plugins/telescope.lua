@@ -87,10 +87,6 @@ telescope.setup({
 	},
 	pickers = {
 		live_grep = {
-			find_command = "rg,--files",
-			"--hidden",
-			"-g",
-			"!.git/**",
 			additional_args = function()
 				return { "--hidden" }
 			end,
