@@ -47,7 +47,7 @@ M.undotree = function()
 end
 
 M.commentary = function()
-	vim.cmd([[map <silent> <space>/ :Commentary<enter>]]) -- TODO: find out why '<leader>/' here isn't working
+	vim.cmd([[map <silent> <leader>/ :Commentary<enter>]])
 end
 
 M.bufferline = function()
