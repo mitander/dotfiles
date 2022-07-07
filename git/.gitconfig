@@ -1,28 +1,23 @@
-[includeIf "gitdir:~/"]
-  path = ~/.gitconfig-custom
-[includeIf "gitdir:~/c/sgg/"]
-  path = ~/.gitconfig-work
-[includeIf "gitdir:~/c/p/"]
-  path = ~/.gitconfig-personal
-[includeIf "gitdir:~/dotfiles/"]
-  path = ~/.gitconfig-personal
+[user]
+	email = carlmitander@gmail.com
+	name = mitander
 [core]
 	editor = nvim
 [credential]
-    helper = store
+	helper = store
 [color]
-        branch = auto
-        diff = auto
-        interactive = auto
-        status = auto
-        ui = auto
+	branch = auto
+	diff = auto
+	interactive = auto
+	status = auto
+	ui = auto
 [color "status"]
-        added = green
-        changed = red bold
-        untracked = magenta bold
+	added = green
+	changed = red bold
+	untracked = magenta bold
 [diff]
-        renames = copies
+	renames = copies
 [fetch]
-        prune = true
+	prune = true
 [push]
-        default = simple
+	default = simple
