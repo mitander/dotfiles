@@ -10,7 +10,7 @@ gitsigns.setup({
 		delete = { hl = "GitSignsDelete", text = "▎", numhl = "GitSignsDeleteNr", linehl = "GitSignsDeleteLn" },
 		topdelete = {
 			hl = "GitSignsDelete",
-			text = "|",
+			text = "▎",
 			numhl = "GitSignsDeleteNr",
 			linehl = "GitSignsDeleteLn",
 		},
