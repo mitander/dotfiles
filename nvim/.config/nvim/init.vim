@@ -54,10 +54,6 @@ nnoremap <silent><leader>c :tabnew $vimrc<enter>
 nnoremap <silent> <enter> :noh<enter>
 
 " tab navigation
-nnoremap <silent> <c-w><C-h> gT
-nnoremap <silent> <c-w><C-l> gt
-
-" buffer navigation
 nnoremap <silent> <s-h> :tabp <enter>
 nnoremap <silent> <s-l> :tabn <enter>
 nnoremap <silent> <s-q> :tabc <enter>
