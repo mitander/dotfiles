@@ -69,13 +69,6 @@ nnoremap <silent> <s-down> :resize +5<enter>
 nnoremap <silent> <s-left> :vertical resize +5<enter>
 nnoremap <silent> <s-right> :vertical resize -5<enter>
 
-" read man entry on hovered word
-nnoremap <silent> <leader>m :exec OpenMan()<enter>
-fu OpenMan()
-   let l:Command = expand("<cword>")
-   execute ":Man " . l:Command
-endfu
-
 " better line navigation
 nnoremap <silent> j gj
 nnoremap <silent> k gk
@@ -92,6 +85,13 @@ xnoremap <silent> p pgvy
 
 " toggle colorcolumn
 nnoremap <silent> <leader>. :execute "set cc=" . (&colorcolumn == "" ? "100" : "")<enter>
+
+" read man entry on hovered word
+nnoremap <silent> <leader>m :exec OpenMan()<enter>
+fu OpenMan()
+   let l:Command = expand("<cword>")
+   execute ":Man " . l:Command
+endfu
 
 " abbreviate quit/save commands
 cab W w
@@ -115,7 +115,3 @@ autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
 
 " indentation
 autocmd Filetype rust,zig,go,c,cpp setlocal tabstop=4 shiftwidth=4
-
-" hide cursorline in insert mode
-autocmd InsertEnter * setlocal nocul
-autocmd InsertLeave * setlocal cul
