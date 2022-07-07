@@ -28,12 +28,12 @@ telescope.setup({
 			"jpeg",
 			"ttf",
 			"otf",
-			"png*",
+			"png",
 			"vendor",
 			".vscode",
-			".gitlab",
+			".gitlab/",
 			"*cache*",
-			".git",
+			".git/",
 		},
 		mappings = {
 			i = {
