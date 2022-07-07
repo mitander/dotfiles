@@ -64,7 +64,7 @@ util.highlight({
 	{ group = "GitSignsDelete", bg = colors.none, fg = colors.red },
 	{ group = "GitSignsChange", bg = colors.none, fg = colors.yellow },
 	{ group = "DiffAdd", bg = colors.none, fg = colors.green },
-	{ group = "DiffChange", bg = colors.none, fg = colors.red },
-	{ group = "DiffDelete", bg = colors.none, fg = colors.yellow },
+	{ group = "DiffChange", bg = colors.none, fg = colors.yellow },
+	{ group = "DiffDelete", bg = colors.none, fg = colors.red },
 	{ group = "GitSignsCurrentLineBlame", bg = colors.none, fg = colors.gray2 },
 })
