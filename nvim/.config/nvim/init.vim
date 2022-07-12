@@ -10,7 +10,7 @@ set incsearch
 set hidden
 set mouse=a
 set number
-set ruler
+set noruler
 set cursorline
 set smartcase
 set ignorecase
