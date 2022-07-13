@@ -47,7 +47,7 @@ M.undotree = function()
 end
 
 M.commentary = function()
-    vim.cmd([[map <silent> <space>/ :Commentary<enter>]])
+	vim.cmd([[map <silent> <space>/ :Commentary<enter>]])
 end
 
 M.bufferline = function()
