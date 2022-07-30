@@ -70,6 +70,12 @@ packer.startup({
 			end,
 		})
 
+		-- fzf integration
+		use({
+			"nvim-telescope/telescope-fzf-native.nvim",
+			run = "make",
+		})
+
 		-- Use project root as work directory
 		use({
 			"airblade/vim-rooter",
