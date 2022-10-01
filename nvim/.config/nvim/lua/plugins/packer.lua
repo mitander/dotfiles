@@ -70,10 +70,14 @@ packer.startup({
 			end,
 		})
 
-		-- fzf integration
 		use({
-			"nvim-telescope/telescope-fzf-native.nvim",
-			run = "make",
+			"ibhagwan/fzf-lua",
+			-- optional for icon support
+			requires = { "kyazdani42/nvim-web-devicons" },
+			config = function()
+				require("plugins.mappings").fzf()
+				require("plugins.fzf")
+			end,
 		})
 
 		-- Use project root as work directory
@@ -119,19 +123,6 @@ packer.startup({
 			requires = { "kyazdani42/nvim-web-devicons" },
 		})
 
-		-- Fuzzy previewer
-		use({
-			"nvim-telescope/telescope.nvim",
-			config = function()
-				require("plugins.telescope")
-				require("plugins.mappings").telescope()
-			end,
-			requires = {
-				{ "kyazdani42/nvim-web-devicons" },
-				{ "nvim-lua/plenary.nvim" },
-			},
-		})
-
 		-- Git signcolumn
 		use({
 			"lewis6991/gitsigns.nvim",
@@ -171,14 +162,6 @@ packer.startup({
 				{ "nvim-lua/lsp-status.nvim" },
 				{ "williamboman/nvim-lsp-installer" },
 			},
-		})
-
-		-- Project management
-		use({
-			"ahmedkhalf/project.nvim",
-			config = function()
-				require("plugins.project")
-			end,
 		})
 
 		-- Faster load times
@@ -244,6 +227,7 @@ packer.startup({
 		use({
 			"nvim-treesitter/nvim-treesitter",
 			run = ":TSUpdate",
+			requires = { { "nvim-lua/plenary.nvim" } },
 			config = function()
 				require("plugins.treesitter")
 			end,

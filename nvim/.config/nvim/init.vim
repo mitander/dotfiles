@@ -100,6 +100,10 @@ cab Wq wq
 cab wQ wq
 cab WQ wq
 
+if executable('Rg')
+  let g:rg_derive_root = 1
+endif
+
 " highlight on yank
 autocmd TextYankPost * silent!lua require('vim.highlight').on_yank({higroup = 'Visual', timeout = 200})
 
