@@ -9,7 +9,7 @@ set hlsearch
 set incsearch
 set hidden
 set mouse=a
-set number
+set nu rnu
 set ruler
 set cursorline
 set smartcase
