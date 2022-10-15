@@ -10,11 +10,10 @@ set incsearch
 set hidden
 set mouse=a
 set number
-set noruler
+set ruler
 set cursorline
 set smartcase
 set ignorecase
-set noshowmode
 set noshowcmd
 set scrolloff=8
 set updatetime=200
@@ -40,6 +39,8 @@ set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
 set laststatus=2
+set statusline=%{expand('%:p:h:t')}/%t\ %m%=%l:%v
+" set statusline=%f%m%r%h\ [%L]\ [%{&ff}]\ %y%=[%p%%]\ [line:%05l,col:%02v]
 syntax on
 
 " leader
