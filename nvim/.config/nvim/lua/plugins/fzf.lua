@@ -7,8 +7,8 @@ local colors = require("plugins.colors")
 
 fzf_lua.setup({
 	winopts = {
-		height = 0.85,
-		width = 0.80,
+		height = 0.60,
+		width = 0.70,
 		row = 0.35,
 		col = 0.55,
 		preview = {
