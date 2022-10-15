@@ -1,6 +1,5 @@
-" initialize plugins with packer
-lua require("plugins.packer")
-lua require("plugins.tabs")
+" initialize plugins
+lua require("plugins")
 
 " options
 set noswapfile
