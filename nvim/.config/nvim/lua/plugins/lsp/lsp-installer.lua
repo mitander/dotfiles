@@ -44,7 +44,7 @@ local opts = {}
 for _, server in ipairs(servers) do
 	opts = {
 		on_attach = handlers.on_attach,
-		capabilities = cmp.update_capabilities(handlers.capabilities),
+		capabilities = cmp.default_capabilities(handlers.capabilities),
 		flags = {
 			debounce_text_changes = 150,
 		},
