@@ -113,16 +113,6 @@ packer.startup({
 			end,
 		})
 
-		-- Overview of file symbols
-		use({
-			"simrat39/symbols-outline.nvim",
-			config = function()
-				require("plugins.symbols-outline")
-				require("plugins.mappings").symbolsoutline()
-			end,
-			requires = { "kyazdani42/nvim-web-devicons" },
-		})
-
 		-- Git signcolumn
 		use({
 			"lewis6991/gitsigns.nvim",
@@ -195,31 +185,6 @@ packer.startup({
 			"jose-elias-alvarez/null-ls.nvim",
 			config = function()
 				require("plugins.null-ls")
-			end,
-		})
-
-		-- Better filetypes
-		use({
-			"nathom/filetype.nvim",
-			config = function()
-				require("plugins.filetype")
-			end,
-		})
-
-		-- Statusline
-		use({
-			"nvim-lualine/lualine.nvim",
-			config = function()
-				require("plugins.lualine")
-			end,
-			requires = { "kyazdani42/nvim-web-devicons" },
-		})
-
-		-- Better quickfix window
-		use({
-			"kevinhwang91/nvim-bqf",
-			config = function()
-				require("plugins.bqf")
 			end,
 		})
 
