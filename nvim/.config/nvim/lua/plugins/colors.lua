@@ -20,6 +20,9 @@ vim.cmd([[colorscheme jellybeans]])
 -- General vim highlights
 local util = require("plugins.util")
 util.highlight({
+	{ group = "ModeMsg", bg = M.none, fg = M.yellow },
+	{ group = "StatusLine", bg = M.gray, fg = M.white },
+	{ group = "StatusLineNC", bg = M.gray, fg = M.gray3 },
 	{ group = "CursorLineNr", bg = M.none, fg = M.yellow },
 	{ group = "CursorLine", bg = M.none, fg = M.none },
 	{ group = "Comment", bg = M.gray3, fg = M.none },
