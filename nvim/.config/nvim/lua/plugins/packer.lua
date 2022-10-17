@@ -206,6 +206,15 @@ packer.startup({
 			end,
 		})
 
+		-- Git
+		use({
+			"TimUntersberger/neogit",
+			config = function()
+				require("plugins.neogit")
+				require("plugins.mappings").neogit()
+			end,
+		})
+
 		if PACKER_BOOTSTRAP then
 			require("packer").sync()
 		end
