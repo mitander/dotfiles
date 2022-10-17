@@ -198,6 +198,14 @@ packer.startup({
 			end,
 		})
 
+		-- Show current context
+		use({
+			"nvim-treesitter/nvim-treesitter-context",
+			config = function()
+				require("plugins.context")
+			end,
+		})
+
 		-- Tmux interaction
 		use({
 			"aserowy/tmux.nvim",
