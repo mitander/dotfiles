@@ -133,15 +133,6 @@ packer.startup({
 			requires = { "kyazdani42/nvim-web-devicons" },
 		})
 
-		-- Toggleterm with Lazygit
-		use({
-			"akinsho/toggleterm.nvim",
-			config = function()
-				require("plugins.toggleterm")
-				require("plugins.mappings").toggleterm()
-			end,
-		})
-
 		-- Lsp configuration
 		use({
 			"neovim/nvim-lspconfig",
