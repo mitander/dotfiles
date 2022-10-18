@@ -14,19 +14,19 @@ scrolling:
 
 font:
   normal:
-    family: FiraCode Nerd Font
+    family: Menlo
     style: Regular
 
   bold:
-    family: FiraCode Nerd Font
+    family: Menlo
     style: Bold
 
   italic:
-    family: FiraCode Nerd Font
+    family: Menlo
     style: Italic
 
   bold_italic:
-    family: FiraCode Nerd Font
+    family: Menlo
     style: Bold Italic
 
   size: 15
