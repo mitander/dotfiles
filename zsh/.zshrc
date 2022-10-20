@@ -41,10 +41,6 @@ alias dl= "docker logs"
 alias dps="docker ps"
 alias dpp="docker-compose pull --parallel"
 
-if [ -x "$(command -v bear)" ]; then
-	alias make="bear -- make"
-fi
-
 # linux
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   alias ls="ls --color=auto"
