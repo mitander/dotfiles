@@ -202,7 +202,6 @@ packer.startup({
 			"aserowy/tmux.nvim",
 			config = function()
 				require("plugins.tmux")
-				require("plugins.mappings").tmux()
 			end,
 		})
 

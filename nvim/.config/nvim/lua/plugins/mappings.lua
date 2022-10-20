@@ -61,8 +61,6 @@ M.gitsigns = function()
 	util.map("n", "<leader><bs>", "Gitsigns reset_hunk")
 end
 
-M.tmux = function()
-	util.map("n", "<leader><enter>", "!tmux select-pane -l && tmux send up enter && tmux select-pane -l<enter>")
-end
+util.map("n", "<leader><enter>", "make")
 
 return M
