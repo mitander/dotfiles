@@ -33,8 +33,8 @@ M.symbolsoutline = function()
 	util.map("n", "<leader>ss", "SymbolsOutline")
 end
 
-M.neogit = function()
-	util.map("n", "<leader>gg", "Neogit")
+M.toggleterm = function()
+	util.map("n", "<leader>gg", "lua _lazygit_toggle()")
 end
 
 M.fugitive = function()

@@ -205,12 +205,12 @@ packer.startup({
 			end,
 		})
 
-		-- Git
+		-- Toggleterm with Lazygit
 		use({
-			"TimUntersberger/neogit",
+			"akinsho/toggleterm.nvim",
 			config = function()
-				require("plugins.neogit")
-				require("plugins.mappings").neogit()
+				require("plugins.toggleterm")
+				require("plugins.mappings").toggleterm()
 			end,
 		})
 
