@@ -38,7 +38,7 @@ set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
 set laststatus=2
-set statusline=%{expand('%:p:h:t')}/%t\ %m%=%l:%v\ %p%%
+set statusline=%y\ %{expand('%:p:h:t')}/%t\ %m%=%l\/%L\ [%p%%]
 syntax on
 
 " leader
