@@ -85,13 +85,6 @@ xnoremap <silent> p pgvy
 " toggle colorcolumn
 nnoremap <silent> <leader>. :execute "set cc=" . (&colorcolumn == "" ? "100" : "")<enter>
 
-" read man entry on hovered word
-nnoremap <silent> <leader>m :exec OpenMan()<enter>
-fu OpenMan()
-   let l:Command = expand("<cword>")
-   execute ":Man " . l:Command
-endfu
-
 " abbreviate quit/save commands
 cab W w
 cab Q q
