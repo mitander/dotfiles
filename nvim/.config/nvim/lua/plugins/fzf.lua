@@ -3,10 +3,10 @@ if not ok then
 	return
 end
 
-local colors = require("plugins.colors")
 
 fzf_lua.setup({
 	winopts = {
+		hl = { border = "FloatBorder" },
 		height = 0.60,
 		width = 0.70,
 		row = 0.35,
