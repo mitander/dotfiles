@@ -3,8 +3,14 @@ if not ok then
 	return
 end
 
-
 fzf_lua.setup({
+	globals = {
+		files = {
+			file_icons = false,
+			color_icons = false,
+			git_icons = false,
+		},
+	},
 	winopts = {
 		hl = { border = "FloatBorder" },
 		height = 0.60,
@@ -23,11 +29,17 @@ fzf_lua.setup({
 	files = {
 		fd_opts = "--no-ignore --color=never --type f --hidden --follow  --exclude .git",
 		action = { ["ctrl-l"] = fzf_lua.actions.arg_add },
+		file_icons = false,
+		color_icons = false,
+		git_icons = false,
 	},
 	grep = {
 		rg_glob = true,
 		rg_opts = "--hidden --column --line-number --no-heading"
 			.. " --color=always --smart-case -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'",
+		file_icons = false,
+		color_icons = false,
+		git_icons = false,
 	},
 	git = {
 		status = {
@@ -53,6 +65,9 @@ fzf_lua.setup({
 		} },
 		files = {
 			cmd = "git ls-files  --exclude-standard --other;  git ls-files",
+			file_icons = false,
+			color_icons = false,
+			git_icons = false,
 		},
 	},
 	diagnostics = { icon_padding = " " },
