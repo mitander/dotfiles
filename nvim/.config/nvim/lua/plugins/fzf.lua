@@ -12,7 +12,7 @@ fzf_lua.setup({
 		},
 	},
 	winopts = {
-		hl = { border = "FloatBorder" },
+		hl = { border = "FzfBorder" },
 		height = 0.60,
 		width = 0.70,
 		row = 0.35,
