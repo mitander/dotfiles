@@ -111,6 +111,7 @@ packer.startup({
 			config = function()
 				require("plugins.gitsigns")
 				require("plugins.mappings").gitsigns()
+				require("plugins.colors").gitsigns()
 			end,
 			requires = { "nvim-lua/plenary.nvim" },
 		})
@@ -121,6 +122,7 @@ packer.startup({
 			config = function()
 				require("plugins.nvim-tree")
 				require("plugins.mappings").nvimtree()
+				require("plugins.colors").nvimtree()
 			end,
 			requires = { "kyazdani42/nvim-web-devicons" },
 		})
@@ -130,6 +132,7 @@ packer.startup({
 			"neovim/nvim-lspconfig",
 			config = function()
 				require("plugins.lsp")
+				require("plugins.colors").diagnostics()
 			end,
 			requires = {
 				{ "nvim-lua/lsp-status.nvim" },

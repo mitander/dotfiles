@@ -55,16 +55,3 @@ gitsigns.setup({
 		enable = false,
 	},
 })
-
-local util = require("plugins.util")
-local colors = require("plugins.colors")
-
-util.highlight({
-	{ group = "GitSignsAdd", bg = colors.none, fg = colors.green },
-	{ group = "GitSignsDelete", bg = colors.none, fg = colors.red },
-	{ group = "GitSignsChange", bg = colors.none, fg = colors.yellow },
-	{ group = "DiffAdd", bg = colors.none, fg = colors.green },
-	{ group = "DiffChange", bg = colors.none, fg = colors.yellow },
-	{ group = "DiffDelete", bg = colors.none, fg = colors.red },
-	{ group = "GitSignsCurrentLineBlame", bg = colors.none, fg = colors.gray2 },
-})
