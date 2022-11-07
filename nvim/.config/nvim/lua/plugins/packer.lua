@@ -61,22 +61,14 @@ packer.startup({
 		use({ "fatih/vim-go" })
 		use({ "ziglang/zig.vim" })
 		use({ "rust-lang/rust.vim" })
+		use({ "junegunn/fzf.vim" })
+		use({ "junegunn/fzf" })
 
 		-- Show indentation
 		use({
 			"lukas-reineke/indent-blankline.nvim",
 			config = function()
 				require("plugins.indent")
-			end,
-		})
-
-		use({
-			"ibhagwan/fzf-lua",
-			-- optional for icon support
-			requires = { "kyazdani42/nvim-web-devicons" },
-			config = function()
-				require("plugins.mappings").fzf()
-				require("plugins.fzf")
 			end,
 		})
 

@@ -15,16 +15,6 @@ M.lsp = function(bufnr)
 	util.map_buf(bufnr, "n", "ga", "lua vim.lsp.buf.code_action()")
 end
 
-M.fzf = function()
-	vim.cmd([[command! Files exec (len(system('git rev-parse'))) ? ':FzfLua files' : ':FzfLua git_files']])
-	util.map("n", "<c-p>", "Files")
-	util.map("n", "<c-f>", "lua require('fzf-lua').live_grep()")
-	util.map("n", "gr", "FzfLua lsp_references")
-	util.map("n", "<c-b>", "FzfLua buffers")
-	util.map("n", "<leader>gs", "FzfLua git_status")
-	util.map("n", "<leader>gl", "FzfLua git_commits")
-end
-
 M.nvimtree = function()
 	util.map("n", "<c-n>", "NvimTreeToggle")
 end
