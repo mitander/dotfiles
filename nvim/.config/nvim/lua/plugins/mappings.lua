@@ -59,6 +59,4 @@ M.gitsigns = function()
 	map("n", "<leader><bs>", "Gitsigns reset_hunk")
 end
 
-map("n", "<leader><enter>", "make")
-
 return M

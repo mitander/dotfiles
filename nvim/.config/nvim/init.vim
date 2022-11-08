@@ -107,6 +107,13 @@ autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
 
 " indentation
 autocmd Filetype rust,zig,go,c,cpp setlocal tabstop=4 shiftwidth=4
+
+" compile
+autocmd Filetype rust nnoremap <silent> <buffer> <leader><enter> :Cargo run<enter>
+autocmd Filetype go nnoremap <silent> <buffer> <leader><enter> :make<enter>
+autocmd Filetype zig nnoremap <silent> <buffer> <leader><enter> :make<enter>
+
+"  terminal
 autocmd TermOpen *  setlocal norelativenumber nonumber
 
 " fzf
