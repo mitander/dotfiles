@@ -10,7 +10,7 @@ local M = {
 	gray = "#36363b",
 	gray2 = "#9c9c9c",
 	gray3 = "#39393e",
-	gray4 = "#4c4c52",
+	gray4 = "#333338",
 	none = "NONE",
 }
 
@@ -25,6 +25,9 @@ end
 
 -- General vim highlights
 highlight({
+	{ group = "StatusGreen", fg = M.green, bg = M.gray },
+	{ group = "StatusWhite", fg = M.white, bg = M.gray },
+	{ group = "StatusYellow", fg = M.yellow, bg = M.gray },
 	{ group = "Fzf1", fg = M.white, bg = M.gray },
 	{ group = "Fzf2", fg = M.white, bg = M.gray },
 	{ group = "Fzf3", fg = M.white, bg = M.gray },
@@ -32,9 +35,8 @@ highlight({
 	{ group = "ModeMsg", bg = M.none, fg = M.yellow },
 	{ group = "StatusLine", bg = M.gray, fg = M.white },
 	{ group = "StatusLineNC", bg = M.gray, fg = M.gray2 },
-	{ group = "CursorLineNr", bg = M.none, fg = M.yellow },
-	{ group = "CursorLine", bg = M.none, fg = M.none },
-	{ group = "Comment", bg = M.gray3, fg = M.none },
+	{ group = "CursorLineNr", bg = M.gray, fg = M.yellow },
+	{ group = "CursorLine", bg = M.gray4, fg = M.none },
 	{ group = "Pmenu", bg = M.gray, fg = M.white },
 	{ group = "FloatBorder", bg = M.gray, fg = M.gray2 },
 	{ group = "FzfBorder", bg = M.none, fg = M.gray2 },
@@ -44,8 +46,7 @@ highlight({
 	{ group = "VertSplit", bg = M.none, fg = M.gray },
 	{ group = "SignColumn", bg = M.none, fg = M.none },
 	{ group = "ColorColumn", bg = M.gray3, fg = M.none },
-	{ group = "Comment", bg = M.none, fg = M.gray2 },
-	{ group = "IndentBlanklineChar", bg = M.none, fg = M.gray4 },
+	{ group = "IndentBlanklineChar", bg = M.none, fg = M.gray },
 })
 
 M.tabs = function()

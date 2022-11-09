@@ -37,8 +37,6 @@ set shiftwidth=4
 set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
-set laststatus=2
-set statusline=%y\ %{expand('%:p:h:t')}/%t\ %m\ %r\ %=\ %l\/%L\ [%p%%]
 syntax on
 
 " leader
@@ -109,7 +107,6 @@ autocmd Filetype qf nnoremap <silent> <buffer> k :cprev<enter><C-w>p
 
 " indentation
 autocmd Filetype rust,zig,go,c,cpp setlocal tabstop=4 shiftwidth=4
-
 " compile
 autocmd Filetype rust nnoremap <silent> <buffer> <leader><enter> :Cargo run<enter>
 autocmd Filetype go nnoremap <silent> <buffer> <leader><enter> :make<enter>
@@ -127,3 +124,19 @@ nnoremap <silent> <c-f> :Rg<enter>
 let g:fzf_layout = {'down': '35%'}
 let g:fzf_preview_window = ['right:hidden', 'ctrl-_']
 let g:fzf_action = {'ctrl-t':'tab split','ctrl-s':'split','ctrl-v':'vsplit' }
+	let branch = trim(system("git rev-parse --abbrev-ref HEAD"))
+	let name = trim(system("basename `git rev-parse --show-toplevel`"))
+
+" statusline
+function GitRepo()
+	return trim(system("basename `git rev-parse --show-toplevel`"))
+endfun
+
+function GitBranch()
+	return trim(system("git rev-parse --abbrev-ref HEAD"))
+endfun
+
+set laststatus=2
+set statusline=\ [%{GitRepo()}:%{GitBranch()}]
+set statusline+=\ %{expand('%:p:h:t')}/%t\ %m\ %r
+set statusline+=%=\ %l\/%L\ [%p%%]\ %y
