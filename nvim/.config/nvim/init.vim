@@ -104,6 +104,8 @@ autocmd InsertLeave * set nopaste
 " quickfix binds
 autocmd FileType qf nnoremap <silent> <buffer> q :close<enter>
 autocmd FileType qf nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
+autocmd Filetype qf nnoremap <silent> <buffer> j :cnext<enter><C-w>p
+autocmd Filetype qf nnoremap <silent> <buffer> k :cprev<enter><C-w>p
 
 " indentation
 autocmd Filetype rust,zig,go,c,cpp setlocal tabstop=4 shiftwidth=4
