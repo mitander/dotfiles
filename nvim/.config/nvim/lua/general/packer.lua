@@ -20,6 +20,7 @@ end
 
 local ok, packer = pcall(require, "packer")
 if not ok then
+	print("error: could not load packer")
 	return
 end
 
@@ -54,6 +55,9 @@ packer.startup({
 		-- Packer manages itself
 		use({ "wbthomason/packer.nvim" })
 
+		-- Faster load times
+		use({ "lewis6991/impatient.nvim" })
+
 		-- Colorscheme
 		use({ "nanotech/jellybeans.vim" })
 
@@ -61,8 +65,48 @@ packer.startup({
 		use({ "fatih/vim-go" })
 		use({ "ziglang/zig.vim" })
 		use({ "rust-lang/rust.vim" })
-		use({ "junegunn/fzf.vim" })
-		use({ "junegunn/fzf" })
+
+		-- Git commands
+		use({
+			"tpope/vim-fugitive",
+			config = function()
+				require("general.keymaps").fugitive()
+			end,
+		})
+
+		-- Easier commenting
+		use({
+			"tpope/vim-commentary",
+			config = function()
+				require("general.keymaps").commentary()
+			end,
+		})
+
+		-- Fuzzy finder
+		use({
+			"junegunn/fzf.vim",
+			config = function()
+				require("general.keymaps").fzf()
+			end,
+			requires = { "junegunn/fzf" },
+		})
+
+		-- Better qf
+		use({
+			"kevinhwang91/nvim-bqf",
+			ft = "qf",
+			config = function()
+				require("plugins.bqf")
+			end,
+		})
+
+		-- Show history
+		use({
+			"mbbill/undotree",
+			config = function()
+				require("general.keymaps").undotree()
+			end,
+		})
 
 		-- Show indentation
 		use({
@@ -81,37 +125,12 @@ packer.startup({
 			end,
 		})
 
-		-- Git commands
-		use({
-			"tpope/vim-fugitive",
-			config = function()
-				require("plugins.mappings").fugitive()
-			end,
-		})
-
-		-- Easier commenting
-		use({
-			"tpope/vim-commentary",
-			config = function()
-				require("plugins.mappings").commentary()
-			end,
-		})
-
-		-- Show history
-		use({
-			"mbbill/undotree",
-			config = function()
-				require("plugins.mappings").undotree()
-			end,
-		})
-
 		-- Git signcolumn
 		use({
 			"lewis6991/gitsigns.nvim",
 			config = function()
 				require("plugins.gitsigns")
-				require("plugins.mappings").gitsigns()
-				require("plugins.colors").gitsigns()
+				require("general.keymaps").gitsigns()
 			end,
 			requires = { "nvim-lua/plenary.nvim" },
 		})
@@ -121,8 +140,7 @@ packer.startup({
 			"kyazdani42/nvim-tree.lua",
 			config = function()
 				require("plugins.nvim-tree")
-				require("plugins.mappings").nvimtree()
-				require("plugins.colors").nvimtree()
+				require("general.keymaps").nvimtree()
 			end,
 			requires = { "kyazdani42/nvim-web-devicons" },
 		})
@@ -132,20 +150,12 @@ packer.startup({
 			"neovim/nvim-lspconfig",
 			config = function()
 				require("plugins.lsp")
-				require("plugins.colors").diagnostics()
 			end,
 			requires = {
 				{ "nvim-lua/lsp-status.nvim" },
-				{ "williamboman/nvim-lsp-installer" },
+				{ "williamboman/mason.nvim" },
+				{ "williamboman/mason-lspconfig.nvim" },
 			},
-		})
-
-		-- Faster load times
-		use({
-			"lewis6991/impatient.nvim",
-			config = function()
-				require("plugins.impatient")
-			end,
 		})
 
 		-- Completions
@@ -155,11 +165,10 @@ packer.startup({
 				require("plugins.cmp")
 			end,
 			requires = {
-				{ "SirVer/ultisnips" },
 				{ "L3MON4D3/LuaSnip" },
-				{ "hrsh7th/cmp-nvim-lsp" },
 				{ "saadparwaiz1/cmp_luasnip" },
 				{ "kyazdani42/nvim-web-devicons" },
+				{ "hrsh7th/cmp-nvim-lsp" },
 				{ "hrsh7th/cmp-buffer" },
 				{ "hrsh7th/cmp-path" },
 				{ "hrsh7th/cmp-cmdline" },
@@ -184,14 +193,6 @@ packer.startup({
 			end,
 		})
 
-		-- Show current context
-		use({
-			"nvim-treesitter/nvim-treesitter-context",
-			config = function()
-				require("plugins.context")
-			end,
-		})
-
 		-- Tmux interaction
 		use({
 			"aserowy/tmux.nvim",
@@ -205,7 +206,7 @@ packer.startup({
 			"akinsho/toggleterm.nvim",
 			config = function()
 				require("plugins.toggleterm")
-				require("plugins.mappings").toggleterm()
+				require("general.keymaps").toggleterm()
 			end,
 		})
 

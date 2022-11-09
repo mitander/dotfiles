@@ -1,5 +1,6 @@
 local ok, configs = pcall(require, "nvim-treesitter.configs")
 if not ok then
+	print("error: could not load nvim-treesitter.configs")
 	return
 end
 
@@ -17,5 +18,8 @@ configs.setup({
 	context_commentstring = {
 		enable = true,
 		enable_autocmd = false,
+	},
+	incremental_selection = {
+		enable = false,
 	},
 })

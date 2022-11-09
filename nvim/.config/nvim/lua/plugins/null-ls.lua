@@ -1,5 +1,6 @@
 local ok, null_ls = pcall(require, "null-ls")
 if not ok then
+	print("error: could not load null-ls")
 	return
 end
 
@@ -13,7 +14,7 @@ null_ls.setup({
 		formatting.gofmt,
 		formatting.zigfmt,
 		formatting.rustfmt,
-		formatting.json_tool,
+		formatting.jq,
 		formatting.stylua,
 	},
 	on_attach = function(client, bufnr)

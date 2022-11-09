@@ -1,5 +1,6 @@
 local tmux_ok, tmux = pcall(require, "tmux")
 if not tmux_ok then
+	print("error: could not load tmux")
 	return
 end
 

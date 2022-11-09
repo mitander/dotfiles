@@ -6,7 +6,7 @@ alias :q="exit"
 # config
 alias zshc="vim $HOME/.custom.zsh"
 alias zshrc="vim $HOME/dotfiles/zsh/.zshrc"
-alias vimrc="vim $HOME/dotfiles/nvim/.config/nvim/init.vim"
+alias vimrc="vim $HOME/dotfiles/nvim/.config/nvim/init.lua"
 alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.yml"
 
 # tmux

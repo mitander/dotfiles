@@ -1,10 +1,12 @@
 local cmp_ok, cmp = pcall(require, "cmp")
 if not cmp_ok then
+	print("error: could not load cmp")
 	return
 end
 
 local snip_ok, luasnip = pcall(require, "luasnip")
 if not snip_ok then
+	print("error: could not load luasnip")
 	return
 end
 
@@ -43,6 +45,12 @@ local kind_icons = {
 	TypeParameter = "",
 }
 
+cmp.setup.cmdline("/", {
+	view = {
+		entries = { name = "wildmenu", separator = "|" },
+	},
+})
+
 cmp.setup({
 	formatting = {
 		fields = { "kind", "abbr", "menu" },
@@ -68,7 +76,7 @@ cmp.setup({
 		select = true,
 	},
 	experimental = {
-		ghost_text = false,
+		ghost_text = true,
 		native_menu = false,
 	},
 	completion = {
@@ -91,7 +99,7 @@ cmp.setup({
 		["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
 		["<C-y>"] = cmp.config.disable,
 		["<C-e>"] = cmp.mapping({ i = cmp.mapping.abort(), c = cmp.mapping.close() }),
-		["<CR>"] = cmp.mapping.confirm(),
+		["<CR>"] = cmp.mapping.confirm({ select = true }),
 		["<Tab>"] = cmp.mapping(function(fallback)
 			if cmp.visible() then
 				cmp.select_next_item()

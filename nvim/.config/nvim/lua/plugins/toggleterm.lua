@@ -1,5 +1,6 @@
 local ok, toggleterm = pcall(require, "toggleterm")
 if not ok then
+	print("error: could not load toggleterm")
 	return
 end
 
