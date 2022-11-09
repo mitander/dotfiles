@@ -15,7 +15,7 @@ local map_buf = function(buf, mode, keys, command)
 end
 
 M.lsp = function(bufnr)
-	map_buf(bufnr, "n", "gD", "lua vim.lsp.buf.declaration()")
+	map_buf(bufnr, "n", "gr", "lua vim.lsp.buf.references()")
 	map_buf(bufnr, "n", "gd", "lua vim.lsp.buf.definition()")
 	map_buf(bufnr, "n", "<leader>rn", "lua vim.lsp.buf.rename()")
 	map_buf(bufnr, "n", "gi", "lua vim.lsp.buf.implementation()")
