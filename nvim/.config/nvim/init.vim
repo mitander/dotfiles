@@ -2,6 +2,7 @@
 lua require("plugins")
 
 " options
+syntax on
 set noswapfile
 set nobackup
 set hlsearch
@@ -37,7 +38,12 @@ set shiftwidth=4
 set termguicolors
 set undodir=~/.vim/tmp/undodir
 set undofile
-syntax on
+
+" statusline
+let &statusline .= trim(system("basename `git rev-parse --show-toplevel`")) .. ":" .. trim(system("git rev-parse --abbrev-ref HEAD"))
+set statusline+=\ ~\ %{expand('%:p:h:t')}/%t\ %m\ %r
+set statusline+=%=\ %l\/%L\ [%p%%]\ %y
+set laststatus=2
 
 " leader
 let mapleader=" "
@@ -126,17 +132,3 @@ let g:fzf_preview_window = ['right:hidden', 'ctrl-_']
 let g:fzf_action = {'ctrl-t':'tab split','ctrl-s':'split','ctrl-v':'vsplit' }
 	let branch = trim(system("git rev-parse --abbrev-ref HEAD"))
 	let name = trim(system("basename `git rev-parse --show-toplevel`"))
-
-" statusline
-function GitRepo()
-	return trim(system("basename `git rev-parse --show-toplevel`"))
-endfun
-
-function GitBranch()
-	return trim(system("git rev-parse --abbrev-ref HEAD"))
-endfun
-
-set laststatus=2
-set statusline=\ [%{GitRepo()}:%{GitBranch()}]
-set statusline+=\ %{expand('%:p:h:t')}/%t\ %m\ %r
-set statusline+=%=\ %l\/%L\ [%p%%]\ %y
