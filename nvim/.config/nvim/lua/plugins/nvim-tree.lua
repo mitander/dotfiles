@@ -12,7 +12,7 @@ end
 
 local tree_cb = nvim_tree_config.nvim_tree_callback
 
-require("general.keymaps").nvimtree()
+require("keymaps").nvimtree()
 
 nvim_tree.setup({
 	renderer = {

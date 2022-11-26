@@ -116,18 +116,14 @@ function M.lsp(bufnr)
 	nnoremap_buf(bufnr, "ga", "lua vim.lsp.buf.code_action()", {})
 end
 
-function M.fzf()
-	vim.cmd([[
-        " fzf
-        command! CtrlP execute (len(system('git rev-parse'))) ? ':Files' : ':GFiles --cached --others --exclude-standard'
-        command! -bang -nargs=* Rg call fzf#vim#grep('rg --column --no-heading --color=always --hidden --smart-case -g "!{.git,vendor,.vscode,.gitlab,*cache*}/*" '.shellescape(<q-args>), 1,  0)
-        nnoremap <silent> <c-p> :CtrlP<enter>
-        nnoremap <silent> <c-f> :Rg<enter>
-
-        let g:fzf_layout = {'down': '35%'}
-        let g:fzf_preview_window = ['right:hidden', 'ctrl-_']
-        let g:fzf_action = {'ctrl-t':'tab split','ctrl-s':'split','ctrl-v':'vsplit' }
-    ]])
+function M.telescope()
+	vim.cmd([[command! Files exec (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files']])
+	nnoremap("<c-p>", "Files")
+	nnoremap("<c-f>", "Telescope live_grep hidden=true")
+	nnoremap("<c-b>", "Telescope buffers")
+	nnoremap("<leader>p", "Telescope projects")
+	nnoremap("<leader>gs", "Telescope git_status")
+	nnoremap("<leader>gl", "Telescope git_commits")
 end
 
 return M

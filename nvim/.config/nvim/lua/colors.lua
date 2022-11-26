@@ -1,5 +1,4 @@
 -- Colorscheme
-vim.cmd([[colorscheme jellybeans]])
 vim.cmd([[set background=dark]])
 
 local c = {
@@ -77,10 +76,8 @@ for _, v in ipairs({
 	{ group = "LspDiagnosticsInformation", bg = c.none, fg = c.white },
 	{ group = "LspDiagnosticsHint", bg = c.none, fg = c.white },
 
-	-- fzf
-	{ group = "Fzf1", fg = c.none, bg = c.gray },
-	{ group = "Fzf2", fg = c.white, bg = c.gray },
-	{ group = "Fzf3", fg = c.white, bg = c.gray },
+	-- telescope
+	{ group = "TelescopeBorder", fg = c.gray2, bg = c.none },
 
 	-- indent
 	{ group = "IndentBlanklineChar", bg = c.none, fg = c.gray },

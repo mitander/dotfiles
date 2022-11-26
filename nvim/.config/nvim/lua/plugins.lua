@@ -21,31 +21,25 @@ end
 local ok, packer = pcall(require, "packer")
 if not ok then
 	print("error: could not load packer")
-	return
 end
-
--- Open float when installing
-packer.init({
-	display = {
-		open_fn = function()
-			return require("packer.util").float({ border = "rounded" })
-		end,
-	},
-})
 
 -- Load compiled packer file
 local func, _ = loadfile(packer_compile)
 if func then
 	func()
-else
-	print("Run :PackerSync to start")
+end
+
+-- faster load times
+local ok, impatient = pcall(require, "impatient")
+if ok then
+	impatient.enable_profile()
 end
 
 -- Use PackerSync when saving this file
 vim.cmd([[
       augroup packer_user_config
         autocmd!
-        autocmd BufWritePost packer.lua source <afile> | PackerSync
+        autocmd BufWritePost plugins.lua source <afile> | PackerSync
       augroup end
     ]])
 
@@ -59,7 +53,13 @@ packer.startup({
 		use({ "lewis6991/impatient.nvim" })
 
 		-- Colorscheme
-		use({ "nanotech/jellybeans.vim" })
+		use({
+			"nanotech/jellybeans.vim",
+			config = function()
+				vim.cmd([[colorscheme jellybeans]])
+				vim.cmd([[ source ~/.config/nvim/lua/colors.lua ]])
+			end,
+		})
 
 		-- Language plugins
 		use({ "fatih/vim-go" })
@@ -70,7 +70,7 @@ packer.startup({
 		use({
 			"tpope/vim-fugitive",
 			config = function()
-				require("general.keymaps").fugitive()
+				require("keymaps").fugitive()
 			end,
 		})
 
@@ -78,17 +78,8 @@ packer.startup({
 		use({
 			"tpope/vim-commentary",
 			config = function()
-				require("general.keymaps").commentary()
+				require("keymaps").commentary()
 			end,
-		})
-
-		-- Fuzzy finder
-		use({
-			"junegunn/fzf.vim",
-			config = function()
-				require("general.keymaps").fzf()
-			end,
-			requires = { "junegunn/fzf" },
 		})
 
 		-- Better qf
@@ -104,7 +95,7 @@ packer.startup({
 		use({
 			"mbbill/undotree",
 			config = function()
-				require("general.keymaps").undotree()
+				require("keymaps").undotree()
 			end,
 		})
 
@@ -130,7 +121,7 @@ packer.startup({
 			"lewis6991/gitsigns.nvim",
 			config = function()
 				require("plugins.gitsigns")
-				require("general.keymaps").gitsigns()
+				require("keymaps").gitsigns()
 			end,
 			requires = { "nvim-lua/plenary.nvim" },
 		})
@@ -140,7 +131,7 @@ packer.startup({
 			"kyazdani42/nvim-tree.lua",
 			config = function()
 				require("plugins.nvim-tree")
-				require("general.keymaps").nvimtree()
+				require("keymaps").nvimtree()
 			end,
 			requires = { "kyazdani42/nvim-web-devicons" },
 		})
@@ -186,7 +177,10 @@ packer.startup({
 		-- Syntax highlighting
 		use({
 			"nvim-treesitter/nvim-treesitter",
-			run = ":TSUpdate",
+			run = function()
+				local ts_update = require("nvim-treesitter.install").update({ with_sync = true })
+				ts_update()
+			end,
 			requires = { { "nvim-lua/plenary.nvim" } },
 			config = function()
 				require("plugins.treesitter")
@@ -206,7 +200,33 @@ packer.startup({
 			"akinsho/toggleterm.nvim",
 			config = function()
 				require("plugins.toggleterm")
-				require("general.keymaps").toggleterm()
+				require("keymaps").toggleterm()
+			end,
+		})
+
+		-- Telescope fuzzy previewer
+		use({
+			"nvim-telescope/telescope.nvim",
+			config = function()
+				require("plugins.telescope")
+				require("keymaps").telescope()
+			end,
+			requires = {
+				{ "kyazdani42/nvim-web-devicons" },
+				{ "nvim-lua/plenary.nvim" },
+			},
+		})
+
+		-- Telescope plugins
+		use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
+		use("nvim-telescope/telescope-ui-select.nvim")
+		use("nvim-telescope/telescope-file-browser.nvim")
+
+		-- Project management
+		use({
+			"ahmedkhalf/project.nvim",
+			config = function()
+				require("plugins.project")
 			end,
 		})
 
@@ -218,11 +238,6 @@ packer.startup({
 	-- Configuration
 	config = {
 		compile_path = packer_compile,
-		display = {
-			open_fn = function()
-				return require("packer.util").float({ border = "rounded" })
-			end,
-		},
 		profile = {
 			enable = true,
 			threshold = 0.0001,

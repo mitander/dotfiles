@@ -1,4 +1,4 @@
-local keymaps = require("general.keymaps")
+local keymaps = require("keymaps")
 
 local cmp_ok, cmp = pcall(require, "cmp_nvim_lsp")
 if not cmp_ok then
