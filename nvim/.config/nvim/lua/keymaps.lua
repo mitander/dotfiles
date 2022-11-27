@@ -73,6 +73,9 @@ nnoremap("<s-right>", ":resize -5")
 -- toggle colorcolumn
 nnoremap("<leader>.", ":execute 'set cc=' . (&colorcolumn == '' ? '100' : '')")
 
+-- reload modules
+nnoremap("<leader>rl", "lua require('keymaps').reload()")
+
 local M = {}
 
 function M.nvimtree()
@@ -124,6 +127,20 @@ function M.telescope()
 	nnoremap("<leader>p", "Telescope projects")
 	nnoremap("<leader>gs", "Telescope git_status")
 	nnoremap("<leader>gl", "Telescope git_commits")
+end
+
+function M.reload()
+	for _, file in ipairs(vim.fn.readdir(vim.fn.stdpath("config") .. "/lua", [[v:val =~ '\.lua$']])) do
+		local name = file:gsub("%.lua$", "")
+		require("plenary.reload").reload_module(name)
+		require(name)
+	end
+	for _, file in ipairs(vim.fn.readdir(vim.fn.stdpath("config") .. "/lua/plugins", [[v:val =~ '\.lua$']])) do
+		local name = "plugins." .. file:gsub("%.lua$", "")
+		require("plenary.reload").reload_module(name)
+		require(name)
+	end
+	print("modules reloaded")
 end
 
 return M
