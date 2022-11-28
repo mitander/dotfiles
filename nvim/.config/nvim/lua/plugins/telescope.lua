@@ -96,6 +96,7 @@ telescope.setup({
 			additional_args = function()
 				return { "--smart-case" }
 			end,
+			show_untracked = true,
 		},
 		buffers = {
 			previewer = false,
