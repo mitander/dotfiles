@@ -35,4 +35,4 @@ opt.undofile = true
 opt.switchbuf = { "useopen", "usetab" }
 opt.undodir = os.getenv("HOME") .. "/.vim/tmp/undodir"
 opt.laststatus = 2
-opt.statusline = "%{expand('%:p:h:t')}/%t %m %r %= %l/%L %p%%"
+opt.statusline = "%{expand('%:p:h:t')}/%t%m %r %= %l/%L"
