@@ -4,13 +4,16 @@ if not ok then
 end
 
 local actions = require("telescope.actions")
+local pickers = require("telescope.pickers")
+local finders = require("telescope.finders")
+local sorters = require("telescope.sorters")
 local theme = require("telescope.themes")
 
 telescope.setup({
 	defaults = {
 		path_display = { "truncate" },
 		selection_strategy = "reset",
-		sorting_strategy = "descending",
+		sorting_strategy = "ascending",
 		layout_strategy = "horizontal",
 		layout_config = {
 			horizontal = {
@@ -21,7 +24,7 @@ telescope.setup({
 				mirror = false,
 			},
 			width = 0.8,
-			height = 0.7,
+			height = 0.8,
 			preview_cutoff = 120,
 		},
 		file_ignore_patterns = {
@@ -88,6 +91,8 @@ telescope.setup({
 	},
 	pickers = {
 		live_grep = {
+			cmd = "rg",
+			sort_last_used = true,
 			additional_args = function()
 				return { "--hidden" }
 			end,
@@ -97,6 +102,23 @@ telescope.setup({
 				return { "--smart-case" }
 			end,
 			show_untracked = true,
+		},
+		git_branches = {
+			previewer = false,
+			layout_config = {
+				width = 0.4,
+				height = 0.4,
+			},
+			attach_mappings = function(_, map)
+				map("i", "<c-x>", actions.git_delete_branch)
+				return true
+			end,
+		},
+		git_status = {
+			attach_mappings = function(_, map)
+				map("i", "<c-space>", actions.git_staging_toggle)
+				return true
+			end,
 		},
 		buffers = {
 			previewer = false,
@@ -130,3 +152,17 @@ telescope.load_extension("fzf")
 telescope.load_extension("ui-select")
 telescope.load_extension("projects")
 telescope.load_extension("file_browser")
+
+local M = {}
+M.rg = function()
+	local input = { "rg", "--hidden", "--column", "" }
+	local opts = {
+		finder = finders.new_oneshot_job(input),
+		sorter = sorters.get_generic_fuzzy_sorter(),
+		prompt_title = "RipGrep",
+	}
+
+	local picker = pickers.new(opts)
+	picker:find()
+end
+return M

@@ -122,11 +122,14 @@ end
 function M.telescope()
 	vim.cmd([[command! Files exec (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files']])
 	nnoremap("<c-p>", "Files")
-	nnoremap("<c-f>", "Telescope live_grep hidden=true")
+	nnoremap("<c-f>", "lua require('plugins.telescope').rg()")
 	nnoremap("<c-b>", "Telescope buffers")
+	nnoremap("<leader>h", "Telescope help_tags")
 	nnoremap("<leader>p", "Telescope projects")
 	nnoremap("<leader>gs", "Telescope git_status")
 	nnoremap("<leader>gl", "Telescope git_commits")
+	nnoremap("<leader>gb", "Telescope git_branches")
+	nnoremap("<leader>gc", "Telescope git_bcommits")
 end
 
 function M.reload()
