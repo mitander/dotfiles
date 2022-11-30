@@ -21,7 +21,7 @@ toggleterm.setup({
 		border = "curved",
 		winblend = 0,
 		highlights = {
-			border = "Normal",
+			border = "FloatBorder",
 			background = "Normal",
 		},
 	},

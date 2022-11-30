@@ -19,6 +19,7 @@ local c = {
 
 for _, v in ipairs({
 	-- vim
+	{ group = "Comment", bg = c.none, fg = c.cyan },
 	{ group = "SpecialKey", bg = c.none, fg = c.yellow },
 	{ group = "ModeMsg", bg = c.none, fg = c.yellow },
 	{ group = "StatusLine", bg = c.gray, fg = c.white },
@@ -26,7 +27,7 @@ for _, v in ipairs({
 	{ group = "CursorLineNr", bg = c.none, fg = c.yellow },
 	{ group = "CursorLine", bg = c.none, fg = c.none },
 	{ group = "Pmenu", bg = c.none, fg = c.white },
-	{ group = "FloatBorder", bg = c.none, fg = c.white },
+	{ group = "FloatBorder", bg = c.none, fg = c.gray2 },
 	{ group = "Normal", bg = c.none, fg = c.none },
 	{ group = "LineNr", bg = c.none, fg = c.white },
 	{ group = "NonText", bg = c.none, fg = c.white },
@@ -84,8 +85,8 @@ for _, v in ipairs({
 
 	-- bqf
 	{ group = "BqfPreviewRange", bg = c.none, fg = c.none },
-	{ group = "BqfPreviewFloat", bg = c.none, fg = c.white },
-	{ group = "BqfPreviewBorder", bg = c.none, fg = c.white },
+	{ group = "BqfPreviewFloat", bg = c.none, fg = c.gray2 },
+	{ group = "BqfPreviewBorder", bg = c.none, fg = c.gray2 },
 
 	-- cmp
 	{ group = " CmpItemKindKeyword", bg = c.none, fg = c.blue },
