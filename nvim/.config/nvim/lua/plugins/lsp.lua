@@ -58,7 +58,7 @@ local servers = {
 	"gopls",
 	"rust_analyzer",
 	"zls",
-	"sumneko_lua",
+	"lua_ls",
 	"jsonls",
 }
 
@@ -100,7 +100,7 @@ for _, server in ipairs(servers) do
 		},
 	}
 
-	if server == "sumneko_lua" then
+	if server == "lua_ls" then
 		local opts = {
 			settings = {
 				Lua = {
