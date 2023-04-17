@@ -26,8 +26,8 @@ for _, v in ipairs({
 	{ group = "StatusLineNC", bg = c.gray, fg = c.gray2 },
 	{ group = "CursorLineNr", bg = c.none, fg = c.yellow },
 	{ group = "CursorLine", bg = c.none, fg = c.none },
-	{ group = "Pmenu", bg = c.none, fg = c.white },
-	{ group = "FloatBorder", bg = c.none, fg = c.gray2 },
+	{ group = "Pmenu", bg = c.gray, fg = c.white },
+	{ group = "FloatBorder", bg = c.gray, fg = c.gray },
 	{ group = "Normal", bg = c.none, fg = c.none },
 	{ group = "LineNr", bg = c.none, fg = c.white },
 	{ group = "NonText", bg = c.none, fg = c.white },
@@ -79,6 +79,7 @@ for _, v in ipairs({
 
 	-- telescope
 	{ group = "TelescopeBorder", fg = c.gray2, bg = c.none },
+	{ group = "TelescopeTitle", fg = c.yellow, bg = c.none },
 
 	-- indent
 	{ group = "IndentBlanklineChar", bg = c.none, fg = c.gray },
@@ -89,11 +90,11 @@ for _, v in ipairs({
 	{ group = "BqfPreviewBorder", bg = c.none, fg = c.gray2 },
 
 	-- cmp
-	{ group = " CmpItemKindKeyword", bg = c.none, fg = c.blue },
-	{ group = " CmpItemAbbrDeprecated", bg = c.none, fg = c.red },
-	{ group = " CmpItemAbbrMatch", bg = c.none, fg = c.yellow },
-	{ group = " CmpItemKindVariable", bg = c.none, fg = c.cyan },
-	{ group = " CmpItemKindFunction", bg = c.none, fg = c.green },
+	{ group = " CmpItemKindKeyword", bg = c.gray, fg = c.blue },
+	{ group = " CmpItemAbbrDeprecated", bg = c.gray, fg = c.red },
+	{ group = " CmpItemAbbrMatch", bg = c.gray, fg = c.yellow },
+	{ group = " CmpItemKindVariable", bg = c.gray, fg = c.cyan },
+	{ group = " CmpItemKindFunction", bg = c.gray, fg = c.green },
 }) do
 	vim.cmd("hi! " .. v.group .. " guibg=" .. v.bg .. " guifg=" .. v.fg .. " gui='NONE'")
 end
