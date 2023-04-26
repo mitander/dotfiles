@@ -1,251 +1,304 @@
-local fn = vim.fn
-local packer_compile = fn.stdpath("data") .. "/lua/plugins/packer/packer_compiled.lua"
-local packer_install = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
-
--- Bootstrap packer
-if fn.empty(fn.glob(packer_install)) > 0 then
-	print("Packer could not be found. Installing..\n")
-	PACKER_BOOTSTRAP = fn.system({
-		"git",
-		"clone",
-		"--depth",
-		"1",
-		"https://github.com/wbthomason/packer.nvim",
-		packer_install,
-	})
-	print("Cloning packer..\n")
-	vim.cmd([[packadd packer.nvim]])
-	print("Packer installed!\n")
-end
-
-local ok, packer = pcall(require, "packer")
-if not ok then
-	print("error: could not load packer")
-end
-
--- Load compiled packer file
-local func, _ = loadfile(packer_compile)
-if func then
-	func()
-end
-
--- faster load times
-local ok, impatient = pcall(require, "impatient")
-if ok then
-	impatient.enable_profile()
-end
-
--- Use PackerSync when saving this file
-vim.cmd([[
-      augroup packer_user_config
-        autocmd!
-        autocmd BufWritePost plugins.lua source <afile> | PackerSync
-      augroup end
-    ]])
-
 -- Plugins
-packer.startup({
-	function(use)
-		-- Packer manages itself
-		use({ "wbthomason/packer.nvim" })
+local plugins = {
+    "nvim-lua/plenary.nvim",
 
-		-- Faster load times
-		use({ "lewis6991/impatient.nvim" })
+    -- Colorscheme
+    {
+        lazy = false,
+        "nanotech/jellybeans.vim",
+        init = function()
+            vim.cmd [[set background=dark]]
+            vim.cmd [[colorscheme jellybeans]]
+            vim.cmd [[ source ~/.config/nvim/lua/colors.lua ]]
+        end,
+    },
 
-		-- Colorscheme
-		use({
-			"nanotech/jellybeans.vim",
-			config = function()
-				vim.cmd([[colorscheme jellybeans]])
-				vim.cmd([[ source ~/.config/nvim/lua/colors.lua ]])
-			end,
-		})
+    -- Language plugins
+    { "fatih/vim-go", ft = "go" },
+    { "ziglang/zig.vim", ft = "zig" },
+    { "rust-lang/rust.vim", ft = "rust" },
 
-		-- Language plugins
-		use({ "fatih/vim-go" })
-		use({ "ziglang/zig.vim" })
-		use({ "rust-lang/rust.vim" })
+    -- Easier commenting
+    {
+        lazy = false,
+        "tpope/vim-commentary",
+        init = function()
+            require("keymaps").commentary()
+        end,
+    },
 
-		-- Git commands
-		use({
-			"tpope/vim-fugitive",
-			config = function()
-				require("keymaps").fugitive()
-			end,
-		})
+    -- Better qf
+    {
+        "kevinhwang91/nvim-bqf",
+        ft = "qf",
+        config = function()
+            require "plugins.bqf"
+        end,
+    },
 
-		-- Easier commenting
-		use({
-			"tpope/vim-commentary",
-			config = function()
-				require("keymaps").commentary()
-			end,
-		})
+    -- Show history
+    {
+        lazy = false,
+        "mbbill/undotree",
+        config = function()
+            require("keymaps").undotree()
+        end,
+    },
 
-		-- Better qf
-		use({
-			"kevinhwang91/nvim-bqf",
-			ft = "qf",
-			config = function()
-				require("plugins.bqf")
-			end,
-		})
+    -- Show indentation
+    {
+        lazy = false,
+        "lukas-reineke/indent-blankline.nvim",
+        config = function()
+            require "plugins.indent"
+        end,
+    },
 
-		-- Show history
-		use({
-			"mbbill/undotree",
-			config = function()
-				require("keymaps").undotree()
-			end,
-		})
+    -- Use project root as work directory
+    {
+        lazy = false,
+        "airblade/vim-rooter",
+        config = function()
+            vim.g.rooter_targets = "/,*"
+            vim.g.rooter_silent_chdir = 1
+        end,
+    },
 
-		-- Show indentation
-		use({
-			"lukas-reineke/indent-blankline.nvim",
-			config = function()
-				require("plugins.indent")
-			end,
-		})
+    -- Git signcolumn
+    {
+        "lewis6991/gitsigns.nvim",
+        ft = "gitcommit",
+        init = function()
+            -- load gitsigns only when a git file is opened
+            vim.api.nvim_create_autocmd({ "BufRead" }, {
+                group = vim.api.nvim_create_augroup("GitSignsLazyLoad", { clear = true }),
+                callback = function()
+                    vim.fn.system("git -C " .. '"' .. vim.fn.expand "%:p:h" .. '"' .. " rev-parse")
+                    if vim.v.shell_error == 0 then
+                        vim.api.nvim_del_augroup_by_name "GitSignsLazyLoad"
+                        vim.schedule(function()
+                            require("lazy").load { plugins = { "gitsigns.nvim" } }
+                        end)
+                    end
+                end,
+            })
+        end,
+        config = function()
+            require "plugins.gitsigns"
+            require("keymaps").gitsigns()
+        end,
+    },
 
-		-- Use project root as work directory
-		use({
-			"airblade/vim-rooter",
-			config = function()
-				vim.g.rooter_targets = "/,*"
-				vim.g.rooter_silent_chdir = 1
-			end,
-		})
+    -- File navigatior
+    {
+        "nvim-tree/nvim-tree.lua",
+        lazy = false,
+        cmd = { "NvimTreeToggle", "NvimTreeFocus" },
+        init = function()
+            require("keymaps").nvimtree()
+        end,
+        opts = function()
+            return require "plugins.nvim-tree"
+        end,
+        config = function(_, opts)
+            require("nvim-tree").setup(opts)
+            vim.g.nvimtree_side = opts.view.side
+        end,
+    },
 
-		-- Git signcolumn
-		use({
-			"lewis6991/gitsigns.nvim",
-			config = function()
-				require("plugins.gitsigns")
-				require("keymaps").gitsigns()
-			end,
-			requires = { "nvim-lua/plenary.nvim" },
-		})
+    -- Lsp configuration
+    {
+        "neovim/nvim-lspconfig",
+        init = function()
+            require("utils").lazy_load "nvim-lspconfig"
+        end,
+        config = function()
+            require "plugins.lsp"
+        end,
+        dependencies = {
+            { "nvim-lua/lsp-status.nvim" },
+            { "williamboman/mason.nvim" },
+            { "williamboman/mason-lspconfig.nvim" },
+        },
+    },
 
-		-- File navigatior
-		use({
-			"kyazdani42/nvim-tree.lua",
-			config = function()
-				require("plugins.nvim-tree")
-				require("keymaps").nvimtree()
-			end,
-			requires = { "kyazdani42/nvim-web-devicons" },
-		})
+    -- Completions
+    {
+        "hrsh7th/nvim-cmp",
+        event = "InsertEnter",
+        dependencies = {
+            {
+                "L3MON4D3/LuaSnip",
+                dependencies = "rafamadriz/friendly-snippets",
+                opts = { history = true, updateevents = "TextChanged,TextChangedI" },
+                config = function(_, opts)
+                    require("luasnip").config.set_config(opts)
+                    require("luasnip.loaders.from_vscode").lazy_load()
+                    require("luasnip.loaders.from_vscode").lazy_load { paths = vim.g.vscode_snippets_path or "" }
+                    require("luasnip.loaders.from_snipmate").load()
+                    require("luasnip.loaders.from_snipmate").lazy_load { paths = vim.g.snipmate_snippets_path or "" }
+                    require("luasnip.loaders.from_lua").load()
+                    require("luasnip.loaders.from_lua").lazy_load { paths = vim.g.lua_snippets_path or "" }
 
-		-- Lsp configuration
-		use({
-			"neovim/nvim-lspconfig",
-			config = function()
-				require("plugins.lsp")
-			end,
-			requires = {
-				{ "nvim-lua/lsp-status.nvim" },
-				{ "williamboman/mason.nvim" },
-				{ "williamboman/mason-lspconfig.nvim" },
-			},
-		})
+                    vim.api.nvim_create_autocmd("InsertLeave", {
+                        callback = function()
+                            if require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()]
+                                and not require("luasnip").session.jump_active
+                            then
+                                require("luasnip").unlink_current()
+                            end
+                        end,
+                    })
+                end,
+            },
+            {
+                "windwp/nvim-autopairs",
+                opts = {
+                    fast_wrap = {},
+                    disable_filetype = { "TelescopePrompt", "vim" },
+                },
+                config = function(_, opts)
+                    require("nvim-autopairs").setup(opts)
+                    local cmp_autopairs = require "nvim-autopairs.completion.cmp"
+                    require("cmp").event:on("confirm_done", cmp_autopairs.on_confirm_done())
+                end,
+            },
+            {
+                "saadparwaiz1/cmp_luasnip",
+                "hrsh7th/cmp-nvim-lua",
+                "hrsh7th/cmp-nvim-lsp",
+                "hrsh7th/cmp-buffer",
+                "hrsh7th/cmp-path",
+            },
+        },
+        config = function()
+            require "plugins.cmp"
+        end,
+    },
 
-		-- Completions
-		use({
-			"hrsh7th/nvim-cmp",
-			config = function()
-				require("plugins.cmp")
-			end,
-			requires = {
-				{ "L3MON4D3/LuaSnip" },
-				{ "saadparwaiz1/cmp_luasnip" },
-				{ "kyazdani42/nvim-web-devicons" },
-				{ "hrsh7th/cmp-nvim-lsp" },
-				{ "hrsh7th/cmp-buffer" },
-				{ "hrsh7th/cmp-path" },
-				{ "hrsh7th/cmp-cmdline" },
-			},
-		})
+    -- Formatting
+    {
+        lazy = false,
+        "jose-elias-alvarez/null-ls.nvim",
+        config = function()
+            require "plugins.null-ls"
+        end,
+    },
 
-		-- Formatting
-		use({
-			"jose-elias-alvarez/null-ls.nvim",
-			config = function()
-				require("plugins.null-ls")
-			end,
-		})
+    -- Syntax highlighting
+    {
+        "nvim-treesitter/nvim-treesitter",
+        init = function()
+            require("utils").lazy_load "nvim-treesitter"
+        end,
+        cmd = { "TSInstall", "TSBufEnable", "TSBufDisable", "TSModuleInfo" },
+        build = ":TSUpdate",
+        config = function()
+            require "plugins.treesitter"
+        end,
+    },
 
-		-- Syntax highlighting
-		use({
-			"nvim-treesitter/nvim-treesitter",
-			run = function()
-				local ts_update = require("nvim-treesitter.install").update({ with_sync = true })
-				ts_update()
-			end,
-			requires = { { "nvim-lua/plenary.nvim" } },
-			config = function()
-				require("plugins.treesitter")
-			end,
-		})
+    -- Tmux interaction
+    {
+        lazy = false,
+        "aserowy/tmux.nvim",
+        config = function()
+            require "plugins.tmux"
+        end,
+    },
 
-		-- Tmux interaction
-		use({
-			"aserowy/tmux.nvim",
-			config = function()
-				require("plugins.tmux")
-			end,
-		})
+    -- Toggleterm with Lazygit
+    {
+        "akinsho/toggleterm.nvim",
+        ft = "gitcommit",
+        init = function()
+            require("keymaps").toggleterm()
+            -- load gitsigns only when a git file is opened
+            vim.api.nvim_create_autocmd({ "BufRead" }, {
+                group = vim.api.nvim_create_augroup("ToggleTermLazyLoad", { clear = true }),
+                callback = function()
+                    vim.fn.system("git -C " .. '"' .. vim.fn.expand "%:p:h" .. '"' .. " rev-parse")
+                    if vim.v.shell_error == 0 then
+                        vim.api.nvim_del_augroup_by_name "ToggleTermLazyLoad"
+                        vim.schedule(function()
+                            require("utils").lazy_load "toggleterm.nvim"
+                            require "plugins.toggleterm"
+                        end)
+                    end
+                end,
+            })
+        end,
+    },
 
-		-- Toggleterm with Lazygit
-		use({
-			"akinsho/toggleterm.nvim",
-			config = function()
-				require("plugins.toggleterm")
-				require("keymaps").toggleterm()
-			end,
-		})
+    -- Telescope fuzzy previewer
+    {
+        "nvim-telescope/telescope.nvim",
+        lazy = false,
+        cmd = "Telescope",
+        init = function()
+            require("keymaps").telescope()
+        end,
+        config = function(_, opts)
+            require "plugins.telescope"
+        end,
+    },
 
-		-- Telescope fuzzy previewer
-		use({
-			"nvim-telescope/telescope.nvim",
-			config = function()
-				require("plugins.telescope")
-				require("keymaps").telescope()
-			end,
-			requires = {
-				{ "kyazdani42/nvim-web-devicons" },
-				{ "nvim-lua/plenary.nvim" },
-			},
-		})
+    -- Project management
+    {
+        lazy = false,
+        "ahmedkhalf/project.nvim",
+        config = function()
+            require "plugins.project"
+        end,
+    },
+}
 
-		-- Telescope plugins
-		use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" })
-		use("nvim-telescope/telescope-ui-select.nvim")
-		use("nvim-telescope/telescope-file-browser.nvim")
+local opts = {
+    defaults = { lazy = true },
+    install = { colorscheme = { "nvchad" } },
 
-		-- Project management
-		use({
-			"ahmedkhalf/project.nvim",
-			config = function()
-				require("plugins.project")
-			end,
-		})
+    ui = {
+        icons = {
+            ft = "",
+            lazy = "鈴 ",
+            loaded = "",
+            not_loaded = "",
+        },
+    },
 
-		if PACKER_BOOTSTRAP then
-			require("packer").sync()
-		end
-	end,
+    performance = {
+        rtp = {
+            disabled_plugins = {
+                "2html_plugin",
+                "tohtml",
+                "getscript",
+                "getscriptPlugin",
+                "gzip",
+                "logipat",
+                "netrw",
+                "netrwPlugin",
+                "netrwSettings",
+                "netrwFileHandlers",
+                "matchit",
+                "tar",
+                "tarPlugin",
+                "rrhelper",
+                "spellfile_plugin",
+                "vimball",
+                "vimballPlugin",
+                "zip",
+                "zipPlugin",
+                "tutor",
+                "rplugin",
+                "syntax",
+                "synmenu",
+                "optwin",
+                "compiler",
+                "bugreport",
+                "ftplugin",
+            },
+        },
+    },
+}
 
-	-- Configuration
-	config = {
-		compile_path = packer_compile,
-		profile = {
-			enable = true,
-			threshold = 0.0001,
-		},
-		git = {
-			clone_timeout = 300,
-		},
-		auto_clean = true,
-		compile_on_sync = true,
-	},
-})
+require("lazy").setup(plugins, opts)

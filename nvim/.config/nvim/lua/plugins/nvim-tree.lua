@@ -1,95 +1,77 @@
-local nvim_tree_ok, nvim_tree = pcall(require, "nvim-tree")
-if not nvim_tree_ok then
-	print("error: could not load nvim-tree")
-	return
-end
+local options = {
+    filters = {
+        dotfiles = false,
+        exclude = { vim.fn.stdpath "config" .. "/lua/custom" },
+    },
+    disable_netrw = true,
+    hijack_netrw = true,
+    hijack_cursor = true,
+    hijack_unnamed_buffer_when_opening = false,
+    sync_root_with_cwd = true,
+    update_focused_file = {
+        enable = true,
+        update_root = false,
+    },
+    view = {
+        adaptive_size = false,
+        side = "left",
+        width = 30,
+        preserve_window_proportions = true,
+    },
+    git = {
+        enable = false,
+        ignore = true,
+    },
+    filesystem_watchers = {
+        enable = true,
+    },
+    actions = {
+        open_file = {
+            resize_window = true,
+        },
+    },
+    renderer = {
+        root_folder_label = false,
+        highlight_git = false,
+        highlight_opened_files = "none",
 
-local config_ok, nvim_tree_config = pcall(require, "nvim-tree.config")
-if not config_ok then
-	print("error: could not load nvim-tree.config")
-	return
-end
+        indent_markers = {
+            enable = false,
+        },
 
-local tree_cb = nvim_tree_config.nvim_tree_callback
+        icons = {
+            show = {
+                file = true,
+                folder = true,
+                folder_arrow = true,
+                git = false,
+            },
 
-require("keymaps").nvimtree()
+            glyphs = {
+                default = "",
+                symlink = "",
+                folder = {
+                    default = "",
+                    empty = "",
+                    empty_open = "",
+                    open = "",
+                    symlink = "",
+                    symlink_open = "",
+                    arrow_open = "",
+                    arrow_closed = "",
+                },
+                git = {
+                    unstaged = "✗",
+                    staged = "✓",
+                    unmerged = "",
+                    renamed = "➜",
+                    untracked = "★",
+                    deleted = "",
+                    ignored = "◌",
+                },
+            },
+        },
+    },
+}
 
-nvim_tree.setup({
-	renderer = {
-		icons = {
-			glyphs = {
-				default = "",
-				symlink = "",
-				git = {
-					unstaged = "",
-					staged = "S",
-					unmerged = "",
-					renamed = "➜",
-					deleted = "",
-					untracked = "U",
-					ignored = "◌",
-				},
-				folder = {
-					default = "",
-					open = "",
-					empty = "",
-					empty_open = "",
-					symlink = "",
-				},
-			},
-		},
-	},
-	disable_netrw = true,
-	hijack_netrw = true,
-	open_on_tab = true,
-	hijack_cursor = false,
-	update_cwd = true,
-	update_focused_file = {
-		enable = true,
-		update_cwd = true,
-	},
-	diagnostics = {
-		enable = true,
-		icons = {
-			hint = "",
-			info = "",
-			warning = "",
-			error = "",
-		},
-	},
-	system_open = {
-		cmd = nil,
-		args = {},
-	},
-	filters = {
-		dotfiles = false,
-		custom = {},
-	},
-	view = {
-		width = 50,
-		hide_root_folder = false,
-		side = "left",
-		mappings = {
-			custom_only = false,
-			list = {
-				{ key = { "l", "<CR>", "o" }, cb = tree_cb("edit") },
-				{ key = { "h", "<BS>" }, cb = tree_cb("close_node") },
-				{ key = "h", cb = tree_cb("close_node") },
-				{ key = "<c-v>", cb = tree_cb("vsplit") },
-				{ key = "<c-s>", cb = tree_cb("split") },
-				{ key = "<c-t>", cb = tree_cb("tab") },
-			},
-		},
-		number = false,
-		relativenumber = false,
-	},
-	trash = {
-		cmd = "trash",
-		require_confirm = true,
-	},
-	actions = {
-		open_file = {
-			quit_on_open = false,
-		},
-	},
-})
+return options

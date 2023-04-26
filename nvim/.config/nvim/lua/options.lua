@@ -5,7 +5,7 @@ opt.nu = true
 opt.rnu = true
 opt.ruler = true
 opt.signcolumn = "yes"
-opt.cursorline = true
+opt.cursorline = false
 opt.errorbells = false
 opt.tabstop = 4
 opt.softtabstop = 4
@@ -27,12 +27,12 @@ opt.scrolloff = 8
 opt.cmdheight = 1
 opt.virtualedit = "block"
 opt.updatetime = 50
-opt.shortmess:append("c")
+opt.shortmess:append "c"
 opt.shell = "/bin/zsh"
 opt.splitbelow = true
 opt.splitright = true
 opt.undofile = true
 opt.switchbuf = { "useopen", "usetab" }
-opt.undodir = os.getenv("HOME") .. "/.vim/tmp/undodir"
+opt.undodir = os.getenv "HOME" .. "/.vim/tmp/undodir"
 opt.laststatus = 2
 opt.statusline = "%{expand('%:p:h:t')}/%t%m %r %= %l/%L"
