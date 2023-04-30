@@ -15,19 +15,19 @@ scrolling:
 
 font:
   normal:
-    family: FiraCode Nerd Font
+    family: JetBrainsMonoNL Nerd Font
     style: Regular
 
   bold:
-    family: FiraCode Nerd Font
+    family: JetBrainsMonoNL Nerd Font
     style: Bold
 
   italic:
-    family: FiraCode Nerd Font
+    family: JetBrainsMonoNL Nerd Font
     style: Italic
 
   bold_italic:
-    family: FiraCode Nerd Font
+    family: JetBrainsMonoNL Nerd Font
     style: Bold Italic
 
   size: 15
@@ -43,8 +43,8 @@ colors:
   normal:
     black:   '#1c1c1c'
     red:     '#d75f5f'
-    green:   '#72a25a'
-    yellow:  '#d8ad4c'
+    green:   '#99ad6a'
+    yellow:  '#E6C384'
     blue:    '#597bc5'
     magenta: '#8787af'
     cyan:    '#4a8382'
