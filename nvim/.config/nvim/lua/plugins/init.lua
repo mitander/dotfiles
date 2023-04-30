@@ -89,19 +89,15 @@ local plugins = {
 
     -- File navigatior
     {
-        "nvim-tree/nvim-tree.lua",
+        "kyazdani42/nvim-tree.lua",
         lazy = false,
-        cmd = { "NvimTreeToggle", "NvimTreeFocus" },
         init = function()
             require("keymaps").nvimtree()
         end,
-        opts = function()
-            return require "plugins.nvim-tree"
+        config = function()
+            require "plugins.nvim-tree"
         end,
-        config = function(_, opts)
-            require("nvim-tree").setup(opts)
-            vim.g.nvimtree_side = opts.view.side
-        end,
+        dependencies = "kyazdani42/nvim-web-devicons",
     },
 
     -- Lsp configuration
