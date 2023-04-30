@@ -17,6 +17,17 @@ local plugins = {
     { "ziglang/zig.vim", ft = "zig" },
     { "rust-lang/rust.vim", ft = "rust" },
 
+    -- Statusline
+    {
+        "nvim-lualine/lualine.nvim",
+        init = function()
+            require("utils").lazy_load "lualine.nvim"
+        end,
+        config = function()
+            require "plugins.lualine"
+        end,
+    },
+
     -- Easier commenting
     {
         lazy = false,

@@ -33,4 +33,4 @@ vim.opt.undofile = true
 vim.opt.switchbuf = { "useopen", "usetab" }
 vim.opt.undodir = os.getenv "HOME" .. "/.vim/tmp/undodir"
 vim.opt.laststatus = 2
-vim.opt.statusline = "%{expand('%:p:h:t')}/%t%m %r %= %l/%L"
+vim.opt.showmode = false
