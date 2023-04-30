@@ -6,6 +6,14 @@ local nnoremap_buf = require("utils").bind_buf "n"
 -- leader
 vim.g.mapleader = " "
 
+vim.cmd [[
+    cab W w
+    cab Q q
+    cab Wq wq
+    cab wQ wq
+    cab WQ wq
+]]
+
 -- better line navigation
 map("n", "j", "gj", {})
 map("n", "k", "gk", {})
