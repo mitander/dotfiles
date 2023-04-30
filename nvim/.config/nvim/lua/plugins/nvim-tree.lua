@@ -114,10 +114,8 @@ nvim_tree.setup {
     hijack_netrw = true,
     open_on_tab = true,
     hijack_cursor = false,
-    update_cwd = true,
     update_focused_file = {
         enable = true,
-        update_cwd = true,
     },
     diagnostics = {
         enable = true,
