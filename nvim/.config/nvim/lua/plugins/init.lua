@@ -13,8 +13,8 @@ local plugins = {
     },
 
     -- Language plugins
-    { "fatih/vim-go", ft = "go" },
-    { "ziglang/zig.vim", ft = "zig" },
+    { "fatih/vim-go",       ft = "go" },
+    { "ziglang/zig.vim",    ft = "zig" },
     { "rust-lang/rust.vim", ft = "rust" },
 
     -- Statusline
@@ -122,8 +122,13 @@ local plugins = {
         end,
         dependencies = {
             { "nvim-lua/lsp-status.nvim" },
-            { "williamboman/mason.nvim" },
             { "williamboman/mason-lspconfig.nvim" },
+            {
+                "williamboman/mason.nvim",
+                config = function()
+                    require "plugins.mason"
+                end,
+            },
         },
     },
 
@@ -147,7 +152,8 @@ local plugins = {
 
                     vim.api.nvim_create_autocmd("InsertLeave", {
                         callback = function()
-                            if require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()]
+                            if
+                                require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()]
                                 and not require("luasnip").session.jump_active
                             then
                                 require("luasnip").unlink_current()
