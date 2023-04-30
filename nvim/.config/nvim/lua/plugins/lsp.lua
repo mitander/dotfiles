@@ -6,18 +6,6 @@ if not cmp_ok then
     return
 end
 
-local mason_ok, mason = pcall(require, "mason")
-if not mason_ok then
-    print "error: could not load mason"
-    return
-end
-
-local mason_config_ok, mason_config = pcall(require, "mason-lspconfig")
-if not mason_config_ok then
-    print "error: could not load mason-lspconfig"
-    return
-end
-
 local lspconfig_ok, lspconfig = pcall(require, "lspconfig")
 if not lspconfig_ok then
     print "error: could not load lspconfig"
@@ -26,9 +14,9 @@ end
 
 local signs = {
     { name = "DiagnosticSignError", text = "" },
-    { name = "DiagnosticSignWarn", text = "" },
-    { name = "DiagnosticSignHint", text = "" },
-    { name = "DiagnosticSignInfo", text = "" },
+    { name = "DiagnosticSignWarn",  text = "" },
+    { name = "DiagnosticSignHint",  text = "" },
+    { name = "DiagnosticSignInfo",  text = "" },
 }
 
 for _, sign in ipairs(signs) do
@@ -57,31 +45,9 @@ local servers = {
     "clangd",
     "gopls",
     "rust_analyzer",
-    -- "zls", TODO: disabled due to bug
+    "zls",
     "lua_ls",
     "jsonls",
-}
-
-mason.setup {
-    log_level = vim.log.levels.INFO,
-    PATH = "skip",
-    ui = {
-        icons = {
-            package_installed = "✓",
-            package_pending = "➜",
-            package_uninstalled = "✗",
-        },
-    },
-    keymaps = {
-        toggle_server_expand = "<CR>",
-        install_server = "i",
-        update_server = "u",
-        check_server_version = "c",
-        update_all_servers = "U",
-        check_outdated_servers = "C",
-        uninstall_server = "X",
-    },
-    max_concurrent_installers = 10,
 }
 
 for _, server in ipairs(servers) do
@@ -155,24 +121,3 @@ for _, server in ipairs(servers) do
 
     lspconfig[server].setup(outer_opts)
 end
-
-mason_config.setup {
-    ensure_installed = servers,
-    ui = {
-        keymaps = {
-            toggle_server_expand = "<CR>",
-            install_server = "i",
-            update_server = "u",
-            check_server_version = "c",
-            update_all_servers = "U",
-            check_outdated_servers = "C",
-            uninstall_server = "X",
-        },
-    },
-
-    log_level = vim.log.levels.INFO,
-}
-
--- add binaries installed by mason to path
-local is_windows = vim.loop.os_uname().sysname == "Windows_NT"
-vim.env.PATH = vim.env.PATH .. (is_windows and ";" or ":") .. vim.fn.stdpath "data" .. "/mason/bin"
