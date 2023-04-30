@@ -82,6 +82,8 @@ end
 M.gitsigns = function()
     nnoremap("gp", "Gitsigns preview_hunk")
     nnoremap("g.", "Gitsigns toggle_signs")
+    nnoremap("[g", "Gitsigns prev_hunk")
+    nnoremap("]g", "Gitsigns next_hunk")
     nnoremap("g,", "Gitsigns toggle_current_line_blame")
     nnoremap("gl", "Gitsigns blame_line")
     nnoremap("<leader><bs>", "Gitsigns reset_hunk")
