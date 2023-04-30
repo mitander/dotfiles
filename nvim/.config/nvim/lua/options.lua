@@ -34,3 +34,4 @@ vim.opt.switchbuf = { "useopen", "usetab" }
 vim.opt.undodir = os.getenv "HOME" .. "/.vim/tmp/undodir"
 vim.opt.laststatus = 2
 vim.opt.showmode = false
+vim.opt.ruler = false
