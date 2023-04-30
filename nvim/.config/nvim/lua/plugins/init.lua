@@ -1,4 +1,3 @@
--- Plugins
 local plugins = {
     "nvim-lua/plenary.nvim",
 

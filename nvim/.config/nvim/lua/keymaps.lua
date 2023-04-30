@@ -51,27 +51,27 @@ nnoremap("<leader>rl", "lua require('keymaps').reload()")
 
 local M = {}
 
-function M.nvimtree()
+M.nvimtree = function()
     nnoremap("<c-n>", "NvimTreeToggle")
 end
 
-function M.toggleterm()
+M.toggleterm = function()
     nnoremap("<leader>gg", "lua _lazygit_toggle()")
 end
 
-function M.fugitive()
+M.fugitive = function()
     nnoremap("gb", "Git blame")
 end
 
-function M.commentary()
+M.commentary = function()
     vim.cmd [[map <silent> <leader>/ :Commentary<enter>]]
 end
 
-function M.undotree()
+M.undotree = function()
     nnoremap("<leader>u", "UndotreeToggle")
 end
 
-function M.gitsigns()
+M.gitsigns = function()
     nnoremap("gp", "Gitsigns preview_hunk")
     nnoremap("g.", "Gitsigns toggle_signs")
     nnoremap("g,", "Gitsigns toggle_current_line_blame")
@@ -79,7 +79,7 @@ function M.gitsigns()
     nnoremap("<leader><bs>", "Gitsigns reset_hunk")
 end
 
-function M.lsp(bufnr)
+M.lsp = function(bufnr)
     nnoremap_buf(bufnr, "gr", "lua vim.lsp.buf.references()", {})
     nnoremap_buf(bufnr, "gd", "lua vim.lsp.buf.definition()", {})
     nnoremap_buf(bufnr, "<leader>rn", "lua vim.lsp.buf.rename()", {})
@@ -92,7 +92,7 @@ function M.lsp(bufnr)
     nnoremap_buf(bufnr, "ga", "lua vim.lsp.buf.code_action()", {})
 end
 
-function M.telescope()
+M.telescope = function()
     vim.cmd [[command! Files exec (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files']]
     nnoremap("<c-p>", "Files")
     nnoremap("<c-f>", "Telescope live_grep")
@@ -105,7 +105,7 @@ function M.telescope()
     nnoremap("<leader>gc", "Telescope git_bcommits")
 end
 
-function M.reload()
+M.reload = function()
     for _, file in ipairs(vim.fn.readdir(vim.fn.stdpath "config" .. "/lua", [[v:val =~ '\.lua$']])) do
         local name = file:gsub("%.lua$", "")
         require("plenary.reload").reload_module(name)

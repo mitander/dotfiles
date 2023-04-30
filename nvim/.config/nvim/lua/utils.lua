@@ -9,7 +9,6 @@ M.lazy_bootstrap = function(install_path)
     M.echo "  Installing lazy.nvim & plugins ..."
     local repo = "https://github.com/folke/lazy.nvim.git"
     vim.fn.system { "git", "clone", "--filter=blob:none", "--branch=stable", repo, install_path }
-    vim.opt.rtp:prepend(install_path)
 end
 
 M.lazy_load = function(plugin)

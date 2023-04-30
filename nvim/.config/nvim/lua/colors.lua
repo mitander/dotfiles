@@ -15,7 +15,6 @@ local c = {
 }
 
 for _, v in ipairs {
-
     -- vim
     { group = "Comment", bg = c.none, fg = c.cyan },
     { group = "SpecialKey", bg = c.none, fg = c.yellow },
