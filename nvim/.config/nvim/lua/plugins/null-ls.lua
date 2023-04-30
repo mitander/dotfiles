@@ -15,7 +15,7 @@ null_ls.setup {
         formatting.zigfmt,
         formatting.rustfmt,
         formatting.jq,
-        formatting.stylua,
+        formatting.lua_format,
     },
     on_attach = function(client, bufnr)
         if client.supports_method "textDocument/formatting" then
