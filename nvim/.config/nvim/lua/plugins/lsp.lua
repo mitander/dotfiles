@@ -57,13 +57,12 @@ local servers = {
     "clangd",
     "gopls",
     "rust_analyzer",
-    "zls",
+    -- "zls", TODO: disabled due to bug
     "lua_ls",
     "jsonls",
 }
 
 mason.setup {
-    ensure_installed = servers,
     log_level = vim.log.levels.INFO,
     PATH = "skip",
     ui = {
