@@ -4,18 +4,13 @@ if not ok then
 end
 
 local colors = {
-    black = "#30302c",
+    fg = "#dcd7ba",
+    bg = "#363646",
     red = "#cf6a4c",
     green = "#99ad6a",
-    yellow = "#d8ad4c",
-    blue = "#8197bf",
-    magneta = "#8787af",
+    yellow = "#E6C384",
     cyan = "#71b9f8",
-    white = "#e8e8de",
-    gray = "#36363b",
-    gray2 = "#9c9c9c",
-    gray3 = "#39393e",
-    gray4 = "#333338",
+    gray = "#9c9c9c",
     none = "NONE",
 }
 
@@ -24,10 +19,10 @@ local config = {
         component_separators = { left = "|", right = "|" },
         section_separators = { left = "|", right = "|" },
         theme = {
-            normal = { c = { fg = colors.gray2, bg = colors.gray } },
-            inactive = { c = { fg = colors.gray2, bg = colors.gray, gui = "bold" } },
+            normal = { c = { fg = colors.fg, bg = colors.bg } },
+            inactive = { c = { fg = colors.gray, bg = colors.bg, gui = "bold" } },
         },
-        ignore_focus = { "NvimTree" }, -- only ignores the ft for statusline.
+        ignore_focus = { "NvimTree" },
     },
     sections = {
         -- remove defaults values
@@ -65,18 +60,18 @@ end
 
 ins_left {
     "mode",
-    color = { fg = colors.yellow, bg = colors.gray, gui = "bold" },
+    color = { fg = colors.yellow, bg = colors.bg, gui = "bold" },
 }
 
 ins_left {
     "branch",
     icon = "",
-    color = { fg = colors.green, bg = colors.gray, gui = "bold" },
+    color = { fg = colors.green, bg = colors.bg, gui = "bold" },
 }
 
 ins_left {
     "filename",
-    color = { fg = colors.gray2, gui = "bold" },
+    color = { gui = "bold" },
     path = 1,
 }
 

@@ -37,7 +37,7 @@ env:
 
 colors:
   primary:
-    background: '#2a2a2e'
+    background: '#1f1f28'
     foreground: '#e4e4e4'
 
   normal:

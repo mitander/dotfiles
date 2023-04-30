@@ -3,12 +3,15 @@ local plugins = {
 
     -- Colorscheme
     {
-        "nanotech/jellybeans.vim",
+        "rebelot/kanagawa.nvim",
         init = function()
-            require("utils").lazy_load "jellybeans.vim"
+            require("utils").lazy_load "kanagawa.nvim"
+            require("kanagawa").load "wave"
             vim.cmd [[set background=dark]]
-            vim.cmd [[colorscheme jellybeans]]
-            vim.cmd [[ source ~/.config/nvim/lua/colors.lua ]]
+            vim.cmd [[hi CursorLineNr guifg=#E6C384]]
+            vim.cmd [[hi StatusLine guibg =#363646]]
+            vim.cmd [[hi StatusLineNC guibg =#363646]]
+            vim.cmd [[hi LineNr guifg=NONE]]
         end,
     },
 
