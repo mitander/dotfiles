@@ -1,5 +1,5 @@
 local c = {
-    black = "cf6a4c",
+    black = "#30302c",
     red = "#cf6a4c",
     green = "#99ad6a",
     yellow = "#d8ad4c",
@@ -22,7 +22,7 @@ for _, v in ipairs {
     { group = "StatusLine", bg = c.gray, fg = c.white },
     { group = "StatusLineNC", bg = c.gray, fg = c.gray2 },
     { group = "CursorLineNr", bg = c.none, fg = c.yellow },
-    { group = "CursorLine", bg = c.gray, fg = c.none },
+    { group = "CursorLine", bg = c.none, fg = c.none },
     { group = "Pmenu", bg = c.none, fg = c.white },
     { group = "FloatBorder", bg = c.none, fg = c.none },
     { group = "Normal", bg = c.none, fg = c.none },
