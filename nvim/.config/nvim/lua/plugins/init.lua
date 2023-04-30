@@ -55,7 +55,7 @@ local plugins = {
 
     -- Use project root as work directory
     {
-        lazy = false,
+        ft = "gitcommit",
         "airblade/vim-rooter",
         config = function()
             vim.g.rooter_targets = "/,*"
