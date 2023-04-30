@@ -16,7 +16,8 @@ toggleterm.setup {
     persist_size = true,
     direction = "horizontal",
     close_on_exit = true,
-    shell = vim.o.shell,
+    shell = "zsh",
+    persist_mode = false,
     float_opts = {
         border = "curved",
         winblend = 0,

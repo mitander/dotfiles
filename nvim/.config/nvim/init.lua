@@ -9,5 +9,4 @@ end
 require "options"
 require "autocmd"
 require "keymaps"
-require "colors"
 require "plugins"

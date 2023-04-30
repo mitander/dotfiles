@@ -63,8 +63,8 @@ M.nvimtree = function()
     nnoremap("<c-n>", "NvimTreeToggle")
 end
 
-M.toggleterm = function()
-    nnoremap("<leader>gg", "lua _lazygit_toggle()")
+M.lazygit = function()
+    nnoremap("<leader>gg", "LazyGit")
 end
 
 M.fugitive = function()

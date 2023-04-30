@@ -69,8 +69,10 @@ local plugins = {
 
     -- Use project root as work directory
     {
-        ft = "gitcommit",
         "airblade/vim-rooter",
+        init = function()
+            require("utils").lazy_load "vim-rooter"
+        end,
         config = function()
             vim.g.rooter_targets = "/,*"
             vim.g.rooter_silent_chdir = 1
@@ -80,7 +82,6 @@ local plugins = {
     -- Git signcolumn
     {
         "lewis6991/gitsigns.nvim",
-        ft = "gitcommit",
         init = function()
             require("keymaps").gitsigns()
             vim.api.nvim_create_autocmd({ "BufRead" }, {
@@ -225,20 +226,18 @@ local plugins = {
 
     -- Toggleterm with Lazygit
     {
-        "akinsho/toggleterm.nvim",
-        ft = "gitcommit",
+        lazy = false,
+        "kdheepak/lazygit.nvim",
         init = function()
-            require("keymaps").toggleterm()
-            -- load gitsigns only when a git file is opened
+            require("keymaps").lazygit()
             vim.api.nvim_create_autocmd({ "BufRead" }, {
-                group = vim.api.nvim_create_augroup("ToggleTermLazyLoad", { clear = true }),
+                group = vim.api.nvim_create_augroup("LazyGitLazyLoad", { clear = true }),
                 callback = function()
                     vim.fn.system("git -C " .. '"' .. vim.fn.expand "%:p:h" .. '"' .. " rev-parse")
                     if vim.v.shell_error == 0 then
-                        vim.api.nvim_del_augroup_by_name "ToggleTermLazyLoad"
+                        vim.api.nvim_del_augroup_by_name "LazyGitLazyLoad"
                         vim.schedule(function()
-                            require("utils").lazy_load "toggleterm.nvim"
-                            require "plugins.toggleterm"
+                            require("utils").lazy_load "lazygit.nvim"
                         end)
                     end
                 end,
