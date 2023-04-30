@@ -4,9 +4,9 @@ local plugins = {
 
     -- Colorscheme
     {
-        lazy = false,
         "nanotech/jellybeans.vim",
         init = function()
+            require("utils").lazy_load "jellybeans.vim"
             vim.cmd [[set background=dark]]
             vim.cmd [[colorscheme jellybeans]]
             vim.cmd [[ source ~/.config/nvim/lua/colors.lua ]]
@@ -69,7 +69,7 @@ local plugins = {
         "lewis6991/gitsigns.nvim",
         ft = "gitcommit",
         init = function()
-            -- load gitsigns only when a git file is opened
+            require("keymaps").gitsigns()
             vim.api.nvim_create_autocmd({ "BufRead" }, {
                 group = vim.api.nvim_create_augroup("GitSignsLazyLoad", { clear = true }),
                 callback = function()
@@ -85,7 +85,6 @@ local plugins = {
         end,
         config = function()
             require "plugins.gitsigns"
-            require("keymaps").gitsigns()
         end,
     },
 
@@ -178,8 +177,10 @@ local plugins = {
 
     -- Formatting
     {
-        lazy = false,
         "jose-elias-alvarez/null-ls.nvim",
+        init = function()
+            require("utils").lazy_load "null-ls.nvim"
+        end,
         config = function()
             require "plugins.null-ls"
         end,
@@ -238,7 +239,7 @@ local plugins = {
         init = function()
             require("keymaps").telescope()
         end,
-        config = function(_, opts)
+        config = function()
             require "plugins.telescope"
         end,
     },
@@ -255,7 +256,6 @@ local plugins = {
 
 local opts = {
     defaults = { lazy = true },
-    install = { colorscheme = { "nvchad" } },
 
     ui = {
         icons = {
