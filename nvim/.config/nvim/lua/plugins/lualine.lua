@@ -16,8 +16,8 @@ local colors = {
 
 local config = {
     options = {
-        component_separators = { left = "|", right = "|" },
-        section_separators = { left = "|", right = "|" },
+        component_separators = { left = "", right = "" },
+        section_separators = { left = "", right = "" },
         theme = {
             normal = { c = { fg = colors.fg, bg = colors.bg } },
             inactive = { c = { fg = colors.gray, bg = colors.bg, gui = "bold" } },
@@ -67,12 +67,14 @@ ins_left {
     "branch",
     icon = "",
     color = { fg = colors.green, bg = colors.bg, gui = "bold" },
+    padding = { right = 1 },
 }
 
 ins_left {
     "filename",
     color = { gui = "bold" },
     path = 1,
+    padding = { right = 1 },
 }
 
 ins_left {
@@ -84,6 +86,7 @@ ins_left {
         color_warn = { fg = colors.yellow },
         color_info = { fg = colors.cyan },
     },
+    padding = { right = 1 },
 }
 
 ins_right {
@@ -110,12 +113,14 @@ ins_right {
     end,
     icon = " ",
     color = { fg = colors.green, gui = "bold" },
+    padding = { right = 1 },
 }
 
 ins_right {
     "o:encoding",
     fmt = string.upper,
     color = { fg = colors.yellow, gui = "bold" },
+    padding = { right = 1 },
 }
 
 lualine.setup(config)
