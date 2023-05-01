@@ -30,7 +30,7 @@ font:
     family: JetBrainsMonoNL Nerd Font
     style: Bold Italic
 
-  size: 15
+  size: 18
 
 env:
   TERM: xterm-256color
@@ -38,7 +38,7 @@ env:
 colors:
   primary:
     background: '#1f1f28'
-    foreground: '#e4e4e4'
+    foreground: '#dcd7ba'
 
   normal:
     black:   '#1c1c1c'
