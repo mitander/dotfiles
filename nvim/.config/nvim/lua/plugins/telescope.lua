@@ -19,8 +19,8 @@ telescope.setup {
             vertical = {
                 mirror = false,
             },
-            width = 0.8,
-            height = 0.8,
+            width = 0.9,
+            height = 0.9,
             preview_cutoff = 120,
         },
         file_ignore_patterns = {
