@@ -8,9 +8,10 @@ local plugins = {
             require("utils").lazy_load "kanagawa.nvim"
             require("kanagawa").load "wave"
             vim.cmd [[set background=dark]]
+            vim.cmd [[hi CursorLine guibg=#2a2a37]]
             vim.cmd [[hi CursorLineNr guifg=#E6C384]]
-            vim.cmd [[hi StatusLine guibg =#363646]]
-            vim.cmd [[hi StatusLineNC guibg =#363646]]
+            vim.cmd [[hi StatusLine guibg=#363646]]
+            vim.cmd [[hi StatusLineNC guibg=#363646]]
             vim.cmd [[hi LineNr guifg=NONE]]
         end,
     },
