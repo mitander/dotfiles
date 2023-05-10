@@ -5,7 +5,7 @@ if not ok then
 end
 
 configs.setup {
-    ensure_installed = { "go", "zig", "rust", "lua", "vim", "python", "c", "cpp", "javascript", "typescript" },
+    ensure_installed = { "go", "zig", "rust", "lua", "vim", "python", "c", "cpp", "javascript", "typescript", "comment" },
     sync_install = false,
     highlight = {
         enable = true,
