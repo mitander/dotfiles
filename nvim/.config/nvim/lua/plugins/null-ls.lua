@@ -12,7 +12,7 @@ null_ls.setup {
     sources = {
         formatting.clang_format,
         formatting.gofmt,
-        formatting.zigfmt,
+        -- formatting.zigfmt, -- let zig.vim handle formatting
         formatting.rustfmt,
         formatting.jq,
         formatting.stylua,
