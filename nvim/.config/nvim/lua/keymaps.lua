@@ -57,6 +57,21 @@ nnoremap("<leader>.", ":execute 'set cc=' . (&colorcolumn == '' ? '100' : '')")
 -- reload modules
 nnoremap("<leader>rl", "lua require('keymaps').reload()")
 
+-- Map key chord `jk` to <Esc>.
+vim.cmd [[
+    let g:j_time = 0
+    let g:k_time = 0
+    function! JK(key)
+        let l:time = reltimefloat(reltime())
+        if a:key=='j' | let g:j_time = l:time | endif
+        if a:key=='k' | let g:k_time = l:time | endif
+        let l:diff = abs(g:j_time - g:k_time)
+        return (l:diff <= 0.05 && l:diff >=0.001) ? "\b\e" : a:key
+    endfunction
+    inoremap <expr> j JK('j')
+    inoremap <expr> k JK('k')
+]]
+
 local M = {}
 
 M.nvimtree = function()
