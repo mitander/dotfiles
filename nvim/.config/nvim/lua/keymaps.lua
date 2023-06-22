@@ -117,6 +117,15 @@ M.lsp = function(bufnr)
     nnoremap_buf(bufnr, "ga", "lua vim.lsp.buf.code_action()", {})
 end
 
+M.dap = function()
+    nnoremap("<leader><cr>", "lua require'dap'.continue()")
+    nnoremap("<leader>bp", "lua require'dap'.toggle_breakpoint()")
+    nnoremap("<leader>so", "lua require'dap'.step_over()")
+    nnoremap("<leader>si", "lua require'dap'.step_into()")
+    nnoremap("<leader>q", "lua require'dap'.terminate()")
+    nnoremap("<leader>db", "lua require'dapui'.toggle()")
+end
+
 M.telescope = function()
     vim.cmd [[command! Files exec (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files']]
     nnoremap("<c-p>", "Files")

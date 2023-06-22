@@ -18,8 +18,8 @@ local plugins = {
     },
 
     -- Language plugins
-    { "fatih/vim-go", ft = "go" },
-    { "ziglang/zig.vim", ft = "zig" },
+    { "fatih/vim-go",       ft = "go" },
+    { "ziglang/zig.vim",    ft = "zig" },
     { "rust-lang/rust.vim", ft = "rust" },
 
     -- Statusline
@@ -267,6 +267,15 @@ local plugins = {
         "ahmedkhalf/project.nvim",
         config = function()
             require "plugins.project"
+        end,
+    },
+
+    {
+        "mfussenegger/nvim-dap",
+        dependencies = "rcarriga/nvim-dap-ui",
+        init = function()
+            require "plugins.dap"
+            require("keymaps").dap()
         end,
     },
 }
