@@ -207,6 +207,7 @@ local plugins = {
     -- Syntax highlighting
     {
         "nvim-treesitter/nvim-treesitter",
+        dependencies = "nvim-treesitter/nvim-treesitter-context",
         init = function()
             require("utils").lazy_load "nvim-treesitter"
         end,

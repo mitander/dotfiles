@@ -5,7 +5,19 @@ if not ok then
 end
 
 configs.setup {
-    ensure_installed = { "go", "zig", "rust", "lua", "vim", "python", "c", "cpp", "javascript", "typescript", "comment" },
+    ensure_installed = {
+        "go",
+        "zig",
+        "rust",
+        "lua",
+        "vim",
+        "python",
+        "c",
+        "cpp",
+        "javascript",
+        "typescript",
+        "comment",
+    },
     sync_install = false,
     highlight = {
         enable = true,
@@ -19,4 +31,23 @@ configs.setup {
         enable = false,
     },
     indent = { enable = true },
+}
+
+require("treesitter-context").setup {
+    enable = true,
+    throttle = true,
+    max_lines = 0,
+    patterns = {
+        default = {
+            "class",
+            "function",
+            "method",
+        },
+
+        zig = {
+            "TopLevelDecl",
+            "Statement",
+            "SwitchProng",
+        },
+    },
 }
