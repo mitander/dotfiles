@@ -57,6 +57,9 @@ nnoremap("<leader>.", ":execute 'set cc=' . (&colorcolumn == '' ? '100' : '')")
 -- reload modules
 nnoremap("<leader>rl", "lua require('keymaps').reload()")
 
+-- compile
+nnoremap("<leader><cr>", "make")
+
 -- Map key chord `jk` to <Esc>.
 vim.cmd [[
     let g:j_time = 0
@@ -118,12 +121,13 @@ M.lsp = function(bufnr)
 end
 
 M.dap = function()
-    nnoremap("<leader><cr>", "lua require'dap'.continue()")
+    nnoremap("<leader>dr", "lua require'dap'.continue() require'dapui'.open()")
+    nnoremap("<leader>q", "lua require'dap'.terminate() require'dapui'.close()")
     nnoremap("<leader>bp", "lua require'dap'.toggle_breakpoint()")
+    nnoremap("<leader>bd", "lua require'dap'.clear_breakpoints()")
     nnoremap("<leader>so", "lua require'dap'.step_over()")
     nnoremap("<leader>si", "lua require'dap'.step_into()")
-    nnoremap("<leader>q", "lua require'dap'.terminate()")
-    nnoremap("<leader>db", "lua require'dapui'.toggle()")
+    nnoremap("<leader>du", "lua require'dapui'.toggle()")
 end
 
 M.telescope = function()
