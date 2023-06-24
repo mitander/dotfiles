@@ -98,7 +98,7 @@ M.undotree = function()
 end
 
 M.gitsigns = function()
-    nnoremap("gp", "Gitsigns preview_hunk")
+    nnoremap("gp", "Gitsigns preview_hunk_inline")
     nnoremap("g.", "Gitsigns toggle_signs")
     nnoremap("[g", "Gitsigns prev_hunk")
     nnoremap("]g", "Gitsigns next_hunk")
