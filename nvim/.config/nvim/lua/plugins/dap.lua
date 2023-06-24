@@ -18,7 +18,8 @@ dap.configurations.c = {
                 table.insert(splits, str)
             end
             -- use root folder name as binary name
-            return "./build/" .. splits[#splits]
+            print("./build/" .. splits[#splits - 1])
+            return "./build/" .. splits[#splits - 1]
         end,
         cwd = "${workspaceFolder}",
         stopOnEntry = false,
@@ -37,6 +38,7 @@ dap.configurations.cpp = {
                 table.insert(splits, str)
             end
             -- use root folder name as binary name
+            print("./build/" .. splits[#splits - 1])
             return "./build/" .. splits[#splits - 1]
         end,
         cwd = "${workspaceFolder}",
@@ -75,7 +77,7 @@ dap.configurations.rust = {
                 table.insert(splits, str)
             end
             -- use root folder name as binary name
-            return "./target/debug/" .. splits[#splits]
+            return "./target/debug/" .. splits[#splits - 1]
         end,
         cwd = "${workspaceFolder}",
         stopOnEntry = false,
