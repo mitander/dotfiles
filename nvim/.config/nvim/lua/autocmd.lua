@@ -1,3 +1,5 @@
+local nnoremap = require("utils").bind "n"
+
 -- highlight yanks
 vim.api.nvim_create_autocmd("TextYankPost", {
     pattern = "*",
@@ -24,6 +26,32 @@ vim.api.nvim_create_autocmd({ "InsertLeave" }, {
 vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = { "zig", "go", "rust", "c", "cpp" },
     command = [[ setlocal tabstop=4 shiftwidth=4 ]],
+})
+
+-- build programs
+vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = "zig",
+    command = [[
+        nnoremap <silent> <buffer> <leader><enter> :Dispatch zig build test<enter>
+    ]],
+})
+vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = { "c", "cpp" },
+    command = [[
+        nnoremap <silent> <buffer> <leader><enter> :Dispatch make<enter>
+    ]],
+})
+vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = { "go" },
+    command = [[
+        nnoremap <silent> <buffer> <leader><enter> :Dispatch go test all<enter>
+    ]],
+})
+vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = { "rust" },
+    command = [[
+        nnoremap <silent> <buffer> <leader><enter> :Dispatch cargo test<enter>
+    ]],
 })
 
 -- terminal

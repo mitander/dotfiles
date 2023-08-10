@@ -12,7 +12,7 @@ alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.yml"
 # tmux
 alias tn="tmux new-session -s "
 alias ta="tmux attach-session -t "
-alias tm="tmux attach -t coffee || tmux new -s coffee"
+alias tm="tmux attach -t default || tmux new -s default"
 alias tls="tmux ls"
 
 # git
