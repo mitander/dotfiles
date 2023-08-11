@@ -131,6 +131,9 @@ export PATH=$PATH:$HOME/.local/bin
 # zig
 export PATH=$PATH:/usr/local/zig
 
+# cargo
+export CARGO_NET_GIT_FETCH_WITH_CLI=true
+
 # load custom paths
 [ -r ~/.custom.zsh ] && source ~/.custom.zsh
 
