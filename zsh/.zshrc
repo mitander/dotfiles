@@ -10,7 +10,7 @@ alias vimrc="vim $HOME/dotfiles/nvim/.config/nvim/init.lua"
 alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.yml"
 
 # tmux
-alias tn="tmux new-session -s "
+alias tn='tmux new-session -s $(basename $PWD)'
 alias ta="tmux attach-session -t "
 alias tm="tmux attach -t default || tmux new -s default"
 alias tls="tmux ls"
