@@ -74,18 +74,6 @@ local plugins = {
         end,
     },
 
-    -- Use project root as work directory
-    {
-        "airblade/vim-rooter",
-        init = function()
-            require("utils").lazy_load "vim-rooter"
-        end,
-        config = function()
-            vim.g.rooter_targets = "/,*"
-            vim.g.rooter_silent_chdir = 1
-        end,
-    },
-
     -- Git signcolumn
     {
         "lewis6991/gitsigns.nvim",
