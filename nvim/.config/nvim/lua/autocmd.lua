@@ -80,15 +80,13 @@ vim.api.nvim_create_autocmd("BufEnter", {
             return
         end
         path = vim.fs.dirname(path)
-        local root = root_cache[path]
-        if root == nil then
+        if root_cache[path] == nil then
             local root_file = vim.fs.find({ ".git", "Makefile" }, { path = path, upward = true })[1]
             if root_file == nil then
                 return
             end
-            root = vim.fs.dirname(root_file)
-            root_cache[path] = root
+            root_cache[path] = vim.fs.dirname(root_file)
         end
-        vim.fn.chdir(root)
+        vim.fn.chdir(root_cache[path])
     end,
 })
