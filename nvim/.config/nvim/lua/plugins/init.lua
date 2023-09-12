@@ -33,11 +33,6 @@ local plugins = {
         end,
     },
 
-    {
-        "tpope/vim-dispatch",
-        lazy = false,
-    },
-
     -- Easier commenting
     {
         lazy = false,

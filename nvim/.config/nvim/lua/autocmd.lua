@@ -28,32 +28,13 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     command = [[ setlocal tabstop=4 shiftwidth=4 ]],
 })
 
--- build programs
+-- switch tmux pane and run command
 vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = "zig",
+    pattern = "*",
     command = [[
-        nnoremap <silent> <buffer> <leader><enter> :Dispatch zig build test<enter>
+        nnoremap <silent> <buffer> <leader><enter> :silent exec "!tmux select-pane -l && tmux send-keys C-l && tmux send up enter && tmux select-pane -l"<enter>
     ]],
 })
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "c", "cpp" },
-    command = [[
-        nnoremap <silent> <buffer> <leader><enter> :Dispatch make<enter>
-    ]],
-})
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "go" },
-    command = [[
-        nnoremap <silent> <buffer> <leader><enter> :Dispatch go test all<enter>
-    ]],
-})
-vim.api.nvim_create_autocmd({ "FileType" }, {
-    pattern = { "rust" },
-    command = [[
-        nnoremap <silent> <buffer> <leader><enter> :Dispatch cargo test<enter>
-    ]],
-})
-
 -- terminal
 vim.api.nvim_create_autocmd({ "TermOpen" }, {
     pattern = "*",
