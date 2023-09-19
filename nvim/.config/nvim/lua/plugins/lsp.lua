@@ -52,8 +52,9 @@ local servers = {
 
 for _, server in ipairs(servers) do
     local outer_opts = {
-        on_attach = function(_, bufnr)
+        on_attach = function(client, bufnr)
             keymaps.lsp(bufnr)
+            client.server_capabilities.semanticTokensProvider = nil
         end,
         capabilities = cmp.default_capabilities(vim.lsp.protocol.make_client_capabilities()),
         flags = {
