@@ -1,21 +1,5 @@
 local nnoremap = require("utils").bind "n"
 
--- highlight yanks
-vim.api.nvim_create_autocmd("TextYankPost", {
-    pattern = "*",
-    callback = function()
-        vim.highlight.on_yank {
-            higroup = "IncSearch",
-            timeout = 200,
-        }
-    end,
-})
--- trim whitespace
-vim.api.nvim_create_autocmd({ "BufWritePre" }, {
-    pattern = "*",
-    command = "%s/\\s\\+$//e",
-})
-
 -- better paste
 vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     pattern = "*",
@@ -35,6 +19,7 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
         nnoremap <silent> <buffer> <leader><enter> :silent exec "!tmux select-pane -l && tmux send-keys C-l && tmux send up enter && tmux select-pane -l"<enter>
     ]],
 })
+
 -- terminal
 vim.api.nvim_create_autocmd({ "TermOpen" }, {
     pattern = "*",

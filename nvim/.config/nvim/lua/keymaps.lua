@@ -25,8 +25,8 @@ map("v", ">", ">gv", {})
 -- disable ex-mode
 map("n", "q", "<nop>", {})
 
--- don't yank on paste
-map("x", "p", "pgvy", {})
+-- -- don't yank on paste
+-- map("x", "p", "pgvy", {})
 
 -- open/reload config
 nnoremap("<leader>c", ":tabnew ~/dotfiles/nvim/.config/nvim/init.lua")

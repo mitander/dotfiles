@@ -18,10 +18,22 @@ local plugins = {
     },
 
     -- Language plugins
-    { "fatih/vim-go",       ft = "go" },
-    { "ziglang/zig.vim",    ft = "zig" },
+    { "fatih/vim-go", ft = "go" },
+    { "ziglang/zig.vim", ft = "zig" },
     { "rust-lang/rust.vim", ft = "rust" },
 
+    -- Better yanks
+    {
+        lazy = false,
+        "ibhagwan/smartyank.nvim",
+        init = function()
+            require("smartyank").setup {
+                highlight = {
+                    timeout = 200, -- timeout for clearing the highlight
+                },
+            }
+        end,
+    },
     -- Statusline
     {
         "nvim-lualine/lualine.nvim",
