@@ -172,7 +172,6 @@ local plugins = {
                 "windwp/nvim-autopairs",
                 opts = {
                     fast_wrap = {},
-                    disable_filetype = { "TelescopePrompt", "vim" },
                 },
                 config = function(_, opts)
                     require("nvim-autopairs").setup(opts)
@@ -232,7 +231,6 @@ local plugins = {
         lazy = false,
         "kdheepak/lazygit.nvim",
         init = function()
-            require("keymaps").lazygit()
             vim.api.nvim_create_autocmd({ "BufRead" }, {
                 group = vim.api.nvim_create_augroup("LazyGitLazyLoad", { clear = true }),
                 callback = function()
@@ -246,18 +244,23 @@ local plugins = {
                 end,
             })
         end,
+        config = function()
+            require("keymaps").lazygit()
+            vim.cmd [[hi LazyGitBorder guifg=#363646]]
+            vim.cmd [[hi LazyGitFloat guifg=#dcd7ba]]
+        end,
     },
 
-    -- Telescope fuzzy previewer
     {
-        "nvim-telescope/telescope.nvim",
+        "ibhagwan/fzf-lua",
         lazy = false,
-        cmd = "Telescope",
         init = function()
-            require("keymaps").telescope()
+            require("keymaps").fzf()
         end,
         config = function()
-            require "plugins.telescope"
+            vim.cmd [[hi FzfLuaBorder guifg=#363646]]
+            vim.cmd [[hi FzfLuaTitle guifg=#dcd7ba]]
+            require "plugins.fzf"
         end,
     },
 

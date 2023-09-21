@@ -130,17 +130,17 @@ M.dap = function()
     nnoremap("<leader>du", "lua require'dapui'.toggle()")
 end
 
-M.telescope = function()
-    vim.cmd [[command! Files exec (len(system('git rev-parse'))) ? ':Telescope find_files' : ':Telescope git_files']]
+M.fzf = function()
+    vim.cmd [[command! Files exec (len(system('git rev-parse'))) ? ':FzfLua files' : ':FzfLua git_files']]
     nnoremap("<c-p>", "Files")
-    nnoremap("<c-f>", "Telescope live_grep")
-    nnoremap("<c-b>", "Telescope buffers")
-    nnoremap("<leader>h", "Telescope help_tags")
-    nnoremap("<leader>p", "Telescope projects")
-    nnoremap("<leader>gs", "Telescope git_status")
-    nnoremap("<leader>gl", "Telescope git_commits")
-    nnoremap("<leader>gb", "Telescope git_branches")
-    nnoremap("<leader>gc", "Telescope git_bcommits")
+    nnoremap("<c-f>", "FzfLua grep_project")
+    nnoremap("<c-b>", "FzfLua buffers")
+    nnoremap("<leader>h", "FzfLua help_tags")
+    nnoremap("<leader>gs", "FzfLua git_status")
+    nnoremap("<leader>gl", "FzfLua git_commits")
+    nnoremap("<leader>gb", "FzfLua git_branches")
+    nnoremap("<leader>gc", "FzfLua git_bcommits")
+    nnoremap("<leader>p", "FzfLua tmux_buffers")
 end
 
 M.reload = function()
