@@ -18,8 +18,8 @@ local plugins = {
     },
 
     -- Language plugins
-    { "fatih/vim-go", ft = "go" },
-    { "ziglang/zig.vim", ft = "zig" },
+    { "fatih/vim-go",       ft = "go" },
+    { "ziglang/zig.vim",    ft = "zig" },
     { "rust-lang/rust.vim", ft = "rust" },
 
     -- Better yanks
@@ -206,7 +206,6 @@ local plugins = {
     -- Syntax highlighting
     {
         "nvim-treesitter/nvim-treesitter",
-        dependencies = "nvim-treesitter/nvim-treesitter-context",
         init = function()
             require("utils").lazy_load "nvim-treesitter"
         end,
