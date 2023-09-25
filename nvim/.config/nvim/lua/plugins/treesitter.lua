@@ -17,6 +17,7 @@ configs.setup {
         "javascript",
         "typescript",
         "comment",
+        "markdown"
     },
     sync_install = false,
     highlight = {
