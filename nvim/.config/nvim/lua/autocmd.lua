@@ -16,7 +16,7 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
 vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = "*",
     command = [[
-        nnoremap <silent> <buffer> <leader><enter> :silent exec "!tmux select-pane -l && tmux send-keys C-l && tmux send up enter && tmux select-pane -l"<enter>
+        nnoremap <silent> <buffer> <leader><enter> :silent exec "!tmux select-window -l && tmux send-keys C-l && tmux send up enter && tmux select-pane -l"<enter>
     ]],
 })
 
