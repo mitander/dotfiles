@@ -36,6 +36,12 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     ]],
 })
 
+-- trim whitespace
+vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+    pattern = "*",
+    command = "%s/\\s\\+$//e",
+})
+
 -- close nvim-tree if last window
 vim.api.nvim_create_autocmd("QuitPre", {
     callback = function()
