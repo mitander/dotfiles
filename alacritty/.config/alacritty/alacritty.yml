@@ -15,19 +15,19 @@ scrolling:
 
 font:
   normal:
-    family: JetBrainsMonoNL Nerd Font
+    family: JetBrainsMono Nerd Font Mono
     style: Regular
 
   bold:
-    family: JetBrainsMonoNL Nerd Font
+    family: JetBrainsMono Nerd Font Mono
     style: Bold
 
   italic:
-    family: JetBrainsMonoNL Nerd Font
+    family: JetBrainsMono Nerd Font Mono
     style: Italic
 
   bold_italic:
-    family: JetBrainsMonoNL Nerd Font
+    family: JetBrainsMono Nerd Font Mono
     style: Bold Italic
 
   size: 16
