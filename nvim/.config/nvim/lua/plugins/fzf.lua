@@ -21,6 +21,7 @@ fzf_lua.setup {
     files = {
         fd_opts = "--no-ignore --color=never --type f --hidden --follow  --exclude .git",
         action = { ["ctrl-l"] = fzf_lua.actions.arg_add },
+        cwd = vim.loop.cwd()
     },
     grep = {
         rg_glob = true,

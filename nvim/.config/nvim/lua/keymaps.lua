@@ -5,6 +5,7 @@ local nnoremap_buf = require("utils").bind_buf "n"
 
 -- leader
 vim.g.mapleader = " "
+vim.g.maplocalleader = " "
 
 vim.cmd [[
     cab W w
