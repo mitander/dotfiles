@@ -140,6 +140,9 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 # load z
 [ -f ~/.config/z/z.sh ] && source ~/.config/z/z.sh
 
+# load zsh-autosuggestions
+[ -f ~/.config/zsh/scripts/zsh-autosuggestions.zsh ] && source ~/.config/zsh/scripts/zsh-autosuggestions.zsh
+
 # llvm
 export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
