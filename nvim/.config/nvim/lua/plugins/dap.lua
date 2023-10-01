@@ -27,6 +27,25 @@ dap.configurations.c = {
     },
 }
 
+dap.configurations.go = {
+    {
+        name = "Launch",
+        type = "lldb",
+        request = "launch",
+        program = function()
+            local splits = {}
+            for str in string.gmatch(vim.uv.cwd(), "[^/]*") do
+                table.insert(splits, str)
+            end
+            -- use root folder name as binary name
+            return splits[#splits - 1]
+        end,
+        cwd = "${workspaceFolder}",
+        stopOnEntry = false,
+        args = {},
+    },
+}
+
 dap.configurations.cpp = {
     {
         name = "Launch",
@@ -38,7 +57,6 @@ dap.configurations.cpp = {
                 table.insert(splits, str)
             end
             -- use root folder name as binary name
-            print("./build/" .. splits[#splits - 1])
             return "./build/" .. splits[#splits - 1]
         end,
         cwd = "${workspaceFolder}",
