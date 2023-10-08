@@ -17,11 +17,21 @@ fzf_lua.setup {
     },
     previewers = {
         bat = { theme = "base16" },
+        builtin = {
+            ueberzug_scaler = "cover",
+            extensions      = {
+                ["gif"]  = { "chafa" },
+                ["png"]  = { "chafa" },
+                ["jpg"]  = { "chafa" },
+                ["jpeg"] = { "chafa" },
+                ["svg"]  = { "chafa" },
+            }
+        },
     },
     files = {
         fd_opts = "--no-ignore --color=never --type f --hidden --follow  --exclude .git",
         action = { ["ctrl-l"] = fzf_lua.actions.arg_add },
-        cwd = vim.loop.cwd()
+        cwd = vim.fn.getcwd()
     },
     grep = {
         rg_glob = true,
@@ -58,11 +68,8 @@ fzf_lua.setup {
     },
     diagnostics = { icon_padding = " " },
     file_ignore_patterns = {
-        "jpg",
-        "jpeg",
         "ttf",
         "otf",
-        "png",
         "vendor",
         ".vscode",
         ".gitlab/",
