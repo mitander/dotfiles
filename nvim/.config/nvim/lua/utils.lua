@@ -30,35 +30,13 @@ M.lazy_load = function(plugin)
                         if plugin == "nvim-lspconfig" then
                             vim.cmd "silent! do FileType"
                         end
-                    end, 0)
+                    end)
                 else
                     require("lazy").load { plugins = plugin }
                 end
             end
         end,
     })
-end
-
-M.bind = function(mode, outer_opts)
-    outer_opts = outer_opts or { noremap = true, silent = true }
-    return function(key, cmd, opts)
-        cmd = "<cmd>" .. cmd .. "<enter>"
-        opts = vim.tbl_extend("force", outer_opts, opts or {})
-        vim.api.nvim_set_keymap(mode, key, cmd, opts)
-    end
-end
-
-M.bind_buf = function(mode, outer_opts)
-    outer_opts = outer_opts or { noremap = true, silent = true }
-    return function(buf, key, cmd, opts)
-        cmd = "<cmd>" .. cmd .. "<enter>"
-        opts = vim.tbl_extend("force", opts, opts or {})
-        vim.api.nvim_buf_set_keymap(buf, mode, key, cmd, opts)
-    end
-end
-
-M.highlight = function(v)
-    vim.cmd("hi! " .. v.group .. " guibg=" .. v.bg .. " guifg=" .. v.fg .. " gui='NONE'")
 end
 
 return M

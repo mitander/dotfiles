@@ -1,5 +1,3 @@
-local nnoremap = require("utils").bind "n"
-
 -- better paste
 vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     pattern = "*",
