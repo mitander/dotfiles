@@ -1,12 +1,20 @@
--- bootstrap lazy.nvim!
-local path = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
-vim.opt.rtp:prepend(path)
-
-if not vim.uv.fs_stat(path) then
-    require("utils").lazy_bootstrap(path)
+-- bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system {
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "--single-branch",
+        "https://github.com/folke/lazy.nvim.git",
+        lazypath,
+    }
 end
+vim.opt.runtimepath:prepend(lazypath)
 
-require "options"
-require "autocmd"
-require "keymaps"
-require "plugins"
+-- leader
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+-- start lazy.nvim
+require "plugins.lazy"

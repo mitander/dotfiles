@@ -1,16 +1,5 @@
 local M = {}
 
-M.echo = function(str)
-    vim.cmd "redraw"
-    vim.api.nvim_echo({ { str, "Bold" } }, true, {})
-end
-
-M.lazy_bootstrap = function(install_path)
-    M.echo "  Installing lazy.nvim & plugins ..."
-    local repo = "https://github.com/folke/lazy.nvim.git"
-    vim.fn.system { "git", "clone", "--filter=blob:none", "--branch=stable", repo, install_path }
-end
-
 M.lazy_load = function(plugin)
     vim.api.nvim_create_autocmd({ "BufRead", "BufWinEnter", "BufNewFile" }, {
         group = vim.api.nvim_create_augroup("BeLazyOnFileOpen" .. plugin, {}),
@@ -37,6 +26,27 @@ M.lazy_load = function(plugin)
             end
         end,
     })
+end
+
+-- helper functions
+M.vmap = function(tbl)
+    vim.keymap.set("v", tbl[1], tbl[2], tbl[3])
+end
+
+M.nmap = function(tbl)
+    vim.keymap.set("n", tbl[1], tbl[2], tbl[3])
+end
+
+M.nmap_cmd = function(tbl)
+    tbl[2] = "<cmd>" .. tbl[2] .. "<enter>"
+    vim.keymap.set("n", tbl[1], tbl[2], tbl[3])
+end
+
+M.nmap_buf = function(tbl)
+    if tbl[3] == nil then
+        tbl[3] = { buffer = 0 }
+    end
+    M.nmap(tbl)
 end
 
 return M

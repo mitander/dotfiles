@@ -1,3 +1,5 @@
+local nmap_cmd = require("utils").nmap_cmd
+
 local plugins = {
     "nvim-lua/plenary.nvim",
 
@@ -56,7 +58,7 @@ local plugins = {
         init = function()
             require("smartyank").setup {
                 highlight = {
-                    timeout = 200, -- timeout for clearing the highlight
+                    timeout = 200,
                 },
             }
         end,
@@ -77,7 +79,7 @@ local plugins = {
         lazy = false,
         "tpope/vim-commentary",
         init = function()
-            require("keymaps").commentary()
+            vim.cmd [[map <silent> <leader>/ :Commentary<enter>]]
         end,
     },
 
@@ -95,7 +97,7 @@ local plugins = {
         lazy = false,
         "mbbill/undotree",
         config = function()
-            require("keymaps").undotree()
+            nmap_cmd { "<leader>u", "UndotreeToggle" }
         end,
     },
 
@@ -112,7 +114,6 @@ local plugins = {
     {
         "lewis6991/gitsigns.nvim",
         init = function()
-            require("keymaps").gitsigns()
             vim.api.nvim_create_autocmd({ "BufRead" }, {
                 group = vim.api.nvim_create_augroup("GitSignsLazyLoad", { clear = true }),
                 callback = function()
@@ -135,9 +136,6 @@ local plugins = {
     {
         "kyazdani42/nvim-tree.lua",
         lazy = false,
-        init = function()
-            require("keymaps").nvimtree()
-        end,
         config = function()
             require "plugins.nvim-tree"
         end,
@@ -271,7 +269,7 @@ local plugins = {
             })
         end,
         config = function()
-            require("keymaps").lazygit()
+            nmap_cmd { "<leader>gg", "LazyGit" }
             vim.cmd [[hi LazyGitBorder guifg=#363646]]
             vim.cmd [[hi LazyGitFloat guifg=#dcd7ba]]
         end,
@@ -280,9 +278,6 @@ local plugins = {
     {
         "ibhagwan/fzf-lua",
         lazy = false,
-        init = function()
-            require("keymaps").fzf()
-        end,
         config = function()
             vim.cmd [[hi FzfLuaBorder guifg=#363646]]
             vim.cmd [[hi FzfLuaTitle guifg=#dcd7ba]]
@@ -304,7 +299,6 @@ local plugins = {
         dependencies = "rcarriga/nvim-dap-ui",
         init = function()
             require "plugins.dap"
-            require("keymaps").dap()
         end,
     },
 }

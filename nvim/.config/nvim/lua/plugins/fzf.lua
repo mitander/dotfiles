@@ -87,3 +87,18 @@ if vim.ui then
         },
     }
 end
+
+local utils = require("utils")
+local nmap = utils.nmap
+local nmap_cmd = utils.nmap_cmd
+
+vim.cmd [[command! Files exec (len(system('git rev-parse'))) ? ':FzfLua files' : ':FzfLua git_files']]
+nmap_cmd { "<c-p>", "Files" }
+nmap { "<c-f>", require("fzf-lua").grep_project }
+nmap { "<c-b>", require("fzf-lua").buffers }
+nmap { "<leader>h", require("fzf-lua").help_tags }
+nmap { "<leader>gs", require("fzf-lua").git_status }
+nmap { "<leader>gl", require("fzf-lua").git_commits }
+nmap { "<leader>gb", require("fzf-lua").git_branches }
+nmap { "<leader>gc", require("fzf-lua").git_bcommits }
+nmap { "<leader>p", require("fzf-lua").tmux_buffers }

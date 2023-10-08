@@ -4,8 +4,6 @@ if not nvim_tree_ok then
     return
 end
 
-require("keymaps").nvimtree()
-
 local function on_attach(bufnr)
     local api = require "nvim-tree.api"
 
@@ -142,3 +140,6 @@ nvim_tree.setup {
         },
     },
 }
+
+local nmap = require("utils").nmap
+nmap { "<c-n>", require("nvim-tree.api").tree.toggle }

@@ -1,4 +1,3 @@
-require("dapui").setup()
 local dap = require "dap"
 
 dap.adapters.lldb = {
@@ -102,3 +101,20 @@ dap.configurations.rust = {
         args = {},
     },
 }
+
+require("dapui").setup()
+
+local nmap = require("utils").nmap
+nmap { "<leader>dr", function()
+    require("dap").continue()
+    require("dap").open()
+end }
+nmap { "<leader>q", function()
+    require("dap").terminate()
+    require("dap").close()
+end }
+nmap { "<leader>bp", require 'dap'.toggle_breakpoint }
+nmap { "<leader>bd", require 'dap'.clear_breakpoints }
+nmap { "<leader>so", require 'dap'.step_over }
+nmap { "<leader>si", require 'dap'.step_into }
+nmap { "<leader>du", require 'dapui'.toggle }

@@ -1,4 +1,4 @@
-local keymaps = require "keymaps"
+local nmap_buf = require "utils".nmap_buf
 
 local cmp_ok, cmp = pcall(require, "cmp_nvim_lsp")
 if not cmp_ok then
@@ -53,7 +53,18 @@ local servers = {
 for _, server in ipairs(servers) do
     local outer_opts = {
         on_attach = function(client, bufnr)
-            keymaps.lsp(bufnr)
+    local opts = { buffer = bufnr, remap = false }
+    nmap_buf { "gr", vim.lsp.buf.references, opts }
+    nmap_buf { "gd", vim.lsp.buf.definition, opts }
+    nmap_buf { "gi", vim.lsp.buf.implementation, opts }
+    nmap_buf { "go", vim.diagnostic.open_float, opts }
+    nmap_buf { "[d", vim.diagnostic.goto_prev, opts }
+    nmap_buf { "]d", vim.diagnostic.goto_next, opts }
+    nmap_buf { "<leader>d", vim.diagnostic.setloclist, opts }
+    nmap_buf { "<leader>rn", vim.lsp.buf.rename, opts }
+    nmap_buf { "K", vim.lsp.buf.hover, opts }
+    nmap_buf { "ga", vim.lsp.buf.code_action, opts }
+
             client.server_capabilities.semanticTokensProvider = nil
         end,
         capabilities = cmp.default_capabilities(vim.lsp.protocol.make_client_capabilities()),
