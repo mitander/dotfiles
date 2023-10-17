@@ -63,7 +63,7 @@ fzf_lua.setup {
             },
         },
         files = {
-            cmd = "git ls-files  --exclude-standard --other -c",
+            cmd = "git ls-files -o -c --exclude-standard | grep -vE \"^$(git ls-files -d | paste -sd \"|\" -)$\"",
         },
     },
     diagnostics = { icon_padding = " " },
