@@ -147,3 +147,4 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
 export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+eval "$(atuin init zsh)"
