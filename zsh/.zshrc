@@ -58,7 +58,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   alias la="ls -GA"
 
   bindkey "ç" fzf-cd-widget
-  source ~/.fzf.zsh
   bindkey -r "^T"
 fi
 
@@ -147,4 +146,4 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
 export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
-eval "$(atuin init zsh)"
+eval "$(atuin init zsh --disable-up-arrow)"
