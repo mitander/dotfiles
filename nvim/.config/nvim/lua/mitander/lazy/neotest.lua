@@ -6,12 +6,15 @@ return {
         "nvim-treesitter/nvim-treesitter",
         "marilari88/neotest-vitest",
         "nvim-neotest/neotest-plenary",
+        "lawrence-laz/neotest-zig",
+        "nvim-neotest/nvim-nio"
     },
     config = function()
         local neotest = require("neotest")
         neotest.setup({
             adapters = {
                 require("neotest-vitest"),
+                require("neotest-zig"),
                 require("neotest-plenary").setup({ min_init = "./scripts/tests/minimal.vim" }),
             }
         })
