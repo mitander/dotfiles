@@ -7,7 +7,7 @@ alias :q="exit"
 alias zshc="vim $HOME/.custom.zsh"
 alias zshrc="vim $HOME/dotfiles/zsh/.zshrc"
 alias vimrc="vim $HOME/dotfiles/nvim/.config/nvim/init.lua"
-alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.yml"
+alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.toml"
 
 # tmux
 alias tn='tmux new-session -s $(basename $PWD)'
