@@ -12,13 +12,13 @@ alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.toml"
 # tmux
 alias tn='tmux new-session -s $(basename $PWD)'
 alias ta="tmux attach-session -t "
-alias tm="tmux attach -t default || tmux new -s default"
+alias tm="~/dotfiles/scripts/tmux-session.sh attach"
 alias tls="tmux ls"
 
 # git
 alias gg="lazygit"
 alias gs="git status"
-alias gl="git log --oneline --graph --color=always --abbrev-commit --date=short |less -REX"
+alias gl="git log --oneline --graph --color=always --abbrev-commit --date=short | less -REX"
 alias gc="git commit"
 alias ga="git add"
 alias gaa="git add ."
