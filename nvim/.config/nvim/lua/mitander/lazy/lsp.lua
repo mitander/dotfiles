@@ -13,6 +13,7 @@ return {
     config = function()
         local cmp = require('cmp')
         local cmp_lsp = require("cmp_nvim_lsp")
+        local luasnip = require("luasnip")
         local lspconfig = require("lspconfig")
         local capabilities = vim.tbl_deep_extend(
             "force",
@@ -51,8 +52,9 @@ return {
         for _, server in ipairs(servers) do
             local outer_opts = {
                 on_attach = function(client, bufnr)
-                    client.server_capabilities.semanticTokensProvider = nil
+                    -- client.server_capabilities.semanticTokensProvider = nil
                     local opts = { buffer = bufnr, remap = false }
+
                     vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
                     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
                     vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
@@ -64,6 +66,10 @@ return {
                     vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
                     -- vim.keymap.set("n", "<leader>s", vim.lsp.signature_help, opts )
                     vim.keymap.set("n", "ga", vim.lsp.buf.code_action, opts)
+
+                    if server == "rust_analyzer" then
+                        vim.lsp.inlay_hint.enable(bufnr, true)
+                    end
                 end,
                 capabilities = capabilities,
                 flags = {
@@ -175,7 +181,7 @@ return {
             },
             snippet = {
                 expand = function(args)
-                    require('luasnip').lsp_expand(args.body)
+                    luasnip.lsp_expand(args.body)
                 end,
             },
             confirm_opts = {
@@ -206,6 +212,22 @@ return {
                 ["<C-y>"] = cmp.config.disable,
                 ["<C-e>"] = cmp.mapping { i = cmp.mapping.abort(), c = cmp.mapping.close() },
                 ["<CR>"] = cmp.mapping.confirm { select = false },
+                ["<Tab>"] = cmp.mapping(function(fallback)
+                    if luasnip.locally_jumpable(1) then
+                        luasnip.jump(1)
+                    else
+                        fallback()
+                    end
+                end, { "i", "s" }),
+
+                ["<S-Tab>"] = cmp.mapping(function(fallback)
+                    if luasnip.locally_jumpable(-1) then
+                        luasnip.jump(-1)
+                    else
+                        fallback()
+                    end
+                end, { "i", "s" }),
+
             }),
         })
     end
