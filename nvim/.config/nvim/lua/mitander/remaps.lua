@@ -66,4 +66,4 @@ vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<CR>")
 vim.keymap.set("n", "<leader>rl", function() vim.cmd("so") end)
 
 -- netrw
-vim.keymap.set("n", "<c-n>", vim.cmd.Ex)
+vim.keymap.set("n", "<c-n>", "<cmd>Oil<cr>")
