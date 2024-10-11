@@ -3,7 +3,7 @@ vim.opt.guicursor = ""
 vim.opt.termguicolors = true
 
 vim.opt.nu = true
-vim.opt.rnu = true
+vim.opt.rnu = false
 vim.opt.ruler = true
 vim.opt.signcolumn = "yes"
 vim.opt.cursorline = true
