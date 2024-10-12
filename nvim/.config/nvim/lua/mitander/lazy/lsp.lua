@@ -51,10 +51,10 @@ return {
 
         for _, server in ipairs(servers) do
             local outer_opts = {
-                on_attach = function(client, bufnr)
-                    -- client.server_capabilities.semanticTokensProvider = nil
+                on_attach = function(_, bufnr)
                     local opts = { buffer = bufnr, remap = false }
-
+                    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+                    vim.keymap.set("n", "ga", vim.lsp.buf.code_action, opts)
                     vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
                     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
                     vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
@@ -63,13 +63,10 @@ return {
                     vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
                     vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, opts)
                     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-                    vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-                    -- vim.keymap.set("n", "<leader>s", vim.lsp.signature_help, opts )
-                    vim.keymap.set("n", "ga", vim.lsp.buf.code_action, opts)
-
-                    if server == "rust_analyzer" then
-                        vim.lsp.inlay_hint.enable(bufnr, true)
-                    end
+                    vim.keymap.set("i", "<leader>s", vim.lsp.buf.signature_help, opts )
+                    vim.keymap.set("n", "<leader>i", function()
+                        vim.lsp.inlay_hint.enable(0, not vim.lsp.inlay_hint.is_enabled())
+                    end, opts)
                 end,
                 capabilities = capabilities,
                 flags = {
