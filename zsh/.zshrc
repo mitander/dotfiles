@@ -91,7 +91,7 @@ autoload -U compinit
 zstyle ':completion:*' menu select
 zmodload zsh/complist
 compinit
-_comp_options+=(globdots)		# include hidden files.
+_comp_options+=(globdots)
 
 # vim keys
 bindkey -M menuselect 'h' vi-backward-char
@@ -127,12 +127,6 @@ export PATH=$PATH:/usr/bin
 export PATH=$PATH:/usr/local/bin
 export PATH=$PATH:$HOME/.local/bin
 
-# zig
-export PATH=$PATH:/usr/local/zig
-
-# cargo
-export CARGO_NET_GIT_FETCH_WITH_CLI=true
-
 # load custom paths
 [ -r ~/.custom.zsh ] && source ~/.custom.zsh
 
@@ -142,8 +136,4 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 # load zsh-autosuggestions
 [ -f ~/.config/zsh/scripts/zsh-autosuggestions.zsh ] && source ~/.config/zsh/scripts/zsh-autosuggestions.zsh
 
-# llvm
-export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
-export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
 eval "$(atuin init zsh --disable-up-arrow)"
