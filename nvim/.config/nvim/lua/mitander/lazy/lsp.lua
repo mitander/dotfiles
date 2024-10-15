@@ -63,7 +63,7 @@ return {
                     vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
                     vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, opts)
                     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-                    vim.keymap.set("n", "<leader>s", vim.lsp.buf.signature_help, opts )
+                    vim.keymap.set("n", "<leader>s", vim.lsp.buf.signature_help, opts)
                     vim.keymap.set("n", "<leader>i", function()
                         vim.lsp.inlay_hint.enable(0, not vim.lsp.inlay_hint.is_enabled())
                     end, opts)
