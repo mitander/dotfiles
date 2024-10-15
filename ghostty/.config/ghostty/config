@@ -1,0 +1,44 @@
+title = "Ghostty"
+
+theme = kanagawabones
+
+window-padding-x = 3
+window-padding-y = 3
+macos-window-shadow = false
+
+command = /bin/zsh
+shell-integration = zsh
+
+clipboard-read = allow
+clipboard-write = allow
+confirm-close-surface = false
+macos-option-as-alt = left
+
+font-size = 18
+font-thicken = true
+font-family = "JetBrainsMono Nerd Font Mono"
+font-family = "FiraCode Nerd Font"
+adjust-cell-width = -5%
+
+cursor-style = block
+cursor-color = "#d8ad4c"
+cursor-text = "#2a2e2e"
+cursor-opacity=0.96
+
+# tmux (\x01 = ctrl-a)
+# search in pane
+keybind = cmd+/=text:\x01\x06
+# windows
+keybind = cmd+physical:one=text:\x01\x31
+keybind = cmd+physical:two=text:\x01\x32
+keybind = cmd+physical:three=text:\x01\x33
+keybind = cmd+physical:four=text:\x01\x34
+keybind = cmd+physical:five=text:\x01\x35
+keybind = cmd+physical:six=text:\x01\x36
+keybind = cmd+physical:seven=text:\x01\x37
+keybind = cmd+physical:eight=text:\x01\x38
+keybind = cmd+physical:nine=text:\x01\x39
+
+# vim: ft=conf
+# vim bindings example (select all)
+keybind = cmd+a=text:\x1bggVG
