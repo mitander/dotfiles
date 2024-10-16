@@ -2,7 +2,7 @@ return {
     "kevinhwang91/nvim-bqf",
     lazy = false,
     config = function()
-        require("bqf").setup {
+        require("bqf").setup({
             {
                 auto_enable = {
                     description = [[enable nvim-bqf in quickfix window automatically]],
@@ -58,7 +58,7 @@ return {
                     default = [[see ###Function table for detail]],
                     openc = "<CR>",
                 },
-            }
-        }
-    end
+            },
+        })
+    end,
 }

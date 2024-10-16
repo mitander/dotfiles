@@ -54,26 +54,26 @@ return {
             table.insert(config.sections.lualine_x, component)
         end
 
-        ins_left {
+        ins_left({
             "mode",
             color = { fg = colors.yellow, bg = colors.bg, gui = "bold" },
-        }
+        })
 
-        ins_left {
+        ins_left({
             "branch",
             icon = "",
             color = { fg = colors.green, bg = colors.bg, gui = "bold" },
             padding = { right = 1 },
-        }
+        })
 
-        ins_left {
+        ins_left({
             "filename",
             color = { gui = "bold" },
             path = 1,
             padding = { right = 1 },
-        }
+        })
 
-        ins_left {
+        ins_left({
             "diagnostics",
             sources = { "nvim_diagnostic" },
             symbols = { error = " ", warn = " ", info = " " },
@@ -83,15 +83,15 @@ return {
                 color_info = { fg = colors.cyan },
             },
             padding = { right = 1 },
-        }
+        })
 
-        ins_right {
+        ins_right({
             "progress",
             color = { gui = "bold" },
             padding = { right = 1 },
-        }
+        })
 
-        ins_right {
+        ins_right({
             function()
                 local msg = ""
                 local buf_ft = vim.api.nvim_buf_get_option(0, "filetype")
@@ -110,14 +110,14 @@ return {
             icon = " ",
             color = { fg = colors.green, gui = "bold" },
             padding = { right = 1 },
-        }
+        })
 
-        ins_right {
+        ins_right({
             "o:encoding",
             fmt = string.upper,
             color = { fg = colors.yellow, gui = "bold" },
             padding = { right = 1 },
-        }
+        })
 
         require("lualine").setup(config)
     end,

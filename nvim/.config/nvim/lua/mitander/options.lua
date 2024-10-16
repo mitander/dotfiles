@@ -38,4 +38,4 @@ vim.opt.shell = "/bin/zsh"
 vim.opt.isfname:append("@-@")
 
 vim.opt.undofile = true
-vim.opt.undodir = os.getenv "HOME" .. "/.vim/tmp/undodir"
+vim.opt.undodir = os.getenv("HOME") .. "/.vim/tmp/undodir"

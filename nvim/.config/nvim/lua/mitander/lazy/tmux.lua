@@ -1,7 +1,7 @@
 return {
     "aserowy/tmux.nvim",
     config = function()
-        require("tmux").setup {
+        require("tmux").setup({
             copy_sync = {
                 enable = true,
                 ignore_buffers = { empty = false },
@@ -18,6 +18,6 @@ return {
             resize = {
                 enable_default_keybindings = true,
             },
-        }
+        })
     end,
 }

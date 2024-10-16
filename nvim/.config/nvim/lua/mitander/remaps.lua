@@ -1,13 +1,13 @@
 vim.g.mapleader = " "
 
 -- just exit pls
-vim.cmd [[
+vim.cmd([[
     cab W w
     cab Q q
     cab Wq wq
     cab wQ wq
     cab WQ wq
-]]
+]])
 
 -- better line navigation
 vim.keymap.set("n", "j", "gj")
@@ -63,7 +63,9 @@ vim.keymap.set("n", "<leader>rs", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left>
 vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<CR>")
 
 -- reload
-vim.keymap.set("n", "<leader>rl", function() vim.cmd("so") end)
+vim.keymap.set("n", "<leader>rl", function()
+    vim.cmd("so")
+end)
 
 -- netrw
 vim.keymap.set("n", "<c-n>", "<cmd>Oil<cr>")

@@ -5,8 +5,8 @@ require("mitander.lazy_init")
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
-local group = augroup('mitander', {})
-local yank_group = augroup('HighlightYank', {})
+local group = augroup("mitander", {})
+local yank_group = augroup("HighlightYank", {})
 
 function R(name)
     require("plenary.reload").reload_module(name)
@@ -14,16 +14,16 @@ end
 
 vim.filetype.add({
     extension = {
-        templ = 'templ',
-    }
+        templ = "templ",
+    },
 })
 
-autocmd('TextYankPost', {
+autocmd("TextYankPost", {
     group = yank_group,
-    pattern = '*',
+    pattern = "*",
     callback = function()
         vim.highlight.on_yank({
-            higroup = 'IncSearch',
+            higroup = "IncSearch",
             timeout = 40,
         })
     end,
@@ -60,7 +60,7 @@ autocmd("QuitPre", {
         local wins = vim.api.nvim_list_wins()
         for _, w in ipairs(wins) do
             local bufname = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w))
-            if bufname:match "NvimTree_" ~= nil then
+            if bufname:match("NvimTree_") ~= nil then
                 table.insert(invalid_win, w)
             end
         end

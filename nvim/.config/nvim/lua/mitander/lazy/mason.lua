@@ -6,7 +6,7 @@ return {
     config = function()
         -- add binaries installed by mason to path
         local is_windows = vim.loop.os_uname().sysname == "Windows_NT"
-        vim.env.PATH = vim.env.PATH .. (is_windows and ";" or ":") .. vim.fn.stdpath "data" .. "/mason/bin"
+        vim.env.PATH = vim.env.PATH .. (is_windows and ";" or ":") .. vim.fn.stdpath("data") .. "/mason/bin"
 
         local servers = {
             "clangd",
@@ -16,7 +16,7 @@ return {
             "lua_ls",
             "jsonls",
         }
-        require "mason".setup {
+        require("mason").setup({
             log_level = vim.log.levels.INFO,
             PATH = "skip",
             ui = {
@@ -36,9 +36,9 @@ return {
                 uninstall_server = "X",
             },
             max_concurrent_installers = 10,
-        }
+        })
 
-        require "mason-lspconfig".setup {
+        require("mason-lspconfig").setup({
             ensure_installed = servers,
             ui = {
                 keymaps = {
@@ -53,6 +53,6 @@ return {
             },
 
             log_level = vim.log.levels.INFO,
-        }
+        })
     end,
 }

@@ -17,7 +17,7 @@ return {
                 "typescript",
                 "comment",
                 "markdown",
-                "vimdoc"
+                "vimdoc",
             },
             auto_install = true,
             sync_install = false,
@@ -34,5 +34,5 @@ return {
                 enable = false,
             },
         })
-    end
+    end,
 }

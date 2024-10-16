@@ -11,7 +11,7 @@ return {
         "j-hui/fidget.nvim",
     },
     config = function()
-        local cmp = require('cmp')
+        local cmp = require("cmp")
         local cmp_lsp = require("cmp_nvim_lsp")
         local luasnip = require("luasnip")
         local lspconfig = require("lspconfig")
@@ -19,10 +19,11 @@ return {
             "force",
             {},
             vim.lsp.protocol.make_client_capabilities(),
-            cmp_lsp.default_capabilities())
+            cmp_lsp.default_capabilities()
+        )
         require("fidget").setup({})
 
-        vim.diagnostic.config {
+        vim.diagnostic.config({
             virtual_text = true,
             update_in_insert = false,
             underline = true,
@@ -34,11 +35,11 @@ return {
                 header = "",
                 prefix = "",
             },
-        }
+        })
 
         vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single" })
-        vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help,
-            { border = "single" })
+        vim.lsp.handlers["textDocument/signatureHelp"] =
+            vim.lsp.with(vim.lsp.handlers.signature_help, { border = "single" })
 
         local servers = {
             "clangd",
@@ -83,9 +84,9 @@ return {
                             },
                             workspace = {
                                 library = {
-                                    [vim.fn.expand "$VIMRUNTIME/lua"] = true,
-                                    [vim.fn.stdpath "config" .. "/lua"] = true,
-                                    [vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy"] = true,
+                                    [vim.fn.expand("$VIMRUNTIME/lua")] = true,
+                                    [vim.fn.stdpath("config") .. "/lua"] = true,
+                                    [vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua/lazy"] = true,
                                 },
                             },
                         },
@@ -123,7 +124,7 @@ return {
                         commands = {
                             Format = {
                                 function()
-                                    vim.lsp.buf.range_formatting({}, { 0, 0 }, { vim.fn.line "$", 0 })
+                                    vim.lsp.buf.range_formatting({}, { 0, 0 }, { vim.fn.line("$"), 0 })
                                 end,
                             },
                         },
@@ -146,30 +147,30 @@ return {
                 fields = { "kind", "abbr", "menu" },
                 format = function(_, vim_item)
                     local kind_icons = {
-                        Text          = "󰊄",
-                        Method        = "󰊕",
-                        Function      = "",
-                        Constructor   = "",
-                        Field         = "",
-                        Variable      = "󰆧",
-                        Class         = "󰌗",
-                        Interface     = "",
-                        Module        = "󰅩",
-                        Property      = "",
-                        Unit          = "󰜫",
-                        Value         = "󰎠",
-                        Enum          = "󰘨",
-                        EnumMember    = "",
-                        Keyword       = "󰌆",
-                        Snippet       = "󰘍",
-                        Color         = "󰏘",
-                        File          = "",
-                        Folder        = "",
-                        Reference     = "󰆑",
-                        Constant      = "󰏿",
-                        Struct        = "󰙅",
-                        Event         = "",
-                        Operator      = "󰒕",
+                        Text = "󰊄",
+                        Method = "󰊕",
+                        Function = "",
+                        Constructor = "",
+                        Field = "",
+                        Variable = "󰆧",
+                        Class = "󰌗",
+                        Interface = "",
+                        Module = "󰅩",
+                        Property = "",
+                        Unit = "󰜫",
+                        Value = "󰎠",
+                        Enum = "󰘨",
+                        EnumMember = "",
+                        Keyword = "󰌆",
+                        Snippet = "󰘍",
+                        Color = "󰏘",
+                        File = "",
+                        Folder = "",
+                        Reference = "󰆑",
+                        Constant = "󰏿",
+                        Struct = "󰙅",
+                        Event = "",
+                        Operator = "󰒕",
                         TypeParameter = "",
                     }
                     vim_item.kind = string.format("%s", kind_icons[vim_item.kind])
@@ -207,8 +208,8 @@ return {
                 ["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs(1), { "i", "c" }),
                 ["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
                 ["<C-y>"] = cmp.config.disable,
-                ["<C-e>"] = cmp.mapping { i = cmp.mapping.abort(), c = cmp.mapping.close() },
-                ["<CR>"] = cmp.mapping.confirm { select = false },
+                ["<C-e>"] = cmp.mapping({ i = cmp.mapping.abort(), c = cmp.mapping.close() }),
+                ["<CR>"] = cmp.mapping.confirm({ select = false }),
                 ["<Tab>"] = cmp.mapping(function(fallback)
                     if luasnip.locally_jumpable(1) then
                         luasnip.jump(1)
@@ -224,8 +225,7 @@ return {
                         fallback()
                     end
                 end, { "i", "s" }),
-
             }),
         })
-    end
+    end,
 }

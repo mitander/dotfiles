@@ -19,7 +19,7 @@ local opts = {
             lazy = "鈴 ",
             loaded = "",
             not_loaded = "",
-        }
+        },
     },
     performance = {
         rtp = {
@@ -51,12 +51,12 @@ local opts = {
                 "compiler",
                 "bugreport",
                 "ftplugin",
-            }
-        }
-    }
+            },
+        },
+    },
 }
 
 require("lazy").setup({
     spec = "mitander.lazy",
-    change_detection = { notify = false }
+    change_detection = { notify = false },
 }, opts)

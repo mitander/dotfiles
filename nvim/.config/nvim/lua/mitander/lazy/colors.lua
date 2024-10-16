@@ -1,7 +1,7 @@
 return {
     "rebelot/kanagawa.nvim",
     init = function()
-        require('kanagawa').setup({
+        require("kanagawa").setup({
             compile = false,
             undercurl = true,
             commentStyle = { italic = false },
@@ -17,10 +17,10 @@ return {
                 theme = {
                     all = {
                         ui = {
-                            bg_gutter = "none"
-                        }
-                    }
-                }
+                            bg_gutter = "none",
+                        },
+                    },
+                },
             },
             overrides = function(colors)
                 local theme = colors.theme
