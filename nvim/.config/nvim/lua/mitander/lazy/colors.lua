@@ -12,11 +12,17 @@ return {
                 ["@codeblock"] = { bg = "palette.bg0" },
                 ["@neorg.markup.strikethrough"] = { fg = "palette.comment", style = "strikethrough" },
             },
+            duskfox = {
+                Normal = { fg = "fg1", bg = "bg1" },
+                NormalFloat = { fg = "fg3", bg = "bg1" },
+                FloatBorder = { link = "NormalFloat" },
+                WinSeparator = { fg = "bg3", bg = "bg1" },
+                StatusLine = { fg = "none", bg = "bg3" },
+                StatusLineNC = { fg = "none", bg = "bg3" },
+            },
         },
     },
     init = function()
         vim.cmd("colorscheme duskfox")
-        vim.cmd([[hi WinSeparator guifg=#363646]])
-        vim.cmd([[hi NormalFloat guibg=#232136]])
     end,
 }

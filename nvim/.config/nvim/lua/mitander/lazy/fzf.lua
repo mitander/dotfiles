@@ -4,13 +4,12 @@ return {
     config = function()
         local fzf_lua = require("fzf-lua")
 
-        vim.cmd([[hi FzfLuaBorder guifg=#363646]])
-        vim.cmd([[hi FzfLuaTitle guifg=#e0def4]])
-        vim.cmd([[hi FzfLuaBackdrop guibg=#232136]])
-
         fzf_lua.setup({
-            {
-                "default-title",
+            hls = {
+                backdrop = "Normal",
+                border = "WinSeparator",
+                preview_title = "Directory",
+                preview_border = "WinSeparator",
             },
             winopts = {
                 height = 0.85,

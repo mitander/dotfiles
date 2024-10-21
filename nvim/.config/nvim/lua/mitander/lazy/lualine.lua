@@ -8,7 +8,7 @@ return {
             green = "#a3be8c",
             blue = "#569fba",
             cyan = "#9ccfd8",
-            gray = "#9d95c9",
+            gray = "#6e6a86",
             none = "NONE",
         }
 
@@ -120,7 +120,5 @@ return {
         })
 
         require("lualine").setup(config)
-        vim.cmd([[hi StatusLine guibg=#393552]])
-        vim.cmd([[hi StatusLineNC guibg=#393552]])
     end,
 }

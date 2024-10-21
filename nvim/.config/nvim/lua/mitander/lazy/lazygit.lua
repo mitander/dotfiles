@@ -16,8 +16,6 @@ return {
     end,
     config = function()
         vim.keymap.set("n", "<leader>gg", vim.cmd.LazyGit)
-        vim.cmd([[hi LazyGitBorder guifg=#363646]])
-        vim.cmd([[hi LazyGitFloat guifg=#dcd7ba]])
         vim.g.lazygit_floating_window_scaling_factor = 1
     end,
 }
