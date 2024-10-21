@@ -118,7 +118,7 @@ return {
         vim.keymap.set(
             "n",
             "<c-p>",
-            "<cmd> exec (len(system('git rev-parse'))) ? ':FzfLua files' : ':FzfLua git_files'<cr>"
+            "<cmd> exec (len(system('git rev-parse'))) ? ':FzfLua files' : ':FzfLua git_files'<enter>"
         )
         vim.keymap.set("n", "<c-f>", require("fzf-lua").grep_project)
         vim.keymap.set("n", "<c-b>", require("fzf-lua").buffers)

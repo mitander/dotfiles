@@ -209,7 +209,7 @@ return {
                 ["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
                 ["<C-y>"] = cmp.config.disable,
                 ["<C-e>"] = cmp.mapping({ i = cmp.mapping.abort(), c = cmp.mapping.close() }),
-                ["<CR>"] = cmp.mapping.confirm({ select = false }),
+                ["<enter>"] = cmp.mapping.confirm({ select = false }),
                 ["<Tab>"] = cmp.mapping(function(fallback)
                     if luasnip.locally_jumpable(1) then
                         luasnip.jump(1)

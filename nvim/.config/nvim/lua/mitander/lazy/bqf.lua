@@ -56,7 +56,7 @@ return {
                 func_map = {
                     description = [[the table for {function = key}]],
                     default = [[see ###Function table for detail]],
-                    openc = "<CR>",
+                    openc = "<enter>",
                 },
             },
         })

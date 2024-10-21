@@ -39,7 +39,7 @@ return {
             watch_for_changes = false,
             keymaps = {
                 ["g?"] = "actions.show_help",
-                ["<CR>"] = "actions.select",
+                ["<enter>"] = "actions.select",
                 ["l"] = "actions.select",
                 ["<C-s>"] = {
                     "actions.select",

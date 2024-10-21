@@ -27,7 +27,7 @@ return {
                 },
             },
             keymaps = {
-                toggle_server_expand = "<CR>",
+                toggle_server_expand = "<enter>",
                 install_server = "i",
                 update_server = "u",
                 check_server_version = "c",
@@ -42,7 +42,7 @@ return {
             ensure_installed = servers,
             ui = {
                 keymaps = {
-                    toggle_server_expand = "<CR>",
+                    toggle_server_expand = "<enter>",
                     install_server = "i",
                     update_server = "u",
                     check_server_version = "c",
