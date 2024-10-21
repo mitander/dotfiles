@@ -2,13 +2,13 @@ return {
     "nvim-lualine/lualine.nvim",
     config = function()
         local colors = {
-            fg = "#dcd7ba",
-            bg = "#363646",
-            red = "#cf6a4c",
-            green = "#99ad6a",
-            yellow = "#E6C384",
-            cyan = "#71b9f8",
-            gray = "#9c9c9c",
+            bg = "#393552",
+            fg = "#e0def4",
+            red = "#eb6f92",
+            green = "#a3be8c",
+            blue = "#569fba",
+            cyan = "#9ccfd8",
+            gray = "#9d95c9",
             none = "NONE",
         }
 
@@ -56,7 +56,7 @@ return {
 
         ins_left({
             "mode",
-            color = { fg = colors.yellow, bg = colors.bg, gui = "bold" },
+            color = { fg = colors.blue, bg = colors.bg, gui = "bold" },
         })
 
         ins_left({
@@ -79,7 +79,7 @@ return {
             symbols = { error = " ", warn = " ", info = " " },
             diagnostics_color = {
                 color_error = { fg = colors.red },
-                color_warn = { fg = colors.yellow },
+                color_warn = { fg = colors.blue },
                 color_info = { fg = colors.cyan },
             },
             padding = { right = 1 },
@@ -115,10 +115,12 @@ return {
         ins_right({
             "o:encoding",
             fmt = string.upper,
-            color = { fg = colors.yellow, gui = "bold" },
+            color = { fg = colors.blue, gui = "bold" },
             padding = { right = 1 },
         })
 
         require("lualine").setup(config)
+        vim.cmd([[hi StatusLine guibg=#393552]])
+        vim.cmd([[hi StatusLineNC guibg=#393552]])
     end,
 }

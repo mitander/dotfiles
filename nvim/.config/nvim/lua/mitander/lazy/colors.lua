@@ -1,42 +1,22 @@
 return {
-    "rebelot/kanagawa.nvim",
-    init = function()
-        require("kanagawa").setup({
-            compile = false,
-            undercurl = true,
-            commentStyle = { italic = false },
-            functionStyle = {},
-            keywordStyle = { italic = false },
-            statementStyle = { bold = true },
-            typeStyle = {},
-            transparent = false,
-            dimInactive = false,
-            terminalColors = true,
-            theme = "wave",
-            colors = {
-                theme = {
-                    all = {
-                        ui = {
-                            bg_gutter = "none",
-                        },
-                    },
-                },
+    "EdenEast/nightfox.nvim",
+    priority = 1000,
+    lazy = true,
+    opts = {
+        groups = {
+            all = {
+                ["@markup.italic"] = { style = "italic" },
+                ["@keyword.operator"] = { link = "@keyword" },
+                ["@text.reference"] = { link = "@keyword" },
+                ["@text.literal"] = { style = "" },
+                ["@codeblock"] = { bg = "palette.bg0" },
+                ["@neorg.markup.strikethrough"] = { fg = "palette.comment", style = "strikethrough" },
             },
-            overrides = function(colors)
-                local theme = colors.theme
-                return {
-                    Pmenu = { fg = theme.ui.shade0, bg = theme.ui.bg_p1 },
-                    PmenuSel = { fg = "NONE", bg = theme.ui.bg_p2 },
-                    PmenuSbar = { bg = theme.ui.bg_m1 },
-                    PmenuThumb = { bg = theme.ui.bg_p2 },
-                    CursorLineNr = { fg = "#E6C384" },
-                    StatusLine = { bg = "#363646" },
-                    StatusLineNC = { bg = "#363646" },
-                    LineNr = { fg = "#9c9c9c" },
-                    IblIndent = { fg = "#35353d" },
-                }
-            end,
-        })
-        vim.cmd("colorscheme kanagawa")
+        },
+    },
+    init = function()
+        vim.cmd("colorscheme duskfox")
+        vim.cmd([[hi WinSeparator guifg=#363646]])
+        vim.cmd([[hi NormalFloat guibg=#232136]])
     end,
 }

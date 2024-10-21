@@ -5,7 +5,8 @@ return {
         local fzf_lua = require("fzf-lua")
 
         vim.cmd([[hi FzfLuaBorder guifg=#363646]])
-        vim.cmd([[hi FzfLuaTitle guifg=#dcd7ba]])
+        vim.cmd([[hi FzfLuaTitle guifg=#e0def4]])
+        vim.cmd([[hi FzfLuaBackdrop guibg=#232136]])
 
         fzf_lua.setup({
             {

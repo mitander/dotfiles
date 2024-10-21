@@ -10,7 +10,7 @@ alias vimrc="vim $HOME/dotfiles/nvim/.config/nvim/init.lua"
 alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.toml"
 
 # tmux
-alias tn='tmux new-session -s $(basename $PWD)'
+alias tn='tmuxinator start session -n $(basename $PWD)'
 alias ta="tmux attach-session -t "
 alias tm="~/dotfiles/scripts/tmux-session.sh attach"
 alias tls="tmux ls"
@@ -71,7 +71,7 @@ setopt PROMPT_SUBST
 setopt autocd
 zstyle ':vcs_info:git:*' formats ' [%b]'
 precmd() { vcs_info }
-PROMPT='%B[$(hostname -f)] %{$fg[green]%}${PWD/#$HOME/~}%{$fg[yellow]%}${vcs_info_msg_0_}%{$reset_color%} $ %b'
+PROMPT='%B[$(hostname -f)] %{$fg[blue]%}${PWD/#$HOME/~}%{$fg[green]%}${vcs_info_msg_0_}%{$reset_color%} $ %b'
 stty stop undef
 
 # history
