@@ -14,8 +14,9 @@ return {
             },
             duskfox = {
                 Normal = { fg = "fg1", bg = "bg1" },
+                Pmenu = { fg = "fg1", bg = "bg1" },
                 NormalFloat = { fg = "fg3", bg = "bg1" },
-                FloatBorder = { link = "NormalFloat" },
+                FloatBorder = { fg = "fg3", bg = "bg1" },
                 WinSeparator = { fg = "bg3", bg = "bg1" },
                 StatusLine = { fg = "none", bg = "bg3" },
                 StatusLineNC = { fg = "none", bg = "bg3" },

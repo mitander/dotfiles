@@ -1,6 +1,10 @@
 return {
     "kdheepak/lazygit.nvim",
     init = function()
+        vim.g.lazygit_floating_window_scaling_factor = 1
+    end,
+    config = function()
+        vim.keymap.set("n", "<leader>gg", vim.cmd.LazyGit)
         vim.api.nvim_create_autocmd({ "BufRead" }, {
             group = vim.api.nvim_create_augroup("LazyGitLazyLoad", { clear = true }),
             callback = function()
@@ -13,9 +17,5 @@ return {
                 end
             end,
         })
-    end,
-    config = function()
-        vim.keymap.set("n", "<leader>gg", vim.cmd.LazyGit)
-        vim.g.lazygit_floating_window_scaling_factor = 1
     end,
 }
