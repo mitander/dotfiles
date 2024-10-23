@@ -3,6 +3,13 @@ alias vim="nvim"
 alias so="source ~/.zshrc"
 alias :q="exit"
 
+# lsd
+alias ls="lsd"
+alias l="ls -l"
+alias la="ls -a"
+alias lla="ls -la"
+alias lt="ls --tree"
+
 # config
 alias zshc="vim $HOME/.custom.zsh"
 alias zshrc="vim $HOME/dotfiles/zsh/.zshrc"
@@ -43,9 +50,6 @@ alias dpp="docker-compose pull --parallel"
 
 # linux
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  alias ls="ls --color=auto"
-  alias la="ls -A --color=auto"
-
   xset r rate 275 40
 
   source /usr/share/doc/fzf/examples/key-bindings.zsh
@@ -54,9 +58,6 @@ fi
 
 # macos
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  alias ls="ls -G"
-  alias la="ls -GA"
-
   bindkey "ç" fzf-cd-widget
   bindkey -r "^T"
 fi
