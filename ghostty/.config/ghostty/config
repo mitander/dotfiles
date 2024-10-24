@@ -12,7 +12,7 @@ clipboard-write = allow
 confirm-close-surface = false
 macos-option-as-alt = left
 
-font-size = 17
+font-size = 19
 font-thicken = true
 font-family = "JetBrainsMono Nerd Font Mono"
 font-family = "FiraCode Nerd Font"

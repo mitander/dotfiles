@@ -144,6 +144,7 @@ return {
             mapping = cmp_config.get().mapping,
             sources = cmp.config.sources({ { name = "path" } }, { { name = "cmdline" } }),
             sorting = { comparators = { cmp.config.compare.recently_used } },
+            completion = { keyword_length = 2 },
         })
     end,
 }
