@@ -49,6 +49,11 @@ return {
             rg_opts = "--hidden --column --line-number --no-heading"
                 .. " --color=always --smart-case -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'",
         },
+        live_grep = {
+            rg_glob = true,
+            rg_opts = "--hidden --column --line-number --no-heading"
+                .. " --color=always --smart-case -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'",
+        },
         git = {
             status = {
                 cmd = "git status -su",
@@ -109,7 +114,7 @@ return {
 
         local in_git = vim.fn.systemlist("git rev-parse --is-inside-work-tree")[1] == "true"
         vim.keymap.set("n", "<c-p>", in_git and fzf_lua.git_files or fzf_lua.files)
-        vim.keymap.set("n", "<c-f>", fzf_lua.grep_project)
+        vim.keymap.set("n", "<c-f>", fzf_lua.live_grep)
         vim.keymap.set("n", "<c-b>", fzf_lua.buffers)
         vim.keymap.set("n", "<leader>h", fzf_lua.help_tags)
         vim.keymap.set("n", "<leader>gs", fzf_lua.git_status)
