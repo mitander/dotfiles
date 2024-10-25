@@ -1,6 +1,6 @@
 return {
     "kevinhwang91/nvim-bqf",
-    lazy = false,
+    ft = qf,
     opts = {
         {
             auto_enable = {
