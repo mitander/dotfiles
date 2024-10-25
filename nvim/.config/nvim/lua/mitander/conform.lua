@@ -25,5 +25,6 @@ return {
     },
     init = function()
         vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+        vim.g.zig_fmt_autosave = 0
     end,
 }
