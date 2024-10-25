@@ -82,9 +82,6 @@ vim.g.maplocalleader = " "
 -- disable ex mode
 vim.keymap.set("n", "q", "<nop>")
 
--- disable tab in normal mode
-vim.keymap.set("n", "<tab>", "<nop>")
-
 -- expand %% to cwd in command mode
 vim.cmd.cabbr({ args = { "<expr>", "%%", "&filetype == 'oil' ? bufname('%')[6:] : expand('%:p:h')" } })
 
