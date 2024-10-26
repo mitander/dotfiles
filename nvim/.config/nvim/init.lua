@@ -209,6 +209,14 @@ vim.api.nvim_create_autocmd("BufEnter", {
     end,
 })
 
+-- better cursorline
+vim.cmd([[
+    au VimEnter * setlocal cursorline
+    au WinEnter * setlocal cursorline
+    au BufWinEnter * setlocal cursorline
+    au WinLeave * setlocal nocursorline
+]])
+
 -- bootstrap lazy if needed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
