@@ -10,12 +10,6 @@ alias la="ls -a"
 alias lla="ls -la"
 alias lt="ls --tree"
 
-# config
-alias zshc="vim $HOME/.custom.zsh"
-alias zshrc="vim $HOME/dotfiles/zsh/.zshrc"
-alias vimrc="vim $HOME/dotfiles/nvim/.config/nvim/init.lua"
-alias alarc="vim $HOME/dotfiles/alacritty/.config/alacritty/alacritty.toml"
-
 # tmux
 alias tn='tmuxinator start session -n $(basename $PWD)'
 alias ta="tmux attach-session -t "
@@ -35,11 +29,6 @@ alias gr="git rebase -i"
 alias ge="git commit --amend --no-edit"
 alias gx="git commit --no-verify"
 
-# directory mappings
-alias p="cd ~/c/p"
-alias c="cd ~/c"
-alias d="cd ~/dotfiles"
-
 # docker
 alias dc="docker-compose"
 alias dcd="docker-compose down"
@@ -58,8 +47,12 @@ fi
 
 # macos
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  bindkey "ç" fzf-cd-widget
-  bindkey -r "^T"
+
+  source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+  source /opt/homebrew/opt/fzf/shell/completion.zsh
+
+  bindkey '^P' fzf-cd-widget
+  bindkey '^F' fzf-file-widget
 fi
 
 # fzf command
@@ -89,7 +82,7 @@ setopt +o nomatch
 
 # autocomplete
 autoload -U compinit
-zstyle ':completion:*' menu select
+zstyle ':completion:*:*:*:default' menu select
 zmodload zsh/complist
 compinit
 _comp_options+=(globdots)
@@ -139,3 +132,4 @@ export PATH=$PATH:$HOME/.local/bin
 [ -f ~/.config/zsh/scripts/zsh-autosuggestions.zsh ] && source ~/.config/zsh/scripts/zsh-autosuggestions.zsh
 
 eval "$(atuin init zsh --disable-up-arrow)"
+export PATH="/opt/homebrew/bin:$PATH"

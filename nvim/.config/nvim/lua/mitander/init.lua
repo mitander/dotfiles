@@ -3,5 +3,5 @@ return {
     { "fatih/vim-go", ft = "go" },
     { "ziglang/zig.vim", ft = "zig" },
     { "rust-lang/rust.vim", ft = "rust" },
-    { "eandrju/cellular-automaton.nvim" },
+    { "dag/vim-fish", ft = "fish" },
 }

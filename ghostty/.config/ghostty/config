@@ -4,8 +4,8 @@ window-padding-x = 3
 window-padding-y = 3
 macos-window-shadow = false
 
-command = /bin/zsh
-shell-integration = zsh
+command = /opt/homebrew/bin/fish
+shell-integration = fish
 
 clipboard-read = allow
 clipboard-write = allow
