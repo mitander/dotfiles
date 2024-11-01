@@ -1,8 +1,10 @@
 title = "Ghostty"
+macos-window-shadow = true
+# window-title-font-family = "JetBrainsMono Nerd Font Mono"
 
 window-padding-x = 3
 window-padding-y = 3
-macos-window-shadow = false
+window-padding-balance = true
 
 command = /opt/homebrew/bin/fish
 shell-integration = fish
@@ -27,8 +29,8 @@ cursor-text = "#232136"
 cursor-opacity=0.96
 
 # colors
-background= 232136
-foreground= e0def4
+background = 232136
+foreground = e0def4
 # black
 palette = 0=#393552
 palette = 8=#47407d
