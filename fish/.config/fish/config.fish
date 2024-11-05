@@ -3,6 +3,9 @@ alias vim "nvim"
 alias so "source ~/.config/fish/config.fish"
 alias :q "exit"
 
+# bat
+alias cat "bat"
+
 # lsd
 alias ls "lsd"
 alias l "ls -l"
