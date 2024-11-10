@@ -31,8 +31,7 @@ return {
         watch_for_changes = false,
         keymaps = {
             ["<enter>"] = "actions.select",
-            ["l"] = "actions.select",
-            ["h"] = "actions.parent",
+            ["<bs>"] = "actions.parent",
             ["<c-p>"] = "actions.preview",
             ["<c-n>"] = "actions.close",
             ["q"] = "actions.close",
