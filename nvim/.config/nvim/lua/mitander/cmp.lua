@@ -96,8 +96,6 @@ return {
                     i = function(fallback)
                         if cmp.visible() then
                             cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
-                        elseif has_words_before() then
-                            cmp.complete()
                         else
                             fallback()
                         end
@@ -114,8 +112,6 @@ return {
                     i = function(fallback)
                         if cmp.visible() then
                             cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-                        elseif has_words_before() then
-                            cmp.complete()
                         else
                             fallback()
                         end
