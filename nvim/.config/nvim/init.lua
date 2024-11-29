@@ -54,22 +54,6 @@ vim.opt.fillchars = {
     verthoriz = "╋",
 }
 
--- grep options
-if vim.fn.executable("rg") == 1 then
-    vim.opt.grepprg = "rg --vimgrep --no-heading --smart-case"
-    vim.opt.grepformat = "%f:%l:%c:%m,%f:%l:%m"
-elseif vim.fn.executable("ag") == 1 then
-    vim.opt.grepprg = "ag --vimgrep"
-    vim.opt.grepformat = "%f:%l:%c:%m"
-elseif vim.fn.executable("ack") == 1 then
-    vim.opt.grepprg = "ack --nogroup --nocolor"
-elseif vim.fn.finddir(".git", ".;") ~= "" then
-    vim.opt.grepprg = "git --no-pager grep --no-color -n"
-    vim.opt.grepformat = "%f:%l:%m,%m %f match%ts,%f"
-else
-    vim.opt.grepprg = "grep -nIR $* /dev/null"
-end
-
 -- disable ftplugins maps
 vim.g.no_plugin_maps = true
 vim.cmd.filetype({ args = { "plugin", "on" } })
@@ -141,9 +125,6 @@ vim.keymap.set("n", "<leader>.", "<cmd>exec 'set cc=' . (&colorcolumn == '' ? '1
 
 -- replace word globally
 vim.keymap.set("n", "<leader>rw", [[*N:s//<c-r>=expand("<cword>")<enter>]])
-
--- fun
-vim.keymap.set("n", "<leader>mr", "<cmd>CellularAutomaton make_it_rain<enter>")
 
 local group = vim.api.nvim_create_augroup("mitander", {})
 
