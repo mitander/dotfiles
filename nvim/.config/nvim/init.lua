@@ -117,8 +117,6 @@ vim.keymap.set("n", "<c-d>", "<c-d>zz")
 vim.keymap.set("n", "<c-u>", "<c-u>zz")
 vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
-vim.keymap.set("n", "[d", "cprev<enter>zz")
-vim.keymap.set("n", "]d", "cnext<enter>zz")
 
 -- toggle colorcolumn
 vim.keymap.set("n", "<leader>.", "<cmd>exec 'set cc=' . (&colorcolumn == '' ? '100' : '')<enter>")

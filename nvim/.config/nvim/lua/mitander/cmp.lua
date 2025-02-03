@@ -23,6 +23,7 @@ return {
                 { name = "nvim_lsp" },
                 { name = "luasnip" },
                 { name = "path" },
+                { name = "crates" },
             },
             window = {
                 completion = cmp.config.window.bordered(border_opts),

@@ -63,13 +63,6 @@ return {
             update_in_insert = false,
             underline = true,
             severity_sort = true,
-            float = {
-                focusable = false,
-                style = "minimal",
-                border = "single",
-                header = "",
-                prefix = "",
-            },
         })
 
         vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single" })
@@ -77,6 +70,7 @@ return {
             vim.lsp.with(vim.lsp.handlers.signature_help, { border = "single" })
 
         local group = vim.api.nvim_create_augroup("LspSetup", {})
+
         vim.api.nvim_create_autocmd("LspAttach", {
             pattern = "*",
             group = group,
@@ -89,8 +83,9 @@ return {
                 vim.keymap.set("n", "gd", vim.lsp.buf.definition, map_opts)
                 vim.keymap.set("n", "gi", vim.lsp.buf.implementation, map_opts)
                 vim.keymap.set("n", "go", vim.diagnostic.open_float, map_opts)
-                vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, map_opts)
-                vim.keymap.set("n", "]d", vim.diagnostic.goto_next, map_opts)
+                -- TODO: this bricks diagnostic jumping somehow
+                -- vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, map_opts)
+                -- vim.keymap.set("n", "]d", vim.diagnostic.goto_next, map_opts)
                 vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, map_opts)
                 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, map_opts)
                 vim.keymap.set("n", "<leader>s", vim.lsp.buf.signature_help, map_opts)
