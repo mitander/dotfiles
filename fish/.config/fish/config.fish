@@ -14,7 +14,7 @@ alias lla "ls -la"
 alias lt "ls --tree"
 
 # tmux
-alias tn "tmuxinator start session -n (basename (pwd))"
+alias tn 'tmux new-session -s $(basename $PWD)'
 alias ta "tmux attach-session -t "
 alias tm "~/dotfiles/scripts/tmux-session.sh attach"
 alias tls "tmux ls"
