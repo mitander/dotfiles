@@ -126,13 +126,6 @@ vim.keymap.set("n", "<leader>rw", [[*N:s//<c-r>=expand("<cword>")<enter>]])
 
 local group = vim.api.nvim_create_augroup("mitander", {})
 
--- remove whitespace
-vim.api.nvim_create_autocmd({ "BufWritePre" }, {
-    group = group,
-    pattern = "*",
-    command = [[%s/\s\+$//e]],
-})
-
 -- nopaste on insert leave
 vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     group = group,

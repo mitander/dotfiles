@@ -13,6 +13,7 @@ return {
             javascript = { "prettierd", "prettier", stop_after_first = true },
             c = { "clang_format" },
             cpp = { "clang_format" },
+            ["*"] = { "trim_whitespace" },
         },
         default_format_opts = {
             lsp_format = "fallback",
