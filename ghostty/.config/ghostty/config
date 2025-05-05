@@ -19,8 +19,8 @@ font-thicken = true
 font-family = "JetBrainsMono Nerd Font Mono"
 font-family = "FiraCode Nerd Font"
 # font-feature = -calt
-font-feature = -liga
-font-feature = -dlig
+# font-feature = -liga
+# font-feature = -dlig
 adjust-cell-width = -5%
 
 cursor-style = block
