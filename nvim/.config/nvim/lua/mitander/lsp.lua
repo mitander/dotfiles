@@ -15,10 +15,17 @@ return {
             debounce_text_changes = 150,
         },
         servers = {
-            zls = {},
             gopls = {},
             jsonls = {},
             clangd = {},
+            zls = {
+                settings = {
+                    zls = {
+                        zig_exe_path = vim.fn.getcwd() .. "/zig/zig",
+                        zig_lib_path = vim.fn.getcwd() .. "/zig/lib",
+                    },
+                },
+            },
             rust_analyzer = {
                 settings = {
                     ["rust-analyzer"] = {
