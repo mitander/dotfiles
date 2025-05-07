@@ -21,6 +21,7 @@ return {
                 StatusLineNC = { fg = "none", bg = "palette.bg3" },
                 NonText = { fg = "palette.blue", bg = "none" },
                 CursorLineNr = { fg = "palette.fg1", bg = "none" },
+                CursorLine = { fg = "none", bg = "palette.bg2" },
             },
         },
     },
