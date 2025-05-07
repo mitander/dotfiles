@@ -72,10 +72,6 @@ return {
             severity_sort = true,
         })
 
-        vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = "single" })
-        vim.lsp.handlers["textDocument/signatureHelp"] =
-            vim.lsp.with(vim.lsp.handlers.signature_help, { border = "single" })
-
         local group = vim.api.nvim_create_augroup("LspSetup", {})
 
         vim.api.nvim_create_autocmd("LspAttach", {
@@ -84,7 +80,6 @@ return {
             callback = function(args)
                 local map_opts = { buffer = args.buf, remap = false }
                 vim.keymap.set("i", "<c-s>", vim.lsp.buf.signature_help, map_opts)
-                vim.keymap.set("n", "K", vim.lsp.buf.hover, map_opts)
                 vim.keymap.set("n", "ga", vim.lsp.buf.code_action, map_opts)
                 vim.keymap.set("n", "gr", vim.lsp.buf.references, map_opts)
                 vim.keymap.set("n", "gd", vim.lsp.buf.definition, map_opts)
@@ -93,6 +88,9 @@ return {
                 vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, map_opts)
                 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, map_opts)
                 vim.keymap.set("n", "<leader>s", vim.lsp.buf.signature_help, map_opts)
+                vim.keymap.set("n", "K", function()
+                    vim.lsp.buf.hover({ border = "single" })
+                end, map_opts)
                 vim.keymap.set("n", "[d", function()
                     vim.diagnostic.jump({ count = -1 })
                 end)
