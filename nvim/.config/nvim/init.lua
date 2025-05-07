@@ -37,6 +37,7 @@ vim.opt.formatoptions = "rqnlj"
 vim.opt.jumpoptions = "stack"
 vim.opt.undofile = true
 vim.opt.undodir = os.getenv("HOME") .. "/.vim/tmp/undodir"
+vim.opt.showmode = false
 
 -- shortmess options
 vim.opt.shortmess:append("c")
