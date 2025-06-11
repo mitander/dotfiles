@@ -30,7 +30,6 @@ return {
                     completion = true,
                     hover = true,
                     on_attach = function()
-                        -- the same on_attach function as for your other lsp's
                         local opts = { buffer = bufnr, remap = false }
                         local crates = require("crates")
 
@@ -60,5 +59,19 @@ return {
                 },
             })
         end,
+    },
+    {
+        "MeanderingProgrammer/render-markdown.nvim",
+        dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+        opts = {},
+    },
+    {
+        "iamcco/markdown-preview.nvim",
+        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+        build = "cd app && yarn install",
+        init = function()
+            vim.g.mkdp_filetypes = { "markdown" }
+        end,
+        ft = { "markdown" },
     },
 }
