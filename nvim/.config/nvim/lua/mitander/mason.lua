@@ -37,7 +37,7 @@ return {
                 "clangd",
                 "gopls",
                 "rust_analyzer",
-                "zls",
+                -- "zls", we manually handle zls
                 "lua_ls",
                 "jsonls",
             },

@@ -19,10 +19,31 @@ return {
             jsonls = {},
             clangd = {},
             zls = {
+                cmd = { vim.fn.expand("~/.local/bin/zls") },
+                root_dir = function(fname)
+                    local util = require("lspconfig.util")
+                    return util.root_pattern("build.zig", ".git")(fname)
+                end,
+                single_file_support = false,
                 settings = {
                     zls = {
+                        -- Use local Zig from project
                         zig_exe_path = vim.fn.getcwd() .. "/zig/zig",
                         zig_lib_path = vim.fn.getcwd() .. "/zig/lib",
+                        -- Disable build runner to avoid version conflicts
+                        enable_build_on_save = false,
+                        enable_ast_check_diagnostics = false,
+                        skip_std_references = true,
+                        -- Keep basic features enabled
+                        enable_autofix = false,
+                        enable_import_completion = true,
+                        enable_semantic_tokens = true,
+                        enable_snippets = true,
+                        enable_function_snippets = true,
+                        enable_argument_placeholders = true,
+                        -- Disable problematic features
+                        warn_style = false,
+                        highlight_global_var_declarations = false,
                     },
                 },
             },

@@ -23,10 +23,15 @@ return {
             shfmt = {
                 prepend_args = { "-i", "2" },
             },
+            zigfmt = {
+                -- By default, conform runs commands from the project root.
+                -- So you can provide a relative path to your executable.
+                command = "zig/zig",
+            },
         },
     },
     init = function()
         vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
-        vim.g.zig_fmt_autosave = 0
+        -- vim.g.zig_fmt_autosave = 1
     end,
 }
