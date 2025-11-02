@@ -49,6 +49,11 @@ return {
                         padding = { right = 1 },
                     },
                     {
+                        "location",
+                        color = { fg = colors.cyan, gui = "bold" },
+                        padding = { right = 1 },
+                    },
+                    {
                         "diagnostics",
                         sources = { "nvim_diagnostic" },
                         symbols = { error = " ", warn = " ", info = " " },
