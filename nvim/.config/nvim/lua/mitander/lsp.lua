@@ -47,21 +47,6 @@ return {
                     },
                 },
             },
-            rust_analyzer = {
-                settings = {
-                    ["rust-analyzer"] = {
-                        cargo = {
-                            loadOutDirsFromCheck = true,
-                        },
-                        checkOnSave = {
-                            command = "clippy",
-                        },
-                        experimental = {
-                            procAttrMacros = true,
-                        },
-                    },
-                },
-            },
             lua_ls = {
                 Lua = {
                     diagnostics = {
