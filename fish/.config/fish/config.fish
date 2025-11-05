@@ -2,6 +2,9 @@
 alias vim "nvim"
 alias so "source ~/.config/fish/config.fish"
 alias :q "exit"
+alias tree "tree --gitignore"
+
+alias zig "./zig/zig"
 
 # bat
 alias cat "bat"
