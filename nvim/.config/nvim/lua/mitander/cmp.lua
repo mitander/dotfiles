@@ -1,147 +1,119 @@
 return {
-    "hrsh7th/nvim-cmp",
-    event = { "InsertEnter", "CmdlineEnter" },
-    dependencies = {
-        "hrsh7th/cmp-buffer",
-        "hrsh7th/cmp-path",
-        "hrsh7th/cmp-cmdline",
-        "L3MON4D3/LuaSnip",
-        "saadparwaiz1/cmp_luasnip",
-    },
-    opts = function()
-        local cmp = require("cmp")
-        local luasnip = require("luasnip")
-
-        local border_opts = {
-            border = "single",
-            winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
-            scrolloff = 2,
-        }
-        return {
-            sources = {
-                { name = "nvim_lua" },
-                { name = "nvim_lsp" },
-                { name = "luasnip" },
-                { name = "path" },
-                { name = "crates" },
+    "saghen/blink.cmp",
+    lazy = false,
+    dependencies = "rafamadriz/friendly-snippets",
+    version = "v0.*",
+    opts = {
+        keymap = {
+            preset = "none",
+            ["<C-k>"] = { "select_prev", "fallback" },
+            ["<C-j>"] = { "select_next", "fallback" },
+            ["<C-u>"] = { "scroll_documentation_up", "fallback" },
+            ["<C-d>"] = { "scroll_documentation_down", "fallback" },
+            ["<C-e>"] = { "hide", "fallback" },
+            ["<CR>"] = { "accept", "fallback" },
+            ["<Tab>"] = { "snippet_forward", "fallback" },
+            ["<S-Tab>"] = { "snippet_backward", "fallback" },
+            ["<C-p>"] = { "select_prev", "fallback" },
+            ["<C-n>"] = { "select_next", "fallback" },
+        },
+        appearance = {
+            use_nvim_cmp_as_default = true,
+            nerd_font_variant = "mono",
+        },
+        sources = {
+            default = { "lsp", "path", "snippets", "buffer" },
+            providers = {
+                buffer = {
+                    name = "Buffer",
+                    module = "blink.cmp.sources.buffer",
+                    opts = {
+                        max_items = 5,
+                    },
+                },
+                snippets = {
+                    name = "Snippets",
+                    module = "blink.cmp.sources.snippets",
+                },
+                path = {
+                    name = "Path",
+                    module = "blink.cmp.sources.path",
+                    opts = {
+                        trailing_slash = false,
+                        label_trailing_slash = true,
+                    },
+                },
+                lsp = {
+                    name = "LSP",
+                    module = "blink.cmp.sources.lsp",
+                },
             },
+        },
+        completion = {
+            accept = {
+                auto_brackets = {
+                    enabled = true,
+                },
+            },
+            menu = {
+                border = "single",
+                winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
+                scrolloff = 2,
+                draw = {
+                    columns = { { "kind_icon" }, { "label", "label_description", gap = 1 } },
+                    components = {
+                        kind_icon = {
+                            text = function(ctx)
+                                local kind_icons = {
+                                    Text = "󰊄",
+                                    Method = "󰊕",
+                                    Function = "",
+                                    Constructor = "",
+                                    Field = "",
+                                    Variable = "󰆧",
+                                    Class = "󰌗",
+                                    Interface = "",
+                                    Module = "󰅩",
+                                    Property = "",
+                                    Unit = "󰜫",
+                                    Value = "󰎠",
+                                    Enum = "󰘨",
+                                    EnumMember = "",
+                                    Keyword = "󰌆",
+                                    Snippet = "󰘍",
+                                    Color = "󰏘",
+                                    File = "",
+                                    Folder = "",
+                                    Reference = "󰆑",
+                                    Constant = "󰏿",
+                                    Struct = "󰙅",
+                                    Event = "",
+                                    Operator = "󰒕",
+                                    TypeParameter = "",
+                                }
+                                return kind_icons[ctx.kind] or ctx.kind
+                            end,
+                        },
+                    },
+                },
+            },
+            documentation = {
+                auto_show = true,
+                auto_show_delay_ms = 200,
+                window = {
+                    border = "single",
+                    winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:Visual,Search:None",
+                },
+            },
+            ghost_text = {
+                enabled = false,
+            },
+        },
+        signature = {
+            enabled = true,
             window = {
-                completion = cmp.config.window.bordered(border_opts),
-                documentation = cmp.config.window.bordered(border_opts),
+                border = "single",
             },
-            snippet = {
-                expand = function(args)
-                    luasnip.lsp_expand(args.body)
-                end,
-            },
-            formatting = {
-                fields = { "kind", "abbr", "menu" },
-                format = function(_, vim_item)
-                    local kind_icons = {
-                        Text = "󰊄",
-                        Method = "󰊕",
-                        Function = "",
-                        Constructor = "",
-                        Field = "",
-                        Variable = "󰆧",
-                        Class = "󰌗",
-                        Interface = "",
-                        Module = "󰅩",
-                        Property = "",
-                        Unit = "󰜫",
-                        Value = "󰎠",
-                        Enum = "󰘨",
-                        EnumMember = "",
-                        Keyword = "󰌆",
-                        Snippet = "󰘍",
-                        Color = "󰏘",
-                        File = "",
-                        Folder = "",
-                        Reference = "󰆑",
-                        Constant = "󰏿",
-                        Struct = "󰙅",
-                        Event = "",
-                        Operator = "󰒕",
-                        TypeParameter = "",
-                    }
-                    vim_item.kind = string.format("%s", kind_icons[vim_item.kind])
-                    local m = vim_item.menu and vim_item.menu or ""
-                    if #m > 20 then
-                        vim_item.menu = string.sub(m, 1, 20) .. "..."
-                    end
-                    return vim_item
-                end,
-            },
-            mapping = cmp.mapping.preset.insert({
-                ["<c-k>"] = cmp.mapping.select_prev_item(),
-                ["<c-j>"] = cmp.mapping.select_next_item(),
-                ["<c-u>"] = cmp.mapping(cmp.mapping.scroll_docs(-1), { "i", "c" }),
-                ["<c-d>"] = cmp.mapping(cmp.mapping.scroll_docs(1), { "i", "c" }),
-                ["<c-e>"] = cmp.mapping({ i = cmp.mapping.abort(), c = cmp.mapping.close() }),
-                ["<enter>"] = cmp.mapping.confirm({ select = false }),
-                ["<tab>"] = cmp.mapping(function(fallback)
-                    if luasnip.locally_jumpable(1) then
-                        luasnip.jump(1)
-                    else
-                        fallback()
-                    end
-                end, { "i", "s" }),
-                ["<s-tab>"] = cmp.mapping(function(fallback)
-                    if luasnip.locally_jumpable(-1) then
-                        luasnip.jump(-1)
-                    else
-                        fallback()
-                    end
-                end, { "i", "s" }),
-                ["<C-p>"] = cmp.mapping({
-                    i = function(fallback)
-                        if cmp.visible() then
-                            cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
-                        else
-                            fallback()
-                        end
-                    end,
-                    c = function()
-                        if cmp.visible() then
-                            cmp.select_prev_item()
-                        else
-                            cmp.complete()
-                        end
-                    end,
-                }),
-                ["<C-n>"] = cmp.mapping({
-                    i = function(fallback)
-                        if cmp.visible() then
-                            cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-                        else
-                            fallback()
-                        end
-                    end,
-                    c = function()
-                        if cmp.visible() then
-                            cmp.select_next_item()
-                        else
-                            cmp.complete()
-                        end
-                    end,
-                }),
-            }),
-        }
-    end,
-    config = function(_, opts)
-        local cmp = require("cmp")
-        local cmp_config = require("cmp.config")
-
-        cmp.setup(opts)
-        cmp.setup.cmdline({ "/", "?" }, {
-            mapping = cmp_config.get().mapping,
-            sources = cmp.config.sources({ { name = "nvim_lsp_document_symbol" } }, { { name = "buffer" } }),
-        })
-        cmp.setup.cmdline(":", {
-            mapping = cmp_config.get().mapping,
-            sources = cmp.config.sources({ { name = "path" } }, { { name = "cmdline" } }),
-            sorting = { comparators = { cmp.config.compare.recently_used } },
-            completion = { keyword_length = 2 },
-        })
-    end,
+        },
+    },
 }

@@ -2,8 +2,6 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-        "hrsh7th/cmp-nvim-lsp",
-        "L3MON4D3/LuaSnip",
         {
             "j-hui/fidget.nvim",
             config = true,
@@ -64,12 +62,9 @@ return {
         },
     },
     config = function(_, opts)
-        local lsp = require("lspconfig")
-        local cmp = require("cmp_nvim_lsp")
-
+        local blink = require("blink.cmp")
         opts.capabilities =
-            vim.tbl_deep_extend("force", {}, vim.lsp.protocol.make_client_capabilities(), cmp.default_capabilities())
-        vim.inspect(opts.capabilities)
+            vim.tbl_deep_extend("force", vim.lsp.protocol.make_client_capabilities(), blink.get_lsp_capabilities())
 
         vim.diagnostic.config({
             virtual_text = true,
@@ -110,7 +105,7 @@ return {
         })
 
         for k, v in pairs(opts.servers) do
-            lsp[k].setup(vim.tbl_deep_extend("force", opts, v))
+            vim.lsp.config(k, vim.tbl_deep_extend("force", opts, v))
         end
     end,
 }
