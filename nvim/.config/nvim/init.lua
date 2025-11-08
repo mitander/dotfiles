@@ -31,17 +31,15 @@ vim.opt.linebreak = true
 vim.opt.virtualedit = "block"
 vim.opt.shell = "/bin/zsh"
 vim.opt.synmaxcol = 300
-vim.opt.updatetime = 400
+vim.opt.updatetime = 200
+vim.opt.timeoutlen = 300
 vim.opt.gdefault = true
 vim.opt.formatoptions = "rqnlj"
 vim.opt.jumpoptions = "stack"
 vim.opt.undofile = true
 vim.opt.undodir = os.getenv("HOME") .. "/.vim/tmp/undodir"
 vim.opt.showmode = false
-
--- shortmess options
-vim.opt.shortmess:append("c")
-vim.opt.shortmess:append("a")
+vim.opt.shortmess:append("casI")
 
 -- window options
 vim.opt.fillchars = {
@@ -55,10 +53,19 @@ vim.opt.fillchars = {
     verthoriz = "╋",
 }
 
--- disable ftplugins maps
-vim.g.no_plugin_maps = true
-vim.cmd.filetype({ args = { "plugin", "on" } })
-vim.cmd.filetype({ args = { "plugin", "indent", "on" } })
+-- disable built-in plugins
+vim.g.loaded_gzip = 1
+vim.g.loaded_zip = 1
+vim.g.loaded_zipPlugin = 1
+vim.g.loaded_tar = 1
+vim.g.loaded_tarPlugin = 1
+vim.g.loaded_getscript = 1
+vim.g.loaded_getscriptPlugin = 1
+vim.g.loaded_vimball = 1
+vim.g.loaded_vimballPlugin = 1
+vim.g.loaded_2html_plugin = 1
+vim.g.loaded_logiPat = 1
+vim.g.loaded_rrhelper = 1
 
 -- leader
 vim.g.mapleader = " "
@@ -149,15 +156,23 @@ vim.api.nvim_create_autocmd({ "TermOpen" }, {
 })
 
 -- quickfix binds
-vim.api.nvim_create_autocmd({ "FileType" }, {
+vim.api.nvim_create_autocmd("FileType", {
     group = group,
     pattern = "qf",
-    command = [[
-        nnoremap <silent> <buffer> q :close<enter>
-        nnoremap <silent> <buffer> <esc> :close<enter>
-        nnoremap <silent> <buffer> <enter> <enter>:cclose<enter>
-    ]],
+    callback = function()
+        vim.keymap.set("n", "q", ":close<cr>", { buffer = true, silent = true })
+        vim.keymap.set("n", "<esc>", ":close<cr>", { buffer = true, silent = true })
+        vim.keymap.set("n", "<enter>", "<enter>:cclose<cr>", { buffer = true, silent = true })
+    end,
 })
+
+-- better cursorline
+vim.cmd([[
+    au VimEnter * setlocal cursorline
+    au WinEnter * setlocal cursorline
+    au BufWinEnter * setlocal cursorline
+    au WinLeave * setlocal nocursorline
+]])
 
 -- auto chdir to root
 local root_cache = {}
@@ -210,13 +225,16 @@ require("lazy").setup({
     spec = "mitander",
     change_detection = { notify = false },
     performance = {
+        cache = {
+            enabled = true,
+        },
         rtp = {
             disabled_plugins = {
-                "matchit",
-                "matchparen",
-                "netrwPlugin",
+                "gzip",
+                "tarPlugin",
                 "tohtml",
                 "tutor",
+                "zipPlugin",
             },
         },
     },
