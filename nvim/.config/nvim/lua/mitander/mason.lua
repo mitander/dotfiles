@@ -1,11 +1,13 @@
 return {
     {
         "williamboman/mason.nvim",
-        lazy = false,
+        cmd = { "Mason", "MasonInstall", "MasonUpdate" },
+        keys = {
+            { "<leader>m", "<cmd>Mason<cr>", desc = "Mason" },
+        },
         opts = {
-            log_level = vim.log.levels.INFO,
-            PATH = "skip",
             ui = {
+                border = "single",
                 icons = {
                     package_installed = "✓",
                     package_pending = "➜",

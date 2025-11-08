@@ -1,26 +1,28 @@
 return {
-    event = { "BufReadPre", "BufNewFile" },
     "lukas-reineke/indent-blankline.nvim",
+    event = { "BufReadPost", "BufNewFile" },
     main = "ibl",
     opts = {
+        indent = {
+            char = "▎",
+            tab_char = "▎",
+        },
         scope = {
             enabled = false,
         },
-        indent = {
-            char = "▎",
-        },
         exclude = {
             filetypes = {
+                "help",
                 "lazy",
-                "NvimTree",
+                "mason",
+                "notify",
+                "oil",
+                "qf",
                 "terminal",
-                "vimwiki",
-                "man",
-                "gitmessengerpopup",
-                "diagnosticpopup",
-                "lspinfo",
-                "packer",
+                "trouble",
                 "checkhealth",
+                "man",
+                "lspinfo",
                 "TelescopePrompt",
                 "TelescopeResults",
                 "",
@@ -28,9 +30,7 @@ return {
             buftypes = {
                 "nofile",
                 "terminal",
-                "lsp-installer",
-                "lspinfo",
-                "fzf",
+                "quickfix",
             },
         },
     },
