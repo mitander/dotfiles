@@ -18,11 +18,11 @@ return {
             clangd = {},
             zls = {
                 cmd = { vim.fn.expand("~/.local/bin/zls") },
-                root_dir = function(fname)
-                    local util = require("lspconfig.util")
-                    return util.root_pattern("build.zig", ".git")(fname)
-                end,
-                single_file_support = false,
+                -- root_dir = function(fname)
+                --     local util = require("lspconfig.util")
+                --     return util.root_pattern("build.zig", ".git")(fname)
+                -- end,
+                -- single_file_support = false,
                 settings = {
                     zls = {
                         -- Use local Zig from project
