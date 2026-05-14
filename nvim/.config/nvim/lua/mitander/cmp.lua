@@ -50,6 +50,11 @@ return {
             },
         },
         completion = {
+            list = {
+                selection = {
+                    preselect = false,
+                },
+            },
             accept = {
                 auto_brackets = {
                     enabled = true,
