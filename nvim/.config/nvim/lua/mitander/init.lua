@@ -1,12 +1,30 @@
+local function cargo_keymaps(bufnr)
+    local crates = require("crates")
+    local opts = { buffer = bufnr, remap = false, silent = true }
+
+    vim.keymap.set("n", "<leader>ct", crates.toggle, opts)
+    vim.keymap.set("n", "<leader>cr", crates.reload, opts)
+    vim.keymap.set("n", "<leader>cv", crates.show_versions_popup, opts)
+    vim.keymap.set("n", "<leader>cf", crates.show_features_popup, opts)
+    vim.keymap.set("n", "<leader>cd", crates.show_dependencies_popup, opts)
+    vim.keymap.set("n", "<leader>cu", crates.update_crate, opts)
+    vim.keymap.set("v", "<leader>cu", crates.update_crates, opts)
+    vim.keymap.set("n", "<leader>ca", crates.update_all_crates, opts)
+    vim.keymap.set("n", "<leader>cU", crates.upgrade_crate, opts)
+    vim.keymap.set("v", "<leader>cU", crates.upgrade_crates, opts)
+    vim.keymap.set("n", "<leader>cA", crates.upgrade_all_crates, opts)
+    vim.keymap.set("n", "<leader>cH", crates.open_homepage, opts)
+    vim.keymap.set("n", "<leader>cR", crates.open_repository, opts)
+    vim.keymap.set("n", "<leader>cD", crates.open_documentation, opts)
+    vim.keymap.set("n", "<leader>cC", crates.open_crates_io, opts)
+    vim.keymap.set("n", "<leader>cL", crates.open_lib_rs, opts)
+end
+
 return {
-    { "nvim-lua/plenary.nvim", name = "plenary" },
-    { "fatih/vim-go", ft = "go" },
-    { "ziglang/zig.vim", ft = "zig" },
-    { "dag/vim-fish", ft = "fish" },
-    { "rust-lang/rust.vim", ft = "rust" },
+    { "nvim-lua/plenary.nvim", name = "plenary", lazy = true },
     {
         "saecki/crates.nvim",
-        event = { "BufRead Cargo.toml" },
+        event = { "BufReadPost Cargo.toml", "BufNewFile Cargo.toml" },
         config = function()
             require("crates").setup({
                 autoupdate_throttle = 50,
@@ -28,29 +46,14 @@ return {
                 },
             })
 
-            -- Keymaps for Cargo.toml files
-            vim.api.nvim_create_autocmd("BufRead", {
-                pattern = "Cargo.toml",
-                callback = function()
-                    local opts = { buffer = true, remap = false }
-                    local crates = require("crates")
+            if vim.fn.expand("%:t") == "Cargo.toml" then
+                cargo_keymaps(0)
+            end
 
-                    vim.keymap.set("n", "<leader>ct", crates.toggle, opts)
-                    vim.keymap.set("n", "<leader>cr", crates.reload, opts)
-                    vim.keymap.set("n", "<leader>cv", crates.show_versions_popup, opts)
-                    vim.keymap.set("n", "<leader>cf", crates.show_features_popup, opts)
-                    vim.keymap.set("n", "<leader>cd", crates.show_dependencies_popup, opts)
-                    vim.keymap.set("n", "<leader>cu", crates.update_crate, opts)
-                    vim.keymap.set("v", "<leader>cu", crates.update_crates, opts)
-                    vim.keymap.set("n", "<leader>ca", crates.update_all_crates, opts)
-                    vim.keymap.set("n", "<leader>cU", crates.upgrade_crate, opts)
-                    vim.keymap.set("v", "<leader>cU", crates.upgrade_crates, opts)
-                    vim.keymap.set("n", "<leader>cA", crates.upgrade_all_crates, opts)
-                    vim.keymap.set("n", "<leader>cH", crates.open_homepage, opts)
-                    vim.keymap.set("n", "<leader>cR", crates.open_repository, opts)
-                    vim.keymap.set("n", "<leader>cD", crates.open_documentation, opts)
-                    vim.keymap.set("n", "<leader>cC", crates.open_crates_io, opts)
-                    vim.keymap.set("n", "<leader>cL", crates.open_lib_rs, opts)
+            vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+                pattern = "Cargo.toml",
+                callback = function(args)
+                    cargo_keymaps(args.buf)
                 end,
             })
         end,

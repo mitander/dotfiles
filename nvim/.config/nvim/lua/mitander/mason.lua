@@ -33,7 +33,8 @@ return {
     },
     {
         "williamboman/mason-lspconfig.nvim",
-        lazy = false,
+        event = { "BufReadPre", "BufNewFile" },
+        dependencies = { "williamboman/mason.nvim" },
         opts = {
             ensure_installed = {
                 "clangd",
@@ -43,6 +44,7 @@ return {
                 "lua_ls",
                 "jsonls",
             },
+            automatic_enable = false,
             ui = {
                 keymaps = {
                     toggle_server_expand = "<enter>",
