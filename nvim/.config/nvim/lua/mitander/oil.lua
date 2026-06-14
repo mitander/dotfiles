@@ -147,6 +147,12 @@ local function reveal_in_sidebar()
     open_sidebar(current_file_path(), true)
 end
 
+local function move_pane(method)
+    return function()
+        require("tmux")[method]()
+    end
+end
+
 local function select_entry()
     local oil = require("oil")
     if not vim.w.oil_sidebar then
@@ -213,8 +219,28 @@ return {
                 desc = "Select entry",
             },
             ["<bs>"] = "actions.parent",
-            ["<c-p>"] = "actions.preview",
-            ["<c-n>"] = {
+            ["<C-h>"] = {
+                callback = move_pane("move_left"),
+                desc = "Move to left pane",
+                mode = "n",
+            },
+            ["<C-j>"] = {
+                callback = move_pane("move_bottom"),
+                desc = "Move to lower pane",
+                mode = "n",
+            },
+            ["<C-k>"] = {
+                callback = move_pane("move_top"),
+                desc = "Move to upper pane",
+                mode = "n",
+            },
+            ["<C-l>"] = {
+                callback = move_pane("move_right"),
+                desc = "Move to right pane",
+                mode = "n",
+            },
+            ["<C-p>"] = "actions.preview",
+            ["<C-n>"] = {
                 callback = close_oil,
                 desc = "Close oil",
             },
