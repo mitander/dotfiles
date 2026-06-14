@@ -3,6 +3,10 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     main = "ibl",
     opts = {
+        debounce = 100,
+        viewport_buffer = {
+            min = 120,
+        },
         indent = {
             char = "▎",
             tab_char = "▎",

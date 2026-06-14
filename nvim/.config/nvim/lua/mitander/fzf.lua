@@ -173,7 +173,6 @@ return {
             winopts = vim.deepcopy(file_picker_winopts),
         },
         grep = {
-            prompt = "Search: ",
             formatter = "path.filename_first",
             winopts = vim.deepcopy(search_winopts),
             rg_glob = true,
@@ -184,7 +183,6 @@ return {
                 .. " --color=always --smart-case -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'",
         },
         live_grep = {
-            prompt = "Search: ",
             formatter = "path.filename_first",
             winopts = vim.deepcopy(search_winopts),
             rg_glob = true,
