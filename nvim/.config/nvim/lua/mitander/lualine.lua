@@ -1,5 +1,6 @@
 return {
     "nvim-lualine/lualine.nvim",
+    event = "VeryLazy",
     opts = function()
         local colors = {
             bg = "#393552",
@@ -9,6 +10,7 @@ return {
             blue = "#569fba",
             cyan = "#9ccfd8",
             gray = "#6e6a86",
+            white = "#e0def4",
             none = "NONE",
         }
         return {
@@ -67,19 +69,11 @@ return {
                     {
                         -- lsp client name
                         function()
-                            local msg = ""
-                            local buf_ft = vim.api.nvim_buf_get_option(0, "filetype")
-                            local clients = vim.lsp.get_clients()
+                            local clients = vim.lsp.get_clients({ bufnr = 0 })
                             if next(clients) == nil then
-                                return msg
+                                return ""
                             end
-                            for _, client in ipairs(clients) do
-                                local filetypes = client.config.filetypes
-                                if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-                                    return client.name
-                                end
-                            end
-                            return msg
+                            return clients[1].name
                         end,
                         icon = "",
                         color = { fg = colors.green, gui = "bold" },

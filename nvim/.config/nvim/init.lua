@@ -29,7 +29,6 @@ vim.opt.wrap = true
 vim.opt.breakindent = true
 vim.opt.linebreak = true
 vim.opt.virtualedit = "block"
-vim.opt.shell = "/bin/zsh"
 vim.opt.synmaxcol = 300
 vim.opt.updatetime = 200
 vim.opt.timeoutlen = 300
@@ -66,6 +65,8 @@ vim.g.loaded_vimballPlugin = 1
 vim.g.loaded_2html_plugin = 1
 vim.g.loaded_logiPat = 1
 vim.g.loaded_rrhelper = 1
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
 
 -- leader
 vim.g.mapleader = " "
@@ -167,12 +168,19 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- better cursorline
-vim.cmd([[
-    au VimEnter * setlocal cursorline
-    au WinEnter * setlocal cursorline
-    au BufWinEnter * setlocal cursorline
-    au WinLeave * setlocal nocursorline
-]])
+vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
+    group = group,
+    callback = function()
+        vim.wo.cursorline = true
+    end,
+})
+
+vim.api.nvim_create_autocmd("WinLeave", {
+    group = group,
+    callback = function()
+        vim.wo.cursorline = false
+    end,
+})
 
 -- auto chdir to root
 local root_cache = {}
@@ -180,30 +188,19 @@ vim.api.nvim_create_autocmd("BufEnter", {
     group = group,
     callback = function()
         local path = vim.api.nvim_buf_get_name(0)
-        if path == "" then
+        if path == "" or vim.bo.buftype ~= "" or path:match("^%w+://") then
             return
         end
         path = vim.fs.dirname(path)
         if root_cache[path] == nil then
             local root_file = vim.fs.find({ ".git", "Makefile" }, { path = path, upward = true })[1]
-            if root_file == nil then
-                return
-            end
-            if path ~= nil then
-                root_cache[path] = vim.fs.dirname(root_file)
-            end
+            root_cache[path] = root_file and vim.fs.dirname(root_file) or false
         end
-        vim.fn.chdir(root_cache[path])
+        if root_cache[path] then
+            vim.fn.chdir(root_cache[path])
+        end
     end,
 })
-
--- better cursorline
-vim.cmd([[
-    au VimEnter * setlocal cursorline
-    au WinEnter * setlocal cursorline
-    au BufWinEnter * setlocal cursorline
-    au WinLeave * setlocal nocursorline
-]])
 
 -- bootstrap lazy if needed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -235,6 +232,7 @@ require("lazy").setup({
                 "tohtml",
                 "tutor",
                 "zipPlugin",
+                "netrwPlugin",
             },
         },
     },

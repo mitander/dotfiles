@@ -1,5 +1,98 @@
+local function in_git_worktree()
+    local result = vim.fn.system({ "git", "-C", vim.fn.getcwd(), "rev-parse", "--is-inside-work-tree" })
+    return vim.v.shell_error == 0 and vim.trim(result) == "true"
+end
+
+local function project_files()
+    local fzf_lua = require("fzf-lua")
+    if in_git_worktree() then
+        fzf_lua.git_files()
+    else
+        fzf_lua.files()
+    end
+end
+
+local function all_files()
+    require("fzf-lua").files({
+        fd_opts = "--no-ignore --color=never --type f --hidden --follow --exclude .git",
+        file_ignore_patterns = { ".git/" },
+    })
+end
+
 return {
     "ibhagwan/fzf-lua",
+    cmd = "FzfLua",
+    init = function()
+        local select = vim.ui.select
+        vim.ui.select = function(items, opts, on_choice)
+            require("lazy").load({ plugins = { "fzf-lua" } })
+            if vim.ui.select == select then
+                select(items, opts, on_choice)
+            else
+                vim.ui.select(items, opts, on_choice)
+            end
+        end
+    end,
+    keys = {
+        { "<c-p>", project_files, desc = "Find project files" },
+        { "<leader>P", all_files, desc = "Find all files" },
+        {
+            "<c-f>",
+            function()
+                require("fzf-lua").live_grep()
+            end,
+            desc = "Live grep",
+        },
+        {
+            "<c-b>",
+            function()
+                require("fzf-lua").buffers()
+            end,
+            desc = "Buffers",
+        },
+        {
+            "<leader>h",
+            function()
+                require("fzf-lua").help_tags()
+            end,
+            desc = "Help tags",
+        },
+        {
+            "<leader>gs",
+            function()
+                require("fzf-lua").git_status()
+            end,
+            desc = "Git status",
+        },
+        {
+            "<leader>gl",
+            function()
+                require("fzf-lua").git_commits()
+            end,
+            desc = "Git commits",
+        },
+        {
+            "<leader>gb",
+            function()
+                require("fzf-lua").git_branches()
+            end,
+            desc = "Git branches",
+        },
+        {
+            "<leader>gc",
+            function()
+                require("fzf-lua").git_bcommits()
+            end,
+            desc = "Buffer commits",
+        },
+        {
+            "<leader>p",
+            function()
+                require("fzf-lua").tmux_buffers()
+            end,
+            desc = "Tmux buffers",
+        },
+    },
     opts = {
         hls = {
             backdrop = "Normal",
@@ -32,8 +125,7 @@ return {
             },
         },
         files = {
-            fd_opts = "--no-ignore --color=never --type f --hidden --follow  --exclude .git",
-            cwd = vim.fn.getcwd(),
+            fd_opts = "--color=never --type f --hidden --follow --exclude .git",
             winopts = {
                 preview = {
                     hidden = "hidden",
@@ -102,6 +194,8 @@ return {
 
     config = function(_, opts)
         local fzf_lua = require("fzf-lua")
+        fzf_lua.setup(opts)
+
         if vim.ui then
             fzf_lua.register_ui_select({
                 winopts = {
@@ -111,18 +205,5 @@ return {
                 },
             })
         end
-
-        local in_git = vim.fn.systemlist("git rev-parse --is-inside-work-tree")[1] == "true"
-        vim.keymap.set("n", "<c-p>", in_git and fzf_lua.git_files or fzf_lua.files)
-        vim.keymap.set("n", "<c-f>", fzf_lua.live_grep)
-        vim.keymap.set("n", "<c-b>", fzf_lua.buffers)
-        vim.keymap.set("n", "<leader>h", fzf_lua.help_tags)
-        vim.keymap.set("n", "<leader>gs", fzf_lua.git_status)
-        vim.keymap.set("n", "<leader>gl", fzf_lua.git_commits)
-        vim.keymap.set("n", "<leader>gb", fzf_lua.git_branches)
-        vim.keymap.set("n", "<leader>gc", fzf_lua.git_bcommits)
-        vim.keymap.set("n", "<leader>p", fzf_lua.tmux_buffers)
-
-        fzf_lua.setup(opts)
     end,
 }
