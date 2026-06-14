@@ -1,3 +1,181 @@
+local sidebar_width = 34
+
+local function is_oil_sidebar(winid)
+    return vim.api.nvim_win_is_valid(winid) and vim.w[winid].oil_sidebar == true
+end
+
+local function find_oil_sidebar()
+    for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if is_oil_sidebar(winid) then
+            return winid
+        end
+    end
+end
+
+local function current_file_path()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name ~= "" and vim.bo[bufnr].buftype == "" then
+        return name
+    end
+end
+
+local function oil_parent_url(path)
+    if not path then
+        return nil
+    end
+
+    local parent_url, basename = require("oil").get_buffer_parent_url(path, true)
+    if basename then
+        require("oil.view").set_last_cursor(parent_url, basename)
+    end
+    return parent_url
+end
+
+local function set_sidebar_width(winid)
+    vim.wo[winid].winfixwidth = true
+    vim.api.nvim_win_set_width(winid, sidebar_width)
+end
+
+local function normal_wins()
+    return vim.tbl_filter(function(winid)
+        return vim.api.nvim_win_get_config(winid).relative == ""
+    end, vim.api.nvim_tabpage_list_wins(0))
+end
+
+local function clear_sidebar_win(winid)
+    vim.w[winid].oil_sidebar = nil
+    vim.w[winid].oil_target_win = nil
+    vim.wo[winid].winfixwidth = false
+end
+
+local function close_sidebar(winid)
+    winid = winid or find_oil_sidebar()
+    if not winid or not vim.api.nvim_win_is_valid(winid) then
+        return
+    end
+
+    if #normal_wins() == 1 then
+        vim.api.nvim_set_current_win(winid)
+        clear_sidebar_win(winid)
+        vim.api.nvim_win_set_buf(winid, vim.api.nvim_create_buf(true, false))
+    else
+        vim.api.nvim_win_close(winid, true)
+    end
+end
+
+local function find_target_win(sidebar_winid)
+    local target = vim.w[sidebar_winid].oil_target_win
+    if target and vim.api.nvim_win_is_valid(target) and not is_oil_sidebar(target) then
+        return target
+    end
+
+    for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if
+            winid ~= sidebar_winid
+            and vim.api.nvim_win_get_config(winid).relative == ""
+            and not is_oil_sidebar(winid)
+        then
+            local bufnr = vim.api.nvim_win_get_buf(winid)
+            if vim.bo[bufnr].buftype == "" then
+                return winid
+            end
+        end
+    end
+end
+
+local function ensure_target_win(sidebar_winid)
+    local target = find_target_win(sidebar_winid)
+    if target and vim.api.nvim_win_is_valid(target) then
+        return target
+    end
+
+    vim.api.nvim_set_current_win(sidebar_winid)
+    vim.cmd("rightbelow vertical split")
+    target = vim.api.nvim_get_current_win()
+    vim.w[target].oil_sidebar = nil
+    vim.w[sidebar_winid].oil_target_win = target
+    vim.api.nvim_set_current_win(sidebar_winid)
+    return target
+end
+
+local function open_sidebar(path, focus)
+    local oil = require("oil")
+    local source_win = vim.api.nvim_get_current_win()
+    local dir = oil_parent_url(path or current_file_path())
+
+    local sidebar_win = find_oil_sidebar()
+    if sidebar_win and vim.api.nvim_win_is_valid(sidebar_win) then
+        if not is_oil_sidebar(source_win) then
+            vim.w[sidebar_win].oil_target_win = source_win
+        end
+        vim.api.nvim_set_current_win(sidebar_win)
+        oil.open(dir)
+    else
+        vim.cmd("topleft vertical new")
+        sidebar_win = vim.api.nvim_get_current_win()
+        vim.w[sidebar_win].oil_sidebar = true
+        vim.w[sidebar_win].oil_target_win = source_win
+        oil.open(dir)
+    end
+
+    set_sidebar_width(sidebar_win)
+
+    if not focus and vim.api.nvim_win_is_valid(source_win) and not is_oil_sidebar(source_win) then
+        vim.api.nvim_set_current_win(source_win)
+    end
+end
+
+local function close_oil()
+    if vim.w.oil_sidebar then
+        close_sidebar(vim.api.nvim_get_current_win())
+    else
+        require("oil").close()
+    end
+end
+
+local function toggle_sidebar()
+    local sidebar_win = find_oil_sidebar()
+    if sidebar_win and vim.api.nvim_win_is_valid(sidebar_win) then
+        close_sidebar(sidebar_win)
+    else
+        open_sidebar(nil, true)
+    end
+end
+
+local function reveal_in_sidebar()
+    open_sidebar(current_file_path(), true)
+end
+
+local function select_entry()
+    local oil = require("oil")
+    if not vim.w.oil_sidebar then
+        oil.select()
+        return
+    end
+
+    local entry = oil.get_cursor_entry()
+    if entry and require("oil.util").is_directory(entry) then
+        oil.select()
+        return
+    end
+
+    local sidebar_win = vim.api.nvim_get_current_win()
+    local target_win = find_target_win(sidebar_win)
+    oil.select({
+        handle_buffer_callback = function(bufnr)
+            if not target_win or not vim.api.nvim_win_is_valid(target_win) then
+                target_win = ensure_target_win(sidebar_win)
+            end
+            vim.api.nvim_set_current_win(target_win)
+            vim.api.nvim_set_current_buf(bufnr)
+            if vim.api.nvim_win_is_valid(sidebar_win) then
+                vim.w[sidebar_win].oil_target_win = target_win
+            end
+        end,
+    })
+end
+
 return {
     "stevearc/oil.nvim",
     lazy = false,
@@ -30,11 +208,20 @@ return {
         constrain_cursor = "editable",
         watch_for_changes = false,
         keymaps = {
-            ["<enter>"] = "actions.select",
+            ["<CR>"] = {
+                callback = select_entry,
+                desc = "Select entry",
+            },
             ["<bs>"] = "actions.parent",
             ["<c-p>"] = "actions.preview",
-            ["<c-n>"] = "actions.close",
-            ["q"] = "actions.close",
+            ["<c-n>"] = {
+                callback = close_oil,
+                desc = "Close oil",
+            },
+            ["q"] = {
+                callback = close_oil,
+                desc = "Close oil",
+            },
             ["."] = "actions.open_cwd",
             ["~"] = "actions.cd",
             ["<c-s>"] = {
@@ -66,7 +253,8 @@ return {
         },
     },
     config = function(_, opts)
-        vim.keymap.set("n", "<c-n>", "<cmd>Oil<enter>")
+        vim.keymap.set("n", "<c-n>", toggle_sidebar, { desc = "Toggle oil sidebar" })
+        vim.keymap.set("n", "<leader>e", reveal_in_sidebar, { desc = "Reveal current file in oil" })
         require("oil").setup(opts)
     end,
 }
