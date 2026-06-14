@@ -218,7 +218,7 @@ vim.opt.rtp:prepend(lazypath)
 
 -- initate lazy
 require("lazy").setup({
-    install = { colorscheme = { "duskfox" } },
+    install = { colorscheme = {} },
     spec = "mitander",
     change_detection = { notify = false },
     performance = {

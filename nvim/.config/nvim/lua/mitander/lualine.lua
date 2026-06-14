@@ -2,24 +2,14 @@ return {
     "nvim-lualine/lualine.nvim",
     event = "VeryLazy",
     opts = function()
-        local colors = {
-            bg = "#393552",
-            fg = "#e0def4",
-            red = "#eb6f92",
-            green = "#a3be8c",
-            blue = "#569fba",
-            cyan = "#9ccfd8",
-            gray = "#6e6a86",
-            white = "#e0def4",
-            none = "NONE",
-        }
+        local colors = require("mitander_theme").colors
         return {
             options = {
                 component_separators = { left = "", right = "" },
                 section_separators = { left = "", right = "" },
                 theme = {
-                    normal = { c = { fg = colors.fg, bg = colors.bg } },
-                    inactive = { c = { fg = colors.gray, bg = colors.bg, gui = "bold" } },
+                    normal = { c = { fg = colors.text, bg = colors.surface_alt } },
+                    inactive = { c = { fg = colors.placeholder, bg = colors.surface, gui = "bold" } },
                 },
             },
             sections = {
@@ -29,12 +19,12 @@ return {
                     {
                         "mode",
                         fmt = string.upper,
-                        color = { fg = colors.blue, bg = colors.bg, gui = "bold" },
+                        color = { fg = colors.accent, bg = colors.surface_alt, gui = "bold" },
                     },
                     {
                         "branch",
                         icon = "",
-                        color = { fg = colors.green, bg = colors.bg, gui = "bold" },
+                        color = { fg = colors.green, bg = colors.surface_alt, gui = "bold" },
                         padding = { right = 1 },
                     },
                     {
@@ -47,7 +37,7 @@ return {
                 lualine_x = {
                     {
                         "progress",
-                        color = { fg = colors.white, gui = "bold" },
+                        color = { fg = colors.text, gui = "bold" },
                         padding = { right = 1 },
                     },
                     {
@@ -61,8 +51,8 @@ return {
                         symbols = { error = " ", warn = " ", info = " " },
                         diagnostics_color = {
                             color_error = { fg = colors.red },
-                            color_warn = { fg = colors.blue },
-                            color_info = { fg = colors.cyan },
+                            color_warn = { fg = colors.yellow },
+                            color_info = { fg = colors.accent },
                         },
                         padding = { right = 1 },
                     },
@@ -82,7 +72,7 @@ return {
                     {
                         "o:encoding",
                         fmt = string.upper,
-                        color = { fg = colors.blue, gui = "bold" },
+                        color = { fg = colors.accent, gui = "bold" },
                         padding = { right = 1 },
                     },
                 },

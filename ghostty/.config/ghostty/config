@@ -22,42 +22,13 @@ font-style-italic = "Medium Italic"
 font-style-bold-italic = "Bold Italic"
 adjust-cell-height = 12%
 alpha-blending = linear
+theme = duskfox
 # font-feature = -calt
 # font-feature = -liga
 # font-feature = -dlig
 
 cursor-style = block
-cursor-color = "#569fba"
-cursor-text = "#232136"
 cursor-opacity=0.96
-
-# colors
-background = 232136
-foreground = e0def4
-# black
-palette = 0=#393552
-palette = 8=#47407d
-# red
-palette = 1=#eb6f92
-palette = 9=#f083a2
-# green
-palette = 2=#a3be8c
-palette = 10=#b1d196
-# yellow
-palette = 3=#f6c177
-palette = 11=#f9cb8c
-# blue
-palette = 4=#569fba
-palette = 12=#65b1cd
-# purple
-palette = 5=#c4a7e7
-palette = 13=#ccb1ed
-# aqua
-palette = 6=#9ccfd8
-palette = 14=#a6dae3
-# white
-palette = 7=#e0def4
-palette = 15=#e2e0f7
 
 # tmux (\x01 = ctrl-a)
 # search in pane
