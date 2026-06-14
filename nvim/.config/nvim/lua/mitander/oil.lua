@@ -4,6 +4,15 @@ local function is_oil_sidebar(winid)
     return vim.api.nvim_win_is_valid(winid) and vim.w[winid].oil_sidebar == true
 end
 
+local function is_oil_win(winid)
+    if not vim.api.nvim_win_is_valid(winid) then
+        return false
+    end
+
+    local bufnr = vim.api.nvim_win_get_buf(winid)
+    return vim.w[winid].oil_sidebar == true or vim.bo[bufnr].filetype == "oil"
+end
+
 local function find_oil_sidebar()
     for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
         if is_oil_sidebar(winid) then
@@ -43,10 +52,13 @@ local function normal_wins()
     end, vim.api.nvim_tabpage_list_wins(0))
 end
 
-local function clear_sidebar_win(winid)
-    vim.w[winid].oil_sidebar = nil
-    vim.w[winid].oil_target_win = nil
-    vim.wo[winid].winfixwidth = false
+local function quit_if_only_oil()
+    vim.schedule(function()
+        local wins = normal_wins()
+        if #wins == 1 and is_oil_win(wins[1]) then
+            vim.cmd.quit()
+        end
+    end)
 end
 
 local function close_sidebar(winid)
@@ -56,9 +68,7 @@ local function close_sidebar(winid)
     end
 
     if #normal_wins() == 1 then
-        vim.api.nvim_set_current_win(winid)
-        clear_sidebar_win(winid)
-        vim.api.nvim_win_set_buf(winid, vim.api.nvim_create_buf(true, false))
+        vim.cmd.quit()
     else
         vim.api.nvim_win_close(winid, true)
     end
@@ -127,7 +137,9 @@ local function open_sidebar(path, focus)
 end
 
 local function close_oil()
-    if vim.w.oil_sidebar then
+    if #normal_wins() == 1 and is_oil_win(vim.api.nvim_get_current_win()) then
+        vim.cmd.quit()
+    elseif vim.w.oil_sidebar then
         close_sidebar(vim.api.nvim_get_current_win())
     else
         require("oil").close()
@@ -285,5 +297,10 @@ return {
         vim.keymap.set("n", "<c-n>", toggle_sidebar, { desc = "Toggle oil sidebar" })
         vim.keymap.set("n", "<leader>e", reveal_in_sidebar, { desc = "Reveal current file in oil" })
         require("oil").setup(opts)
+
+        vim.api.nvim_create_autocmd("WinClosed", {
+            group = vim.api.nvim_create_augroup("mitander_oil_last_window", { clear = true }),
+            callback = quit_if_only_oil,
+        })
     end,
 }
