@@ -1,4 +1,5 @@
 local uv = vim.uv or vim.loop
+local zls_bin = vim.fn.expand("~/.local/bin/zls")
 
 local function project_zig_paths(root)
     local local_zig = root .. "/zig/zig"
@@ -6,31 +7,46 @@ local function project_zig_paths(root)
     return local_zig, local_zig_lib
 end
 
-local function add_project_zig(new_config, root_dir)
-    local root = root_dir or vim.fn.getcwd()
-    local local_zig, local_zig_lib = project_zig_paths(root)
+local function project_zig_root(root)
+    local dir = root
+    while dir and dir ~= "" do
+        local local_zig, local_zig_lib = project_zig_paths(dir)
+        if uv.fs_stat(local_zig) and uv.fs_stat(local_zig_lib) then
+            return dir, local_zig, local_zig_lib
+        end
 
-    new_config.settings = vim.deepcopy(new_config.settings or {})
-    new_config.settings.zls = new_config.settings.zls or {}
+        local parent = vim.fs.dirname(dir)
+        if parent == dir then
+            break
+        end
+        dir = parent
+    end
+end
 
-    if uv.fs_stat(local_zig) then
-        new_config.settings.zls.zig_exe_path = local_zig
+local function add_project_zig(config, root_dir)
+    local root = root_dir or config.root_dir or vim.fn.getcwd()
+    local _, local_zig, local_zig_lib = project_zig_root(root)
+
+    config.settings = config.settings or {}
+    config.settings.zls = config.settings.zls or {}
+
+    if local_zig then
+        config.settings.zls.zig_exe_path = local_zig
     end
 
-    if uv.fs_stat(local_zig_lib) then
-        new_config.settings.zls.zig_lib_path = local_zig_lib
+    if local_zig_lib then
+        config.settings.zls.zig_lib_path = local_zig_lib
     end
 end
 
 local function zls_root_dir(bufnr, on_dir)
-    local root = vim.fs.root(bufnr, { "build.zig", ".git" })
+    local root = vim.fs.root(bufnr, { ".git" }) or vim.fs.root(bufnr, { "build.zig" })
     if not root then
-        local name = vim.api.nvim_buf_get_name(bufnr)
+        local name = type(bufnr) == "number" and vim.api.nvim_buf_get_name(bufnr) or bufnr
         root = name ~= "" and vim.fs.dirname(name) or vim.fn.getcwd()
     end
 
-    local local_zig = project_zig_paths(root)
-    if uv.fs_stat(local_zig) or vim.fn.executable("zig") == 1 then
+    if project_zig_root(root) or vim.fn.executable("zig") == 1 then
         on_dir(root)
     end
 end
@@ -55,9 +71,12 @@ return {
             clangd = {},
             rust_analyzer = {},
             zls = {
-                cmd = { "zls" },
+                cmd = { zls_bin },
                 root_dir = zls_root_dir,
                 on_new_config = add_project_zig,
+                before_init = function(_, config)
+                    add_project_zig(config, config.root_dir)
+                end,
                 settings = {
                     zls = {
                         -- Keep ZLS useful, but avoid expensive/version-sensitive project checks by default.
