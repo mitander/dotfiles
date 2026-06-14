@@ -1,8 +1,8 @@
 local M = {}
 
 M.colors = {
-    border = "#393552",
-    border_variant = "#2a273f",
+    border = "#56526e",
+    border_variant = "#44415a",
     border_focused = "#569fba",
     surface = "#2a273f",
     surface_alt = "#393552",
