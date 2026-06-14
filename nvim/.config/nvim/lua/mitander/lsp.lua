@@ -120,7 +120,7 @@ return {
                     return function()
                         local ok, fzf_lua = pcall(require, "fzf-lua")
                         if ok and fzf_lua[method] then
-                            fzf_lua[method]()
+                            fzf_lua[method]({ resume = true, jump1 = false })
                         else
                             fallback()
                         end

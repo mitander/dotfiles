@@ -17,7 +17,7 @@ alias tm="~/dotfiles/scripts/tmux-session.sh attach"
 alias tls="tmux ls"
 
 # git
-alias gg="lazygit"
+alias gg="$HOME/dotfiles/scripts/lazygit-session.sh"
 alias gs="git status"
 alias gl="git log --oneline --graph --color=always --abbrev-commit --date=short | less -REX"
 alias gc="git commit"

@@ -21,7 +21,7 @@ local function cargo_keymaps(bufnr)
 end
 
 return {
-    { "nvim-lua/plenary.nvim", name = "plenary", lazy = true },
+    { "nvim-lua/plenary.nvim", lazy = true },
     {
         "saecki/crates.nvim",
         event = { "BufReadPost Cargo.toml", "BufNewFile Cargo.toml" },

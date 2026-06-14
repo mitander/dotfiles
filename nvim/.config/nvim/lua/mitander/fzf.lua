@@ -4,19 +4,112 @@ local function in_git_worktree()
 end
 
 local function project_files()
+    local opts = { no_resume = true }
     local fzf_lua = require("fzf-lua")
     if in_git_worktree() then
-        fzf_lua.git_files()
+        fzf_lua.git_files(opts)
     else
-        fzf_lua.files()
+        fzf_lua.files(opts)
     end
 end
 
 local function all_files()
     require("fzf-lua").files({
+        no_resume = true,
         fd_opts = "--no-ignore --color=never --type f --hidden --follow --exclude .git",
         file_ignore_patterns = { ".git/" },
     })
+end
+
+local function smart_rg_glob(query, opts)
+    local libuv = require("fzf-lua.libuv")
+    local glob_flag = opts.glob_flag or "--glob"
+
+    local function words(s)
+        local items = {}
+        for item in tostring(s or ""):gmatch("%S+") do
+            items[#items + 1] = item
+        end
+        return items
+    end
+
+    local function trim(s)
+        return tostring(s or ""):gsub("^%s+", ""):gsub("%s+$", "")
+    end
+
+    local function normalize_glob(glob)
+        glob = trim(glob)
+        if glob == "" then
+            return nil
+        end
+        if glob:match("^%.[%w_%-]+$") then
+            glob = "*" .. glob
+        elseif glob:sub(-1) == "/" then
+            glob = glob .. "**"
+        end
+        return glob
+    end
+
+    local function looks_like_glob(token)
+        if token == "" or token == "*" or token == ".*" then
+            return false
+        end
+        return token:find("/", 1, true) ~= nil
+            or token:match("^%.[%w_%-]+$") ~= nil
+            or (token:find("[%*%?%[]") ~= nil and token:find("%.") ~= nil)
+    end
+
+    local filters = {}
+    local function add_filter(glob, exclude)
+        glob = normalize_glob(glob)
+        if not glob then
+            return
+        end
+        if exclude and glob:sub(1, 1) ~= "!" then
+            glob = "!" .. glob
+        end
+        filters[#filters + 1] = glob
+    end
+
+    local search, glob_part = query:match("^(.-)%s%-%-%s*(.*)$")
+    if glob_part then
+        search = trim(search)
+        for _, token in ipairs(words(glob_part)) do
+            local exclude = token:sub(1, 1) == "!"
+            add_filter(exclude and token:sub(2) or token, exclude)
+        end
+    else
+        local terms = {}
+        for _, token in ipairs(words(query)) do
+            local include = token:match("^in:(.+)$") or token:match("^include:(.+)$")
+            local exclude = token:match("^out:(.+)$") or token:match("^exclude:(.+)$")
+            if include then
+                add_filter(include, false)
+            elseif exclude then
+                if exclude:sub(1, 1) == "!" then
+                    exclude = exclude:sub(2)
+                end
+                add_filter(exclude, true)
+            elseif token:sub(1, 1) == "!" and looks_like_glob(token:sub(2)) then
+                add_filter(token:sub(2), true)
+            elseif looks_like_glob(token) then
+                add_filter(token, false)
+            else
+                terms[#terms + 1] = token
+            end
+        end
+        search = #filters > 0 and table.concat(terms, " ") or query
+    end
+
+    if #filters == 0 then
+        return query, nil
+    end
+
+    local args = {}
+    for _, glob in ipairs(filters) do
+        args[#args + 1] = string.format("%s %s", glob_flag, libuv.shellescape(glob))
+    end
+    return search, table.concat(args, " ")
 end
 
 return {
@@ -39,9 +132,9 @@ return {
         {
             "<c-f>",
             function()
-                require("fzf-lua").live_grep()
+                require("fzf-lua").live_grep({ resume = true })
             end,
-            desc = "Live grep",
+            desc = "Live grep session",
         },
         {
             "<c-b>",
@@ -94,6 +187,12 @@ return {
         },
     },
     opts = {
+        keymap = {
+            fzf = {
+                true,
+                ["ctrl-c"] = "clear-query",
+            },
+        },
         hls = {
             backdrop = "Normal",
             border = "WinSeparator",
@@ -138,11 +237,17 @@ return {
         },
         grep = {
             rg_glob = true,
+            glob_flag = "--glob",
+            glob_separator = ".",
+            rg_glob_fn = smart_rg_glob,
             rg_opts = "--hidden --column --line-number --no-heading"
                 .. " --color=always --smart-case -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'",
         },
         live_grep = {
             rg_glob = true,
+            glob_flag = "--glob",
+            glob_separator = ".",
+            rg_glob_fn = smart_rg_glob,
             rg_opts = "--hidden --column --line-number --no-heading"
                 .. " --color=always --smart-case -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'",
         },

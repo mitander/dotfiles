@@ -1,0 +1,14 @@
+# Keep lazygit as a long-lived tmux review session.
+# q hides/switches away from the lazygit window; Q is the explicit quit.
+quitOnTopLevelReturn: false
+confirmOnQuit: false
+keybinding:
+  universal:
+    quit: Q
+    quit-alt1: <disabled>
+    quitWithoutChangingDirectory: <disabled>
+customCommands:
+  - key: q
+    context: global
+    description: Hide lazygit tmux window
+    command: sh -c 'if [ -n "$TMUX" ]; then tmux select-window -l; else printf "Not inside tmux; use Q to quit lazygit.\n"; sleep 1; fi'
