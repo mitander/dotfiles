@@ -185,15 +185,18 @@ end
 return {
     "stevearc/oil.nvim",
     lazy = false,
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
         default_file_explorer = true,
-        columns = {},
+        columns = { "icon" },
         buf_options = {
             buflisted = false,
             bufhidden = "hide",
         },
         win_options = {
             wrap = false,
+            number = false,
+            relativenumber = false,
             signcolumn = "no",
             cursorcolumn = false,
             foldcolumn = "0",
