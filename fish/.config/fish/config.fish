@@ -1,16 +1,16 @@
 # general
-alias vim "nvim"
+alias vim nvim
 alias so "source ~/.config/fish/config.fish"
-alias :q "exit"
+alias :q exit
 alias tree "tree --gitignore"
 
 alias zig "./zig/zig"
 
 # bat
-alias cat "bat"
+alias cat bat
 
 # lsd
-alias ls "lsd"
+alias ls lsd
 alias l "ls -l"
 alias la "ls -a"
 alias lla "ls -la"
@@ -36,7 +36,7 @@ alias ge "git commit --amend --no-edit"
 alias gx "git commit --no-verify"
 
 # docker
-alias dc "docker-compose"
+alias dc docker-compose
 alias dcd "docker-compose down"
 alias dcu "docker-compose up"
 alias dl "docker logs"
@@ -44,7 +44,7 @@ alias dps "docker ps"
 alias dpp "docker-compose pull --parallel"
 
 # linux
-if test (uname) = "Linux"
+if test (uname) = Linux
     xset r rate 275 40
 end
 
@@ -91,12 +91,12 @@ end
 set -Ux FZF_DEFAULT_COMMAND "rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 
 # editor and other settings
-set -Ux EDITOR "nvim"
-set -Ux TERMINAL "alacritty"
-set -Ux BROWSER "firefox"
+set -Ux EDITOR nvim
+set -Ux TERMINAL alacritty
+set -Ux BROWSER firefox
 set -Ux PAGER "less -RF"
 set -Ux MANPAGER "$PAGER"
-set -Ux MANWIDTH "999"
+set -Ux MANWIDTH 999
 set -Ux KEYTIMEOUT 1
 
 # man page
