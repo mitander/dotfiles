@@ -116,6 +116,12 @@ return {
             group = group,
             callback = function(args)
                 local map_opts = { buffer = args.buf, remap = false }
+                local function qf_references()
+                    vim.lsp.buf.references(nil, { loclist = false })
+                end
+                local function qf_implementations()
+                    vim.lsp.buf.implementation({ loclist = false })
+                end
                 local function fzf_lsp(method, fallback)
                     return function()
                         local ok, fzf_lua = pcall(require, "fzf-lua")
@@ -129,9 +135,11 @@ return {
 
                 vim.keymap.set("i", "<c-s>", vim.lsp.buf.signature_help, map_opts)
                 vim.keymap.set("n", "ga", vim.lsp.buf.code_action, map_opts)
-                vim.keymap.set("n", "gr", fzf_lsp("lsp_references", vim.lsp.buf.references), map_opts)
+                vim.keymap.set("n", "gr", fzf_lsp("lsp_references", qf_references), map_opts)
+                vim.keymap.set("n", "gR", qf_references, map_opts)
                 vim.keymap.set("n", "gd", vim.lsp.buf.definition, map_opts)
-                vim.keymap.set("n", "gi", fzf_lsp("lsp_implementations", vim.lsp.buf.implementation), map_opts)
+                vim.keymap.set("n", "gi", fzf_lsp("lsp_implementations", qf_implementations), map_opts)
+                vim.keymap.set("n", "gI", qf_implementations, map_opts)
                 vim.keymap.set("n", "go", vim.diagnostic.open_float, map_opts)
                 vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, map_opts)
                 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, map_opts)
