@@ -1,9 +1,9 @@
 return {
     dir = vim.fn.stdpath("config"),
-    name = "duskfox",
+    name = "flume.nvim",
     lazy = false,
     priority = 1000,
     config = function()
-        require("mitander_theme").setup()
+        require("flume").setup()
     end,
 }

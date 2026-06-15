@@ -2,7 +2,7 @@ return {
     "nvim-lualine/lualine.nvim",
     event = "VeryLazy",
     opts = function()
-        local colors = require("mitander_theme").colors
+        local colors = require("flume").colors
         return {
             options = {
                 component_separators = { left = "", right = "" },
