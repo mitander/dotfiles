@@ -19,6 +19,7 @@ M.colors = {
     active_line = "#2a273f",
     line_number = "#6e6a86",
     active_line_number = "#e0def4",
+    indent_guide = "#393552",
 
     black = "#393552",
     bright_black = "#47407d",
@@ -89,6 +90,8 @@ function M.setup()
     hi("EndOfBuffer", { fg = c.bg, bg = c.bg })
     hi("NonText", { fg = c.line_number })
     hi("Whitespace", { fg = c.line_number })
+    hi("IblIndent", { fg = c.indent_guide })
+    hi("IblWhitespace", { fg = c.indent_guide })
     hi("ColorColumn", { bg = c.surface })
     hi("CursorLine", { bg = c.active_line })
     hi("CursorLineNr", { fg = c.active_line_number, bg = c.active_line, bold = true })
