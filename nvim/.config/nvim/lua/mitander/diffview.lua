@@ -16,14 +16,34 @@ local function default_branch()
     end
 end
 
-local function git_status()
+local function close_current_view()
     local ok, lib = pcall(require, "diffview.lib")
     if ok and lib.get_current_view() then
         vim.cmd.DiffviewClose()
+        return true
+    end
+end
+
+local function toggle_view(open)
+    if close_current_view() then
         return
     end
 
-    vim.cmd.DiffviewOpen()
+    open()
+end
+
+local function git_status()
+    toggle_view(vim.cmd.DiffviewOpen)
+end
+
+local function current_file_history()
+    toggle_view(function()
+        vim.cmd("DiffviewFileHistory %")
+    end)
+end
+
+local function repo_history()
+    toggle_view(vim.cmd.DiffviewFileHistory)
 end
 
 local function review_branch()
@@ -51,6 +71,24 @@ return {
                 end
             end,
         })
+
+        vim.api.nvim_create_autocmd("BufWinEnter", {
+            group = group,
+            callback = function(args)
+                local name = vim.api.nvim_buf_get_name(args.buf)
+                if not name:match("^diffview://.*/log/%d+/commit_log$") then
+                    return
+                end
+
+                local opts = { buffer = args.buf, silent = true }
+                vim.keymap.set("n", "q", "<cmd>DiffviewClose<cr>", opts)
+                vim.keymap.set("n", "<esc>", "<cmd>DiffviewClose<cr>", opts)
+                vim.keymap.set("n", "<leader>gs", "<cmd>DiffviewClose<cr>", opts)
+                vim.keymap.set("n", "<leader>gl", "<cmd>DiffviewClose<cr>", opts)
+                vim.keymap.set("n", "<leader>gh", "<cmd>DiffviewClose<cr>", opts)
+                vim.keymap.set("n", "<leader>gH", "<cmd>DiffviewClose<cr>", opts)
+            end,
+        })
     end,
     cmd = {
         "DiffviewOpen",
@@ -63,11 +101,12 @@ return {
     dependencies = { "nvim-lua/plenary.nvim" },
     keys = {
         { "<leader>gs", git_status, desc = "Git status diff" },
+        { "<leader>gl", repo_history, desc = "Git log" },
         { "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Review working tree" },
         { "<leader>gD", "<cmd>DiffviewOpen --staged<cr>", desc = "Review staged changes" },
         { "<leader>gr", review_branch, desc = "Review branch against default" },
-        { "<leader>gh", "<cmd>DiffviewFileHistory %<cr>", desc = "Current file history" },
-        { "<leader>gH", "<cmd>DiffviewFileHistory<cr>", desc = "Repo history" },
+        { "<leader>gh", current_file_history, desc = "Current file history" },
+        { "<leader>gH", repo_history, desc = "Repo history" },
         { "<leader>gq", "<cmd>DiffviewClose<cr>", desc = "Close review" },
     },
     opts = function()
@@ -97,9 +136,14 @@ return {
             },
             keymaps = {
                 view = {
-                    { "n", "q", close, { desc = "Close git status" } },
-                    { "n", "<esc>", close, { desc = "Close git status" } },
+                    { "n", "q", close, { desc = "Close git review" } },
+                    { "n", "<esc>", close, { desc = "Close git review" } },
                     { "n", "<leader>gs", close, { desc = "Close git status" } },
+                    { "n", "<leader>gl", close, { desc = "Close git log" } },
+                    { "n", "<leader>gh", close, { desc = "Close file history" } },
+                    { "n", "<leader>gH", close, { desc = "Close repo history" } },
+                    { "n", "[d", "[c", { desc = "Previous diff hunk" } },
+                    { "n", "]d", "]c", { desc = "Next diff hunk" } },
                     { "n", "[g", "[c", { desc = "Previous diff hunk" } },
                     { "n", "]g", "]c", { desc = "Next diff hunk" } },
                     { "n", "-", actions.toggle_stage_entry, { desc = "Stage / unstage current file" } },
@@ -109,13 +153,19 @@ return {
                     { "n", "X", actions.restore_entry, { desc = "Discard current file changes" } },
                 },
                 file_panel = {
-                    { "n", "q", close, { desc = "Close git status" } },
-                    { "n", "<esc>", close, { desc = "Close git status" } },
+                    { "n", "q", close, { desc = "Close git review" } },
+                    { "n", "<esc>", close, { desc = "Close git review" } },
                     { "n", "<leader>gs", close, { desc = "Close git status" } },
+                    { "n", "<leader>gl", close, { desc = "Close git log" } },
+                    { "n", "<leader>gh", close, { desc = "Close file history" } },
+                    { "n", "<leader>gH", close, { desc = "Close repo history" } },
                 },
                 file_history_panel = {
                     { "n", "q", close, { desc = "Close file history" } },
                     { "n", "<esc>", close, { desc = "Close file history" } },
+                    { "n", "<leader>gl", close, { desc = "Close git log" } },
+                    { "n", "<leader>gh", close, { desc = "Close file history" } },
+                    { "n", "<leader>gH", close, { desc = "Close repo history" } },
                 },
             },
         }

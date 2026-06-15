@@ -40,6 +40,8 @@ return {
 
         vim.keymap.set("n", "gp", require("gitsigns").preview_hunk_inline)
         vim.keymap.set("n", "g.", require("gitsigns").toggle_signs)
+        vim.keymap.set("n", "[d", require("gitsigns").prev_hunk)
+        vim.keymap.set("n", "]d", require("gitsigns").next_hunk)
         vim.keymap.set("n", "[g", require("gitsigns").prev_hunk)
         vim.keymap.set("n", "]g", require("gitsigns").next_hunk)
         vim.keymap.set("n", "g,", require("gitsigns").toggle_current_line_blame)

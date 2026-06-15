@@ -100,11 +100,11 @@ return {
             desc = "Git status picker",
         },
         {
-            "<leader>gl",
+            "<leader>gL",
             function()
                 require("fzf-lua").git_commits()
             end,
-            desc = "Git commits",
+            desc = "Git commits picker",
         },
         {
             "<leader>gb",
