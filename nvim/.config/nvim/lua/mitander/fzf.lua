@@ -133,6 +133,7 @@ return {
             fzf = {
                 true,
                 ["ctrl-c"] = "clear-query",
+                ["ctrl-w"] = "abort",
             },
         },
         hls = {
