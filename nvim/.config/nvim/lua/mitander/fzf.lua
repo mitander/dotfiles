@@ -8,6 +8,7 @@ end
 local function project_files()
     require("fzf-lua").files({
         no_resume = true,
+        previewer = false,
         cwd = git_root() or vim.fn.getcwd(),
     })
 end
@@ -15,6 +16,7 @@ end
 local function all_files()
     require("fzf-lua").files({
         no_resume = true,
+        previewer = false,
         fd_opts = "--no-ignore --color=never --type f --hidden --follow --exclude .git",
         file_ignore_patterns = { ".git/" },
     })
@@ -28,15 +30,7 @@ local file_picker_winopts = {
     width = 0.82,
     row = 0.50,
     col = 0.50,
-    title = " Files · F4 preview ",
-    preview = {
-        hidden = "hidden",
-        layout = "flex",
-        flip_columns = 140,
-        horizontal = "right:55%",
-        vertical = "down:45%",
-        scrollbar = "float",
-    },
+    title = " Files ",
 }
 
 local search_winopts = {
@@ -143,6 +137,7 @@ return {
             preview_border = "FloatBorder",
         },
         winopts = {
+            title_flags = false,
             height = 0.85,
             width = 0.80,
             row = 0.35,
@@ -169,6 +164,7 @@ return {
         files = {
             prompt = "Files: ",
             formatter = "path.filename_first",
+            previewer = false,
             cmd = fd .. " --color=never --type f --hidden --follow --exclude .git",
             multiprocess = false,
             winopts = vim.deepcopy(file_picker_winopts),
@@ -217,6 +213,7 @@ return {
             files = {
                 prompt = "Files: ",
                 formatter = "path.filename_first",
+                previewer = false,
                 cmd = "git ls-files --exclude-standard",
                 multiprocess = false,
                 winopts = vim.deepcopy(file_picker_winopts),
