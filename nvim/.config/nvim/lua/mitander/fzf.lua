@@ -93,11 +93,11 @@ return {
             desc = "Help tags",
         },
         {
-            "<leader>gs",
+            "<leader>gS",
             function()
                 require("fzf-lua").git_status()
             end,
-            desc = "Git status",
+            desc = "Git status picker",
         },
         {
             "<leader>gl",
