@@ -240,6 +240,7 @@ function M.setup()
     hi("OilFile", { fg = c.fg })
     hi("OilHidden", { fg = c.placeholder })
     hi("OilLink", { fg = c.cyan })
+    hi("OilStatusLine", { fg = c.fg, bg = c.surface_alt, bold = true })
 
     local terminal_colors = {
         c.black,

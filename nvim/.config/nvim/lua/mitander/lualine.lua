@@ -11,6 +11,9 @@ return {
                     normal = { c = { fg = colors.text, bg = colors.surface_alt } },
                     inactive = { c = { fg = colors.placeholder, bg = colors.surface, gui = "bold" } },
                 },
+                disabled_filetypes = {
+                    statusline = { "oil" },
+                },
             },
             sections = {
                 lualine_a = {},

@@ -1,5 +1,27 @@
 local sidebar_width = 34
 
+function _G.get_oil_statusline()
+    local bufnr = vim.api.nvim_win_get_buf(vim.g.statusline_winid or 0)
+    local dir = require("oil").get_current_dir(bufnr)
+    local path = ""
+    if dir then
+        path = "  " .. vim.fn.fnamemodify(dir, ":~")
+    else
+        path = "  Oil"
+    end
+    return "%#OilStatusLine#" .. path
+end
+
+local show_detail = false
+local function toggle_detail()
+    show_detail = not show_detail
+    if show_detail then
+        require("oil").set_columns({ "icon", "permissions", "size", "mtime" })
+    else
+        require("oil").set_columns({ "icon" })
+    end
+end
+
 local function is_oil_sidebar(winid)
     return vim.api.nvim_win_is_valid(winid) and vim.w[winid].oil_sidebar == true
 end
@@ -165,10 +187,11 @@ local function move_pane(method)
     end
 end
 
-local function select_entry()
+local function select_entry(opts)
+    opts = opts or {}
     local oil = require("oil")
     if not vim.w.oil_sidebar then
-        oil.select()
+        oil.select(opts)
         return
     end
 
@@ -186,6 +209,13 @@ local function select_entry()
                 target_win = ensure_target_win(sidebar_win)
             end
             vim.api.nvim_set_current_win(target_win)
+            if opts.vertical then
+                vim.cmd("vsplit")
+                target_win = vim.api.nvim_get_current_win()
+            elseif opts.horizontal then
+                vim.cmd("split")
+                target_win = vim.api.nvim_get_current_win()
+            end
             vim.api.nvim_set_current_buf(bufnr)
             if vim.api.nvim_win_is_valid(sidebar_win) then
                 vim.w[sidebar_win].oil_target_win = target_win
@@ -216,9 +246,11 @@ return {
             list = false,
             conceallevel = 3,
             concealcursor = "nvic",
+            statuscolumn = "  ",
+            statusline = "%!v:lua.get_oil_statusline()",
         },
-        delete_to_trash = false,
-        skip_confirm_for_simple_edits = false,
+        delete_to_trash = true,
+        skip_confirm_for_simple_edits = true,
         prompt_save_on_select_new_entry = true,
         cleanup_delay_ms = 2000,
         lsp_file_methods = {
@@ -266,14 +298,20 @@ return {
             ["."] = "actions.open_cwd",
             ["~"] = "actions.cd",
             ["<c-s>"] = {
-                "actions.select",
-                opts = { vertical = true },
-                desc = "Open the entry in a vertical split",
+                callback = function()
+                    select_entry({ vertical = true })
+                end,
+                desc = "Open the entry in a vertical split in target window",
             },
             ["<c-v>"] = {
-                "actions.select",
-                opts = { horizontal = true },
-                desc = "Open the entry in a horizontal split",
+                callback = function()
+                    select_entry({ horizontal = true })
+                end,
+                desc = "Open the entry in a horizontal split in target window",
+            },
+            ["gd"] = {
+                callback = toggle_detail,
+                desc = "Toggle detail columns",
             },
         },
         use_default_keymaps = true,
