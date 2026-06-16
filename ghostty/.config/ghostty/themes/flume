@@ -1,24 +1,39 @@
-# Duskfox
-background = #232136
-foreground = #e0def4
-selection-background = #393552
-selection-foreground = #e0def4
-cursor-color = #569fba
-cursor-text = #232136
+# Light sandy sharp theme
+background = #e6dfcf
+foreground = #141312
+selection-background = #d1c1a9
+selection-foreground = #141312
+cursor-color = #315f86
+cursor-text = #e6dfcf
 
-palette = 0=#393552
-palette = 1=#eb6f92
-palette = 2=#a3be8c
-palette = 3=#f6c177
-palette = 4=#569fba
-palette = 5=#c4a7e7
-palette = 6=#9ccfd8
-palette = 7=#e0def4
-palette = 8=#47407d
-palette = 9=#f083a2
-palette = 10=#b1d196
-palette = 11=#f9cb8c
-palette = 12=#65b1cd
-palette = 13=#ccb1ed
-palette = 14=#a6dae3
-palette = 15=#e2e0f7
+palette = 0=#141312
+palette = 1=#a63d3f
+palette = 2=#4f6a32
+palette = 3=#83580c
+palette = 4=#315f86
+palette = 5=#8f3d7a
+palette = 6=#266a76
+palette = 7=#4f473d
+palette = 8=#4f473d
+palette = 9=#b84b4c
+palette = 10=#5f7a3e
+palette = 11=#9a6710
+palette = 12=#34658c
+palette = 13=#a03872
+palette = 14=#2f7782
+palette = 15=#141312
+
+# Neovim custom overrides:
+# border = #a49376
+# border_variant = #b9aa8f
+# highlight = #eea645
+# syntax_boolean = #99405f
+# syntax_comment = #695f51
+# syntax_doc_comment = #5a625c
+# syntax_punctuation_special = #9b4a2a
+# predictive = #7b7f76
+# diff_add_bg = #dfe7d3
+# diff_change_bg = #dbe4e6
+# diff_delete_bg = #efd9d5
+# hint_bg = #dbe4e6
+# warn_bg = #efdfc6

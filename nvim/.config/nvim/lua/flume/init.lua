@@ -3,83 +3,182 @@
 local M = {}
 
 M.colors = {
-    border = "#56526e",
-    border_variant = "#44415a",
-    border_focused = "#569fba",
-    surface = "#2a273f",
-    surface_alt = "#393552",
-    element = "#2a273f",
-    element_hover = "#393552",
-    element_active = "#44415a",
-    bg = "#232136",
-    terminal_bg = "#232136",
-    fg = "#e0def4",
-    text = "#e0def4",
-    muted = "#908caa",
-    placeholder = "#6e6a86",
-    accent = "#569fba",
-    active_line = "#2a273f",
-    line_number = "#6e6a86",
-    active_line_number = "#e0def4",
-    indent_guide = "#393552",
+    -- warm paper / ink scaffold
+    border = "#a49376",
+    border_variant = "#b9aa8f",
+    border_focused = "#315f86",
 
-    black = "#393552",
-    bright_black = "#47407d",
-    dim_black = "#2a273f",
-    red = "#eb6f92",
-    bright_red = "#f083a2",
-    dim_red = "#a84a62",
-    green = "#a3be8c",
-    bright_green = "#b1d196",
-    dim_green = "#71885f",
-    yellow = "#f6c177",
-    bright_yellow = "#f9cb8c",
-    dim_yellow = "#b88752",
-    blue = "#569fba",
-    bright_blue = "#65b1cd",
-    dim_blue = "#3c7288",
-    magenta = "#c4a7e7",
-    bright_magenta = "#ccb1ed",
-    dim_magenta = "#8c74aa",
-    cyan = "#9ccfd8",
-    bright_cyan = "#a6dae3",
-    dim_cyan = "#6f969e",
-    white = "#e0def4",
-    bright_white = "#e2e0f7",
-    dim_white = "#908caa",
+    bg = "#e6dfcf",
+    terminal_bg = "#e6dfcf",
 
-    syntax_attribute = "#74ade8",
-    syntax_boolean = "#eb98c3",
-    syntax_comment = "#6e6a86",
-    syntax_doc_comment = "#878e98",
-    syntax_constant = "#dfc184",
-    syntax_function = "#73ade9",
-    syntax_type = "#65b1cd",
-    syntax_keyword = "#c4a7e7",
-    syntax_primary = "#d8d5ea",
-    syntax_property = "#e07a84",
-    syntax_punctuation = "#d8d5ea",
-    syntax_punctuation_bracket = "#d8d5ea",
-    syntax_punctuation_special = "#b1574b",
-    syntax_string = "#a3be8c",
-    syntax_special = "#eb98c3",
-    predictive = "#5a6a87",
+    surface = "#ddd3c0",
+    surface_alt = "#d1c1a9",
+    element = "#ddd3c0",
+    element_hover = "#d1c1a9",
+    element_active = "#bfa987",
 
-    diff_add_bg = "#2f3d2d",
-    diff_change_bg = "#2d3a45",
-    diff_delete_bg = "#402834",
-    hint = "#9ccfd8",
-    hint_bg = "#2d3a45",
-    warn_bg = "#493b2b",
+    fg = "#141312",
+    text = "#141312",
+    muted = "#6b5f4f",
+    placeholder = "#887a66",
+
+    accent = "#315f86",
+    highlight = "#eea645",
+
+    active_line = "#ddd3c0",
+    line_number = "#887a66",
+    active_line_number = "#141312",
+    indent_guide = "#c8bca6",
+
+    -- terminal / ANSI.
+    black = "#141312",
+    bright_black = "#4f473d",
+    dim_black = "#a49376",
+
+    red = "#a63d3f",
+    bright_red = "#b84b4c",
+    dim_red = "#efd9d5",
+
+    green = "#4f6a32",
+    bright_green = "#5f7a3e",
+    dim_green = "#dfe7d3",
+
+    yellow = "#83580c",
+    bright_yellow = "#9a6710",
+    dim_yellow = "#efdfc6",
+
+    blue = "#315f86",
+    bright_blue = "#34658c",
+    dim_blue = "#c8d9df",
+
+    magenta = "#8f3d7a",
+    bright_magenta = "#a03872",
+    dim_magenta = "#e6cfda",
+
+    cyan = "#266a76",
+    bright_cyan = "#2f7782",
+    dim_cyan = "#c9ddda",
+
+    white = "#4f473d",
+    bright_white = "#141312",
+    dim_white = "#6b5f4f",
+
+    -- syntax
+    syntax_attribute = "#34658c",
+    syntax_boolean = "#99405f",
+    syntax_comment = "#695f51",
+    syntax_doc_comment = "#5a625c",
+    syntax_constant = "#83580c",
+    syntax_function = "#315f86",
+    syntax_type = "#266a76",
+    syntax_keyword = "#8f3d7a",
+    syntax_primary = "#141312",
+    syntax_property = "#a63d3f",
+    syntax_punctuation = "#4f473d",
+    syntax_punctuation_bracket = "#4f473d",
+    syntax_punctuation_special = "#9b4a2a",
+    syntax_string = "#4f6a32",
+    syntax_special = "#a03872",
+
+    predictive = "#7b7f76",
+
+    diff_add_bg = "#dfe7d3",
+    diff_change_bg = "#dbe4e6",
+    diff_delete_bg = "#efd9d5",
+
+    hint = "#266a76",
+    hint_bg = "#dbe4e6",
+    warn_bg = "#efdfc6",
 }
+
+local function load_ghostty_colors()
+    local paths = {
+        vim.fn.expand("~/.config/ghostty/themes/flume"),
+        vim.fn.expand("~/dotfiles/ghostty/.config/ghostty/themes/flume"),
+    }
+    local f
+    for _, path in ipairs(paths) do
+        f = io.open(path, "r")
+        if f then break end
+    end
+    if not f then return end
+
+    local ghostty = {}
+    for line in f:lines() do
+        local clean_line = line:match("^%s*(.-)%s*$")
+        if clean_line and clean_line ~= "" then
+            local is_comment, key, val = clean_line:match("^(#?)%s*([%w%-_]+)%s*=%s*(#[%da-fA-F]+)$")
+            if not key then
+                local is_pal_comment, pal_val = clean_line:match("^(#?)%s*palette%s*=%s*(.+)$")
+                if pal_val then
+                    local idx, color = pal_val:match("^(%d+)%s*=%s*(#[%da-fA-F]+)$")
+                    if idx and color then
+                        ghostty["color_" .. idx] = color
+                    end
+                end
+            else
+                ghostty[key] = val
+            end
+        end
+    end
+    f:close()
+
+    local c = M.colors
+    if ghostty.background then
+        c.bg = ghostty.background
+        c.terminal_bg = ghostty.background
+        c.element = ghostty.background
+    end
+    if ghostty.foreground then
+        c.fg = ghostty.foreground
+        c.text = ghostty.foreground
+        c.syntax_primary = ghostty.foreground
+    end
+    if ghostty["selection-background"] then
+        c.surface_alt = ghostty["selection-background"]
+        c.active_line = ghostty["selection-background"]
+        c.indent_guide = ghostty["selection-background"]
+    end
+
+    local map = {
+        color_0 = "black",
+        color_1 = "red",
+        color_2 = "green",
+        color_3 = "yellow",
+        color_4 = "blue",
+        color_5 = "magenta",
+        color_6 = "cyan",
+        color_7 = "white",
+        color_8 = "bright_black",
+        color_9 = "bright_red",
+        color_10 = "bright_green",
+        color_11 = "bright_yellow",
+        color_12 = "bright_blue",
+        color_13 = "bright_magenta",
+        color_14 = "bright_cyan",
+        color_15 = "bright_white",
+    }
+    for k, v in pairs(map) do
+        if ghostty[k] then
+            c[v] = ghostty[k]
+        end
+    end
+
+    for k, v in pairs(ghostty) do
+        if c[k] ~= nil then
+            c[k] = v
+        end
+    end
+end
 
 local function hi(group, opts)
     vim.api.nvim_set_hl(0, group, opts)
 end
 
 function M.setup()
+    load_ghostty_colors()
     local c = M.colors
-    vim.o.background = "dark"
+    vim.o.background = "light"
     vim.g.colors_name = "flume"
 
     hi("Normal", { fg = c.syntax_primary, bg = c.bg })
@@ -102,8 +201,8 @@ function M.setup()
     hi("LineNr", { fg = c.line_number, bg = c.bg })
     hi("Visual", { bg = c.element_active })
     hi("Search", { fg = c.text, bg = c.dim_blue })
-    hi("IncSearch", { fg = c.terminal_bg, bg = c.yellow })
-    hi("CurSearch", { fg = c.terminal_bg, bg = c.yellow })
+    hi("IncSearch", { fg = c.black, bg = c.highlight })
+    hi("CurSearch", { fg = c.black, bg = c.highlight })
     hi("MatchParen", { fg = c.text, bg = c.element_active, bold = true })
     hi("Directory", { fg = c.accent })
     hi("Title", { fg = c.syntax_property })
@@ -182,7 +281,7 @@ function M.setup()
     hi("Underlined", { fg = c.accent, underline = true })
     hi("Ignore", { fg = c.placeholder })
     hi("Error", { fg = c.red })
-    hi("Todo", { fg = c.yellow, bg = "NONE", bold = true })
+    hi("Todo", { fg = c.black, bg = c.highlight, bold = true })
 
     hi("@attribute", { fg = c.syntax_attribute })
     hi("@boolean", { fg = c.syntax_boolean })
