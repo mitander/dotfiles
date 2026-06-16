@@ -22,6 +22,26 @@ local function all_files()
     })
 end
 
+local function git_review_status()
+    require("mitander_git_review").status()
+end
+
+local function git_review_form()
+    require("mitander_git_review").form()
+end
+
+local function git_changed_files()
+    require("mitander_git_review").changed_files()
+end
+
+local function git_staged_files()
+    require("mitander_git_review").staged_files()
+end
+
+local function git_branch_review()
+    require("mitander_git_review").branch()
+end
+
 local smart_rg_glob = require("mitander_fzf_query").rg_glob
 local fd = vim.fn.exepath("fd") ~= "" and vim.fn.exepath("fd") or "fd"
 
@@ -86,12 +106,17 @@ return {
             end,
             desc = "Help tags",
         },
+        { "<leader>gS", git_review_status, desc = "Git status review picker" },
+        { "<leader>gs", git_review_form, desc = "Git review form" },
+        { "<leader>gd", git_changed_files, desc = "Changed files diff picker" },
+        { "<leader>gD", git_staged_files, desc = "Staged files diff picker" },
+        { "<leader>gr", git_branch_review, desc = "Review branch against default" },
         {
-            "<leader>gS",
+            "<leader>gl",
             function()
-                require("fzf-lua").git_status()
+                require("fzf-lua").git_commits()
             end,
-            desc = "Git status picker",
+            desc = "Git log",
         },
         {
             "<leader>gL",
@@ -113,6 +138,20 @@ return {
                 require("fzf-lua").git_bcommits()
             end,
             desc = "Buffer commits",
+        },
+        {
+            "<leader>gh",
+            function()
+                require("fzf-lua").git_bcommits()
+            end,
+            desc = "Current file history",
+        },
+        {
+            "<leader>gH",
+            function()
+                require("fzf-lua").git_commits()
+            end,
+            desc = "Repo history",
         },
         {
             "<leader>p",
@@ -191,11 +230,19 @@ return {
         },
         git = {
             status = {
-                cmd = "git status -su",
+                prompt = "Review> ",
+                cmd = "git -c color.status=false --no-optional-locks status --porcelain=v1 -uall",
                 winopts = {
                     preview = { vertical = "down:70%", horizontal = "right:70%" },
                 },
                 preview_pager = vim.fn.executable("delta") == 1 and "delta --width=$COLUMNS",
+            },
+            diff = {
+                preview = "git diff --color {ref1} {ref} -- {file}",
+                preview_pager = vim.fn.executable("delta") == 1 and "delta --width=$COLUMNS",
+            },
+            hunks = {
+                cmd = "git --no-pager diff --color=always {ref1} {ref} -- {file}",
             },
             commits = {
                 winopts = { preview = { vertical = "down:60%" } },
