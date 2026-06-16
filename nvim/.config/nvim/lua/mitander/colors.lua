@@ -1,5 +1,5 @@
 return {
-    dir = vim.fn.stdpath("config"),
+    dir = vim.fn.expand("~/dotfiles/themes/flume"),
     name = "flume.nvim",
     lazy = false,
     priority = 1000,

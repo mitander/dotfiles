@@ -1,8 +1,9 @@
 return {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main",
     build = ":TSUpdate",
     event = { "BufReadPost", "BufNewFile" },
-    cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
+    cmd = { "TSUpdate", "TSInstall" },
     dependencies = {
         "nvim-treesitter/nvim-treesitter-textobjects",
     },
@@ -86,6 +87,15 @@ return {
         },
     },
     config = function(_, opts)
-        require("nvim-treesitter.configs").setup(opts)
+        require("nvim-treesitter").setup(opts)
+        if opts.ensure_installed then
+            require("nvim-treesitter").install(opts.ensure_installed)
+        end
+        if opts.textobjects then
+            local ok, textobjects = pcall(require, "nvim-treesitter-textobjects")
+            if ok then
+                textobjects.setup(opts.textobjects)
+            end
+        end
     end,
 }
