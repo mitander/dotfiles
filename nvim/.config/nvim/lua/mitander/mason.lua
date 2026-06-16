@@ -31,32 +31,5 @@ return {
             vim.env.PATH = vim.env.PATH .. (is_windows and ";" or ":") .. vim.fn.stdpath("data") .. "/mason/bin"
         end,
     },
-    {
-        "williamboman/mason-lspconfig.nvim",
-        event = { "BufReadPre", "BufNewFile" },
-        dependencies = { "williamboman/mason.nvim" },
-        opts = {
-            ensure_installed = {
-                "clangd",
-                "gopls",
-                "rust_analyzer",
-                -- "zls", we manually handle zls
-                "lua_ls",
-                "jsonls",
-            },
-            automatic_enable = false,
-            ui = {
-                keymaps = {
-                    toggle_server_expand = "<enter>",
-                    install_server = "i",
-                    update_server = "u",
-                    check_server_version = "c",
-                    update_all_servers = "U",
-                    check_outdated_servers = "C",
-                    uninstall_server = "X",
-                },
-            },
-            log_level = vim.log.levels.INFO,
-        },
-    },
 }
+

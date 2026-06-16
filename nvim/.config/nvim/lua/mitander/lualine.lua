@@ -72,6 +72,7 @@ return {
                         color = { fg = colors.green, gui = "bold" },
                         padding = { right = 1 },
                     },
+
                     {
                         "o:encoding",
                         fmt = string.upper,

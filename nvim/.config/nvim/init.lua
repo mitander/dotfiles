@@ -1,5 +1,3 @@
-vim.loader.enable()
-
 -- options
 vim.opt.mouse = "a"
 vim.opt.backup = false
@@ -102,6 +100,10 @@ vim.keymap.set("c", "<c-g>", "<c-c>")
 vim.keymap.set("n", "j", "gj")
 vim.keymap.set("n", "k", "gk")
 
+-- comment line / visual selection
+vim.keymap.set("n", "<leader>/", "gcc", { remap = true, silent = true })
+vim.keymap.set("v", "<leader>/", "gc", { remap = true, silent = true })
+
 -- keep visual block on indentation
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
@@ -141,6 +143,7 @@ vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     pattern = "*",
     command = "set nopaste",
 })
+
 
 -- 4 space indentation
 vim.api.nvim_create_autocmd({ "FileType" }, {
