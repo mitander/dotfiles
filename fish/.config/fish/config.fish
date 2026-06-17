@@ -1,5 +1,16 @@
 # general
-alias vim nvim
+function nvim
+    if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"
+        ~/dotfiles/scripts/tmux-project.sh vim-open -- $argv
+    else
+        command nvim $argv
+    end
+end
+
+function vim
+    nvim $argv
+end
+
 alias so "source ~/.config/fish/config.fish"
 alias :q exit
 alias tree "tree --gitignore"
@@ -17,13 +28,13 @@ alias lla "ls -la"
 alias lt "ls --tree"
 
 # tmux
-alias tn 'tmux new-session -s $(basename $PWD)'
+alias tn '~/dotfiles/scripts/tmux-project.sh session'
 alias ta "tmux attach-session -t "
 alias tm "~/dotfiles/scripts/tmux-session.sh attach"
 alias tls "tmux ls"
 
 # git
-alias gg "$HOME/dotfiles/scripts/lazygit-session.sh"
+alias gg "$HOME/dotfiles/scripts/tmux-project.sh git"
 alias gs "git status"
 alias gl "git log --oneline --graph --color=always --abbrev-commit --date=short | less -REX"
 alias gc "git commit"

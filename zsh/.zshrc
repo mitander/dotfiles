@@ -1,5 +1,16 @@
 # general
-alias vim="nvim"
+function nvim() {
+  if [[ -n "$TMUX" && -z "$NVIM" && -z "$TMUX_EDIT_BYPASS" ]]; then
+    "$HOME/dotfiles/scripts/tmux-project.sh" vim-open -- "$@"
+  else
+    command nvim "$@"
+  fi
+}
+
+function vim() {
+  nvim "$@"
+}
+
 alias so="source ~/.zshrc"
 alias :q="exit"
 
@@ -11,13 +22,13 @@ alias lla="ls -la"
 alias lt="ls --tree"
 
 # tmux
-alias tn='tmuxinator start session -n $(basename $PWD)'
+alias tn="$HOME/dotfiles/scripts/tmux-project.sh session"
 alias ta="tmux attach-session -t "
 alias tm="~/dotfiles/scripts/tmux-session.sh attach"
 alias tls="tmux ls"
 
 # git
-alias gg="$HOME/dotfiles/scripts/lazygit-session.sh"
+alias gg="$HOME/dotfiles/scripts/tmux-project.sh git"
 alias gs="git status"
 alias gl="git log --oneline --graph --color=always --abbrev-commit --date=short | less -REX"
 alias gc="git commit"
