@@ -197,13 +197,16 @@ nvim_runner() {
     fi
 
     export TMUX_EDIT_BYPASS=1
+    if [[ -n "${TMUX_PANE:-}" ]] && command -v tmux >/dev/null 2>&1; then
+        tmux set-option -w -t "$TMUX_PANE" @project_vim_pane "$TMUX_PANE" >/dev/null 2>&1 || true
+    fi
     exec nvim --listen "$server" "${args[@]}"
 }
 
 vim_window() {
     local cwd="$1"; shift
     local args=("$@")
-    local root name start_cwd session session_id server target saved_server window_id
+    local root name start_cwd session session_id server target saved_server window_id vim_pane new_pane
     require_dir "$cwd"
 
     root="$(workspace_root "$cwd")"
@@ -249,6 +252,29 @@ vim_window() {
         (cd "$start_cwd" && env TMUX_EDIT_BYPASS=1 nvim --server "$server" --remote-tab-silent "${args[@]}") >/dev/null 2>&1
     }
 
+    remote_focus() {
+        env TMUX_EDIT_BYPASS=1 nvim --server "$server" --remote-expr \
+            'system("tmux select-pane -t " . shellescape($TMUX_PANE))' >/dev/null 2>&1
+    }
+
+    find_vim_pane() {
+        local target_window="$1" saved pane tty
+
+        saved="$(tmux show-options -wqv -t "$target_window" @project_vim_pane || true)"
+        if [[ -n "$saved" ]] && tmux display-message -p -t "$saved" '#{pane_id}' >/dev/null 2>&1; then
+            printf '%s\n' "$saved"
+            return 0
+        fi
+
+        while IFS=$'\t' read -r pane tty; do
+            if ps -o state= -o comm= -t "$tty" 2>/dev/null \
+                | grep -iqE '^[^TXZ ]+ +(\S+/)?g?(view|n?vim?x?)(diff)?$'; then
+                printf '%s\n' "$pane"
+                return 0
+            fi
+        done < <(tmux list-panes -t "$target_window" -F '#{pane_id}\t#{pane_tty}')
+    }
+
     target="$(find_role_window "$session" vim)"
     if [[ -n "$target" ]]; then
         tmux rename-window -t "$target" "$name"
@@ -271,12 +297,27 @@ vim_window() {
     tmux select-window -t "$target"
 
     if ((${#args[@]})); then
-        if server_alive; then
-            (remote_open || { clean_server; tmux split-window -h -t "$target" -c "$start_cwd" "$(start_command)"; }) &
+        if [[ -S "$server" ]]; then
+            vim_pane="$(find_vim_pane "$target")"
+            [[ -n "$vim_pane" ]] && tmux select-pane -t "$vim_pane"
+            (
+                remote_focus || true
+                if remote_open; then
+                    remote_focus || true
+                else
+                    rm -f "$server"
+                    new_pane="$(tmux split-window -h -P -F '#{pane_id}' -t "$target" -c "$start_cwd" "$(start_command)")"
+                    tmux select-pane -t "$new_pane"
+                fi
+            ) >/dev/null 2>&1 &
         else
-            clean_server
-            tmux split-window -h -t "$target" -c "$start_cwd" "$(start_command)"
+            rm -f "$server"
+            new_pane="$(tmux split-window -h -P -F '#{pane_id}' -t "$target" -c "$start_cwd" "$(start_command)")"
+            tmux select-pane -t "$new_pane"
         fi
+    else
+        vim_pane="$(find_vim_pane "$target")"
+        [[ -n "$vim_pane" ]] && tmux select-pane -t "$vim_pane"
     fi
 }
 
