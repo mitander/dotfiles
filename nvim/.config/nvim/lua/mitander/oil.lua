@@ -286,7 +286,7 @@ return {
                 desc = "Move to right pane",
                 mode = "n",
             },
-            ["<C-p>"] = "actions.preview",
+            ["<C-p>"] = false,
             ["<C-n>"] = {
                 callback = close_oil,
                 desc = "Close oil",

@@ -501,6 +501,43 @@ local function setup_buffer(bufnr)
     end, opts)
 end
 
+local function is_oil_win(winid)
+    if not vim.api.nvim_win_is_valid(winid) then
+        return false
+    end
+
+    local bufnr = vim.api.nvim_win_get_buf(winid)
+    return vim.w[winid].oil_sidebar == true or vim.bo[bufnr].filetype == "oil"
+end
+
+local function find_review_target_win()
+    local current = vim.api.nvim_get_current_win()
+    if not is_oil_win(current) then
+        return current
+    end
+
+    local oil_target = vim.w[current].oil_target_win
+    if oil_target and vim.api.nvim_win_is_valid(oil_target) and not is_oil_win(oil_target) then
+        return oil_target
+    end
+
+    for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        if vim.api.nvim_win_get_config(winid).relative == "" and not is_oil_win(winid) then
+            return winid
+        end
+    end
+end
+
+local function select_review_target_win()
+    local target = find_review_target_win()
+    if target and vim.api.nvim_win_is_valid(target) then
+        vim.api.nvim_set_current_win(target)
+        return
+    end
+
+    vim.cmd("rightbelow vertical new")
+end
+
 local function open_review_buffer(root)
     local bufnr = buffers_by_root[root]
     if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then
@@ -515,6 +552,7 @@ local function open_review_buffer(root)
     if win ~= -1 then
         vim.api.nvim_set_current_win(win)
     else
+        select_review_target_win()
         vim.api.nvim_set_current_buf(bufnr)
     end
 
