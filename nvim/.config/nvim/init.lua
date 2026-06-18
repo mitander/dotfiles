@@ -142,6 +142,176 @@ end, { desc = "Toggle colorcolumn" })
 -- replace word globally
 vim.keymap.set("n", "<leader>rw", [[*N:s//<c-r>=expand("<cword>")<enter>]])
 
+-- Helper to record plugin spec modification times
+local function get_plugin_mtimes()
+    local mtimes = {}
+    local plugins_dir = vim.fn.stdpath("config") .. "/lua/mitander/plugins"
+    if vim.fn.isdirectory(plugins_dir) == 1 then
+        for name, kind in vim.fs.dir(plugins_dir) do
+            if kind == "file" and name:match("%.lua$") then
+                local path = plugins_dir .. "/" .. name
+                local stat = vim.uv.fs_stat(path)
+                if stat then
+                    mtimes[name] = { sec = stat.mtime.sec, nsec = stat.mtime.nsec }
+                end
+            end
+        end
+    end
+    return mtimes
+end
+
+_G.plugin_spec_mtimes = _G.plugin_spec_mtimes or get_plugin_mtimes()
+
+-- reload configuration
+vim.keymap.set("n", "<leader>rl", function()
+    -- 1. Scan lua/mitander/plugins/ to find changed spec files
+    local plugins_dir = vim.fn.stdpath("config") .. "/lua/mitander/plugins"
+    local plugin_names = {}
+    local changed_spec_files = {}
+
+    if vim.fn.isdirectory(plugins_dir) == 1 then
+        for name, kind in vim.fs.dir(plugins_dir) do
+            if kind == "file" and name:match("%.lua$") then
+                local filepath = plugins_dir .. "/" .. name
+                local stat = vim.uv.fs_stat(filepath)
+                if stat then
+                    local cached = _G.plugin_spec_mtimes[name]
+                    local changed = false
+                    if not cached then
+                        changed = true
+                    elseif cached.sec ~= stat.mtime.sec or cached.nsec ~= stat.mtime.nsec then
+                        changed = true
+                    end
+
+                    if changed then
+                        table.insert(changed_spec_files, name)
+                        _G.plugin_spec_mtimes[name] = { sec = stat.mtime.sec, nsec = stat.mtime.nsec }
+
+                        local modname = "mitander.plugins." .. name:gsub("%.lua$", "")
+                        package.loaded[modname] = nil
+                        local ok, spec = pcall(require, modname)
+                        if ok and type(spec) == "table" then
+                            local is_list = false
+                            if #spec > 0 then
+                                if type(spec[1]) == "table" then
+                                    is_list = true
+                                end
+                            end
+
+                            if is_list then
+                                for _, subspec in ipairs(spec) do
+                                    if type(subspec) == "table" then
+                                        local sub_name = subspec.name
+                                        if not sub_name and type(subspec[1]) == "string" then
+                                            local sub_pkg = subspec[1]
+                                            sub_name = sub_pkg:match("/([^/]+)$") or sub_pkg
+                                        end
+                                        if sub_name and sub_name ~= "" then
+                                            table.insert(plugin_names, sub_name)
+                                        end
+                                    end
+                                end
+                            else
+                                local plugin_name = spec.name
+                                if not plugin_name and type(spec[1]) == "string" then
+                                    local raw_pkg = spec[1]
+                                    plugin_name = raw_pkg:match("/([^/]+)$") or raw_pkg
+                                end
+                                if plugin_name and plugin_name ~= "" then
+                                    table.insert(plugin_names, plugin_name)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- 2. Clear cached custom user configs
+    for name, _ in pairs(package.loaded) do
+        if name:match("^mitander") or name:match("^flume") or name:match("^git_review") then
+            local is_spec = name:match("^mitander%.plugins%.")
+            local spec_filename = is_spec and (name:gsub("^mitander%.plugins%.", "") .. ".lua")
+
+            local should_clear = true
+            if is_spec then
+                should_clear = false
+                for _, file_name in ipairs(changed_spec_files) do
+                    if file_name == spec_filename then
+                        should_clear = true
+                        break
+                    end
+                end
+            end
+
+            if should_clear then
+                package.loaded[name] = nil
+            end
+        end
+    end
+
+    if #plugin_names > 0 then
+        -- 3. Reload specs using lazy core
+        local ok_core, plugin_core = pcall(require, "lazy.core.plugin")
+        if ok_core then
+            pcall(plugin_core.load)
+        end
+
+        -- 4. Wipe cache for ONLY the changed plugins to force option re-evaluation
+        local ok_config, config = pcall(require, "lazy.core.config")
+        if ok_config and config.plugins then
+            for _, name in ipairs(plugin_names) do
+                local plugin = config.plugins[name]
+                if plugin and plugin._ then
+                    plugin._.cache = nil
+                end
+            end
+        end
+    end
+
+    -- 5. Reload init.lua
+    dofile(vim.env.MYVIMRC)
+
+    -- 6. Reload flume colorscheme
+    local ok, flume = pcall(require, "flume")
+    if ok then
+        pcall(flume.setup)
+    else
+        pcall(vim.cmd, "colorscheme flume")
+    end
+
+    -- 7. Trigger lazy.nvim's official reload mechanism for ONLY the changed plugins
+    if #plugin_names > 0 then
+        local lazy = require("lazy")
+        local ok_util, util = pcall(require, "lazy.core.util")
+        local orig_warn
+        if ok_util and util.warn then
+            orig_warn = util.warn
+            util.warn = function() end
+        end
+
+        for _, name in ipairs(plugin_names) do
+            local is_loaded = false
+            for _, p in ipairs(lazy.plugins()) do
+                if p.name == name and p._.loaded ~= nil then
+                    is_loaded = true
+                    break
+                end
+            end
+            if is_loaded then
+                pcall(lazy.reload, { plugins = { name } })
+            end
+        end
+
+        if orig_warn and util then
+            util.warn = orig_warn
+        end
+    end
+
+    vim.notify("nvim config reloaded", vim.log.levels.INFO)
+end, { desc = "Reload Neovim configuration" })
+
 local group = vim.api.nvim_create_augroup("mitander", { clear = true })
 
 -- nopaste on insert leave
@@ -232,23 +402,26 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 -- initate lazy
-require("lazy").setup({
-    install = { colorscheme = {} },
-    spec = "mitander.plugins",
-    change_detection = { notify = false },
-    performance = {
-        cache = {
-            enabled = true,
-        },
-        rtp = {
-            disabled_plugins = {
-                "gzip",
-                "tarPlugin",
-                "tohtml",
-                "tutor",
-                "zipPlugin",
-                "netrwPlugin",
+if not _G.lazy_initialized then
+    require("lazy").setup({
+        install = { colorscheme = {} },
+        spec = "mitander.plugins",
+        change_detection = { notify = false },
+        performance = {
+            cache = {
+                enabled = true,
+            },
+            rtp = {
+                disabled_plugins = {
+                    "gzip",
+                    "tarPlugin",
+                    "tohtml",
+                    "tutor",
+                    "zipPlugin",
+                    "netrwPlugin",
+                },
             },
         },
-    },
-})
+    })
+    _G.lazy_initialized = true
+end

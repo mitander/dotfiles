@@ -46,12 +46,6 @@ end
 return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
-    dependencies = {
-        {
-            "j-hui/fidget.nvim",
-            opts = {},
-        },
-    },
     opts = {
         capabilities = vim.lsp.protocol.make_client_capabilities(),
         flags = {
