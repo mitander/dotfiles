@@ -215,8 +215,21 @@ local function select_entry(opts)
             if vim.api.nvim_win_is_valid(sidebar_win) then
                 vim.w[sidebar_win].oil_target_win = target_win
             end
+            if opts.keep_focus and vim.api.nvim_win_is_valid(sidebar_win) then
+                vim.api.nvim_set_current_win(sidebar_win)
+            end
         end,
     })
+end
+
+local function select_on_click()
+    local mouse = vim.fn.getmousepos()
+    if mouse.winid == vim.api.nvim_get_current_win() and mouse.line > 0 and mouse.column > 0 then
+        local line_count = vim.api.nvim_buf_line_count(0)
+        local target_line = math.min(mouse.line, line_count)
+        vim.api.nvim_win_set_cursor(0, { target_line, mouse.column - 1 })
+    end
+    select_entry({ keep_focus = true })
 end
 
 return {
@@ -259,6 +272,14 @@ return {
             ["<CR>"] = {
                 callback = select_entry,
                 desc = "Select entry",
+            },
+            ["<LeftMouse>"] = {
+                callback = select_on_click,
+                desc = "Select entry (click)",
+            },
+            ["<2-LeftMouse>"] = {
+                callback = select_on_click,
+                desc = "Select entry (double click)",
             },
             ["<bs>"] = "actions.parent",
             ["<C-h>"] = {
