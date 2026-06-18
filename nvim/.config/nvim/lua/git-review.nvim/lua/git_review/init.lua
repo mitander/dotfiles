@@ -1,19 +1,20 @@
 local M = {}
 
-local namespace = vim.api.nvim_create_namespace("mitander_git_review")
+local namespace = vim.api.nvim_create_namespace("git_review")
 local buffers_by_root = {}
 local states = {}
 
-local msg_begin =
-    "── Commit message ─────────────────────────────────────────"
-local msg_end =
-    "── Files ──────────────────────────────────────────────────"
 
 local function notify(message, level)
     vim.notify(message, level or vim.log.levels.INFO, { title = "git review" })
 end
 
+local git_exists = vim.fn.executable("git") == 1
+
 local function git(root, args)
+    if not git_exists then
+        return { "git executable not found" }, -1
+    end
     local cmd = { "git" }
     if root then
         vim.list_extend(cmd, { "-C", root })
@@ -33,13 +34,25 @@ local function git_one(root, args, fallback)
 end
 
 local function git_root()
+    if not git_exists then
+        return nil
+    end
     local output = vim.fn.system({ "git", "-C", vim.fn.getcwd(), "rev-parse", "--show-toplevel" })
     if vim.v.shell_error == 0 then
         return vim.trim(output)
     end
 end
 
+local function git_dir(root)
+    return git_one(root, { "rev-parse", "--absolute-git-dir" }, root .. "/.git")
+end
+
+
 local function require_root(root)
+    if not git_exists then
+        notify("git executable not found in PATH", vim.log.levels.ERROR)
+        return nil
+    end
     root = root or git_root()
     if not root then
         notify("Not inside a git repository", vim.log.levels.WARN)
@@ -143,36 +156,6 @@ local function status_sections(root)
     return sections
 end
 
-local function read_message(bufnr)
-    if not vim.api.nvim_buf_is_valid(bufnr) then
-        return { "" }
-    end
-
-    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-    local message = {}
-    local in_message = false
-
-    for _, line in ipairs(lines) do
-        if line == msg_begin then
-            in_message = true
-        elseif line == msg_end then
-            break
-        elseif in_message then
-            table.insert(message, line)
-        end
-    end
-
-    if #message == 0 then
-        return { "" }
-    end
-
-    return message
-end
-
-local function message_text(bufnr)
-    local text = table.concat(read_message(bufnr), "\n")
-    return vim.trim(text)
-end
 
 local function display_status(item)
     local x = item.x == " " and "·" or item.x
@@ -201,7 +184,7 @@ local function highlight(bufnr, state)
     local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     for index, line in ipairs(lines) do
         local row = index - 1
-        if index == 1 or line == msg_begin or line == msg_end or line:match("^%u[%w ]+ %(%d+%)$") then
+        if index == 1 or line:match("^%u[%w ]+ %(%d+%)$") then
             vim.api.nvim_buf_add_highlight(bufnr, namespace, "Title", row, 0, -1)
         elseif line:match("^Keys:") then
             vim.api.nvim_buf_add_highlight(bufnr, namespace, "Comment", row, 0, -1)
@@ -218,7 +201,6 @@ local function highlight(bufnr, state)
 end
 
 local function render(bufnr, state)
-    local message = state.message or read_message(bufnr)
     local sections = status_sections(state.root)
     local branch = git_one(state.root, { "branch", "--show-current" }, "(detached)")
     local head = git_one(state.root, { "rev-parse", "--short", "HEAD" }, "unknown")
@@ -229,12 +211,7 @@ local function render(bufnr, state)
         "Root: " .. state.root,
         "Branch: " .. branch .. " @ " .. head .. "  Upstream: " .. upstream,
         "Keys: r refresh │ o open │ d diff │ s stage │ u unstage │ x discard │ S stage all │ U unstage all │ c commit │ q close",
-        "",
-        msg_begin,
     }
-
-    vim.list_extend(lines, message)
-    table.insert(lines, msg_end)
 
     local line_to_item = {}
     append_section(lines, line_to_item, "Staged", sections.staged, "staged")
@@ -242,7 +219,6 @@ local function render(bufnr, state)
     append_section(lines, line_to_item, "Untracked", sections.untracked, "untracked")
 
     state.line_to_item = line_to_item
-    state.message = message
 
     local current_win = vim.api.nvim_get_current_win()
     local restore_view
@@ -253,7 +229,7 @@ local function render(bufnr, state)
     vim.bo[bufnr].modifiable = true
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
     vim.bo[bufnr].modified = false
-    vim.bo[bufnr].modifiable = true
+    vim.bo[bufnr].modifiable = false
 
     highlight(bufnr, state)
 
@@ -291,7 +267,6 @@ local function run_and_refresh(bufnr, args, success_message)
         return
     end
 
-    state.message = read_message(bufnr)
     local output, code = git(state.root, args)
     if code ~= 0 then
         notify(format_error(output, code), vim.log.levels.ERROR)
@@ -382,8 +357,6 @@ local function diff_item(bufnr)
         return
     end
 
-    state.message = read_message(bufnr)
-
     local args
     if item.section == "untracked" then
         args = { "diff", "--no-index", "--", "/dev/null", item.path }
@@ -407,7 +380,6 @@ local function refresh(bufnr)
     if not state then
         return
     end
-    state.message = read_message(bufnr)
     render(bufnr, state)
 end
 
@@ -425,13 +397,6 @@ local function commit(bufnr)
         return
     end
 
-    state.message = read_message(bufnr)
-    local text = message_text(bufnr)
-    if text == "" then
-        notify("Write a commit message in the form first", vim.log.levels.WARN)
-        return
-    end
-
     local _, diff_code = git(state.root, { "diff", "--cached", "--quiet" })
     if diff_code == 0 then
         notify("No staged changes to commit", vim.log.levels.WARN)
@@ -441,22 +406,39 @@ local function commit(bufnr)
         return
     end
 
-    local message_file = vim.fn.tempname()
-    vim.fn.writefile(vim.split(text, "\n", { plain = true }), message_file)
+    -- Generate the standard COMMIT_EDITMSG template using core.editor=true dummy
+    git(state.root, { "-c", "core.editor=true", "commit" })
 
-    local output, code = git(state.root, { "commit", "-F", message_file })
-    vim.fn.delete(message_file)
+    local gdir = git_dir(state.root)
+    local commit_file = gdir .. "/COMMIT_EDITMSG"
 
-    if code ~= 0 then
-        notify(format_error(output, code), vim.log.levels.ERROR)
-        return
-    end
+    -- Open the split window
+    vim.cmd("botright split " .. vim.fn.fnameescape(commit_file))
+    local commit_bufnr = vim.api.nvim_get_current_buf()
 
-    notify(table.concat(output, "\n"))
-    state.message = { "" }
-    vim.cmd.checktime()
-    render(bufnr, state)
+    -- Set up autocommand to execute commit and refresh on write
+    local commit_group = vim.api.nvim_create_augroup("git_review_commit_" .. commit_bufnr, { clear = true })
+    vim.api.nvim_create_autocmd("BufWritePost", {
+        group = commit_group,
+        buffer = commit_bufnr,
+        callback = function()
+            -- Run git commit with the written message file
+            local output, code = git(state.root, { "commit", "-F", commit_file })
+            if code == 0 then
+                notify("Committed successfully:\n" .. table.concat(output, "\n"))
+                -- Close the split window by deleting the buffer
+                vim.api.nvim_del_augroup_by_name("git_review_commit_" .. commit_bufnr)
+                vim.api.nvim_buf_delete(commit_bufnr, { force = true })
+                if vim.api.nvim_buf_is_valid(bufnr) then
+                    refresh(bufnr)
+                end
+            else
+                notify("Commit failed:\n" .. format_error(output, code), vim.log.levels.ERROR)
+            end
+        end
+    })
 end
+
 
 local function setup_buffer(bufnr)
     vim.bo[bufnr].buftype = "nofile"
@@ -543,7 +525,7 @@ local function open_review_buffer(root)
     if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then
         bufnr = vim.api.nvim_create_buf(false, false)
         buffers_by_root[root] = bufnr
-        states[bufnr] = { root = root, message = { "" }, line_to_item = {} }
+        states[bufnr] = { root = root, line_to_item = {} }
         vim.api.nvim_buf_set_name(bufnr, "git-review://" .. vim.fn.fnamemodify(root, ":t"))
         setup_buffer(bufnr)
     end
@@ -557,7 +539,6 @@ local function open_review_buffer(root)
     end
 
     local state = states[bufnr]
-    state.message = read_message(bufnr)
     render(bufnr, state)
 end
 

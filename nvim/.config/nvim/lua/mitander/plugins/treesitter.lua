@@ -40,7 +40,7 @@ return {
             disable = function(lang, buf)
                 -- Disable for large files
                 local max_filesize = 100 * 1024 -- 100 KB
-                local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+                local ok, stats = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(buf))
                 if ok and stats and stats.size > max_filesize then
                     return true
                 end
@@ -88,9 +88,6 @@ return {
     },
     config = function(_, opts)
         require("nvim-treesitter").setup(opts)
-        if opts.ensure_installed then
-            require("nvim-treesitter").install(opts.ensure_installed)
-        end
         if opts.textobjects then
             local ok, textobjects = pcall(require, "nvim-treesitter-textobjects")
             if ok then

@@ -50,21 +50,14 @@ return {
                 cargo_keymaps(0)
             end
 
+            local crates_group = vim.api.nvim_create_augroup("CratesKeymaps", { clear = true })
             vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+                group = crates_group,
                 pattern = "Cargo.toml",
                 callback = function(args)
                     cargo_keymaps(args.buf)
                 end,
             })
         end,
-    },
-    {
-        "iamcco/markdown-preview.nvim",
-        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-        build = "cd app && yarn install",
-        init = function()
-            vim.g.mkdp_filetypes = { "markdown" }
-        end,
-        ft = { "markdown" },
     },
 }

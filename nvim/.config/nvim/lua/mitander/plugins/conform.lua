@@ -52,7 +52,7 @@ return {
                 command = function(_, ctx)
                     local root = vim.fs.root(ctx.buf, { "build.zig", ".git" }) or vim.fn.getcwd()
                     local local_zig = root .. "/zig/zig"
-                    if (vim.uv or vim.loop).fs_stat(local_zig) then
+                    if vim.uv.fs_stat(local_zig) then
                         return local_zig
                     end
                     return "zig"

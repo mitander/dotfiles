@@ -1,14 +1,9 @@
 local sidebar_width = 34
 
-function _G.get_oil_statusline()
+function _G.mitander_oil_statusline()
     local bufnr = vim.api.nvim_win_get_buf(vim.g.statusline_winid or 0)
     local dir = require("oil").get_current_dir(bufnr)
-    local path = ""
-    if dir then
-        path = "  " .. vim.fn.fnamemodify(dir, ":~")
-    else
-        path = "  Oil"
-    end
+    local path = dir and ("  " .. vim.fn.fnamemodify(dir, ":~")) or "  Oil"
     return "%#OilStatusLine#" .. path
 end
 
@@ -247,7 +242,7 @@ return {
             conceallevel = 3,
             concealcursor = "nvic",
             statuscolumn = "  ",
-            statusline = "%!v:lua.get_oil_statusline()",
+            statusline = "%!v:lua.mitander_oil_statusline()",
         },
         delete_to_trash = true,
         skip_confirm_for_simple_edits = true,
@@ -279,6 +274,11 @@ return {
             ["<C-k>"] = {
                 callback = move_pane("move_top"),
                 desc = "Move to upper pane",
+                mode = "n",
+            },
+            ["<C-w>k"] = {
+                callback = move_pane("move_top"),
+                desc = "Move to upper pane (fallback)",
                 mode = "n",
             },
             ["<C-l>"] = {
@@ -335,6 +335,27 @@ return {
         vim.keymap.set("n", "<c-n>", toggle_sidebar, { desc = "Toggle oil sidebar" })
         vim.keymap.set("n", "<leader>e", reveal_in_sidebar, { desc = "Reveal current file in oil" })
         require("oil").setup(opts)
+
+        local function setup_oil_highlights()
+            local ok, flume = pcall(require, "flume")
+            if ok and flume.colors then
+                local colors = flume.colors
+                vim.api.nvim_set_hl(0, "OilStatusLine", {
+                    fg = colors.text or "#c0caf5",
+                    bg = colors.surface_alt or "#1e1e2e",
+                    bold = true,
+                })
+            else
+                vim.api.nvim_set_hl(0, "OilStatusLine", { link = "StatusLine" })
+            end
+        end
+
+        setup_oil_highlights()
+
+        vim.api.nvim_create_autocmd("ColorScheme", {
+            group = vim.api.nvim_create_augroup("mitander_oil_colors", { clear = true }),
+            callback = setup_oil_highlights,
+        })
 
         vim.api.nvim_create_autocmd("WinClosed", {
             group = vim.api.nvim_create_augroup("mitander_oil_last_window", { clear = true }),

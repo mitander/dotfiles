@@ -130,33 +130,47 @@ vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 
 -- toggle colorcolumn
-vim.keymap.set("n", "<leader>.", "<cmd>exec 'set cc=' . (&colorcolumn == '' ? '100' : '')<enter>")
+vim.keymap.set("n", "<leader>.", function()
+    local cc = vim.opt_local.colorcolumn:get()
+    if #cc > 0 and cc[1] == "100" then
+        vim.opt_local.colorcolumn = ""
+    else
+        vim.opt_local.colorcolumn = "100"
+    end
+end, { desc = "Toggle colorcolumn" })
 
 -- replace word globally
 vim.keymap.set("n", "<leader>rw", [[*N:s//<c-r>=expand("<cword>")<enter>]])
 
-local group = vim.api.nvim_create_augroup("mitander", {})
+local group = vim.api.nvim_create_augroup("mitander", { clear = true })
 
 -- nopaste on insert leave
 vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     group = group,
     pattern = "*",
-    command = "set nopaste",
+    callback = function()
+        vim.opt.paste = false
+    end,
 })
-
 
 -- 4 space indentation
 vim.api.nvim_create_autocmd({ "FileType" }, {
     group = group,
     pattern = { "zig", "go", "rust", "c", "cpp" },
-    command = [[ setlocal tabstop=4 shiftwidth=4 ]],
+    callback = function()
+        vim.opt_local.tabstop = 4
+        vim.opt_local.shiftwidth = 4
+    end,
 })
 
 -- no line numbers in terminal
 vim.api.nvim_create_autocmd({ "TermOpen" }, {
     group = group,
     pattern = "*",
-    command = [[ setlocal norelativenumber nonumber ]],
+    callback = function()
+        vim.opt_local.relativenumber = false
+        vim.opt_local.number = false
+    end,
 })
 
 -- quickfix binds
@@ -174,14 +188,14 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
     group = group,
     callback = function()
-        vim.wo.cursorline = true
+        vim.opt_local.cursorline = true
     end,
 })
 
 vim.api.nvim_create_autocmd("WinLeave", {
     group = group,
     callback = function()
-        vim.wo.cursorline = false
+        vim.opt_local.cursorline = false
     end,
 })
 
@@ -194,20 +208,18 @@ vim.api.nvim_create_autocmd("BufEnter", {
         if path == "" or vim.bo.buftype ~= "" or path:match("^%w+://") then
             return
         end
-        path = vim.fs.dirname(path)
         if root_cache[path] == nil then
-            local root_file = vim.fs.find({ ".git", "Makefile" }, { path = path, upward = true })[1]
-            root_cache[path] = root_file and vim.fs.dirname(root_file) or false
+            root_cache[path] = vim.fs.root(path, { ".git", "Makefile" }) or false
         end
         if root_cache[path] then
-            vim.fn.chdir(root_cache[path])
+            vim.api.nvim_set_current_dir(root_cache[path])
         end
     end,
 })
 
 -- bootstrap lazy if needed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
     vim.fn.system({
         "git",
         "clone",
@@ -222,7 +234,7 @@ vim.opt.rtp:prepend(lazypath)
 -- initate lazy
 require("lazy").setup({
     install = { colorscheme = {} },
-    spec = "mitander",
+    spec = "mitander.plugins",
     change_detection = { notify = false },
     performance = {
         cache = {

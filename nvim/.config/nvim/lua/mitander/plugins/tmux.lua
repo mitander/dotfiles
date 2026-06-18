@@ -57,6 +57,10 @@ return {
             desc = "Tmux new pi split",
         },
         { "<leader>Tp", open_shell_popup, desc = "Tmux shell popup" },
+        { "<C-w>h", function() require("tmux").move_left() end, desc = "Tmux navigate left" },
+        { "<C-w>j", function() require("tmux").move_bottom() end, desc = "Tmux navigate down" },
+        { "<C-w>k", function() require("tmux").move_top() end, desc = "Tmux navigate up" },
+        { "<C-w>l", function() require("tmux").move_right() end, desc = "Tmux navigate right" },
     },
     opts = {
         copy_sync = {

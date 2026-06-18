@@ -1,25 +1,17 @@
-local uv = vim.uv or vim.loop
+local uv = vim.uv
 local zls_bin = vim.fn.expand("~/.local/bin/zls")
 
-local function project_zig_paths(root)
-    local local_zig = root .. "/zig/zig"
-    local local_zig_lib = root .. "/zig/lib"
-    return local_zig, local_zig_lib
-end
-
 local function project_zig_root(root)
-    local dir = root
-    while dir and dir ~= "" do
-        local local_zig, local_zig_lib = project_zig_paths(dir)
-        if uv.fs_stat(local_zig) and uv.fs_stat(local_zig_lib) then
-            return dir, local_zig, local_zig_lib
+    local project_root = vim.fs.root(root, function(name, path)
+        if name == "zig" then
+            local local_zig = path .. "/zig/zig"
+            local local_zig_lib = path .. "/zig/lib"
+            return uv.fs_stat(local_zig) and uv.fs_stat(local_zig_lib)
         end
-
-        local parent = vim.fs.dirname(dir)
-        if parent == dir then
-            break
-        end
-        dir = parent
+        return false
+    end)
+    if project_root then
+        return project_root, project_root .. "/zig/zig", project_root .. "/zig/lib"
     end
 end
 
@@ -40,7 +32,7 @@ local function add_project_zig(config, root_dir)
 end
 
 local function zls_root_dir(bufnr, on_dir)
-    local root = vim.fs.root(bufnr, { ".git" }) or vim.fs.root(bufnr, { "build.zig" })
+    local root = vim.fs.root(bufnr, { ".git", "build.zig" })
     if not root then
         local name = type(bufnr) == "number" and vim.api.nvim_buf_get_name(bufnr) or bufnr
         root = name ~= "" and vim.fs.dirname(name) or vim.fn.getcwd()
@@ -128,7 +120,7 @@ return {
             float = { border = "single" },
         })
 
-        local group = vim.api.nvim_create_augroup("LspSetup", {})
+        local group = vim.api.nvim_create_augroup("LspSetup", { clear = true })
 
         vim.api.nvim_create_autocmd("LspAttach", {
             pattern = "*",
