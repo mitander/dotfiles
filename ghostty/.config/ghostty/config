@@ -6,7 +6,7 @@ window-padding-x = 3
 window-padding-y = 3
 window-padding-balance = true
 
-command = /opt/homebrew/bin/fish
+command = fish
 shell-integration = fish
 
 clipboard-read = allow

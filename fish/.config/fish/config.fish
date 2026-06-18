@@ -1,7 +1,9 @@
 # general
+set -q DOTFILES_DIR; or set -gx DOTFILES_DIR "$HOME/dotfiles"
+
 function nvim
-    if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"
-        ~/dotfiles/scripts/tmux-project.sh vim-open -- $argv
+    if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"; and test -x "$DOTFILES_DIR/scripts/tmux-project.sh"
+        "$DOTFILES_DIR/scripts/tmux-project.sh" vim-open -- $argv
     else
         command nvim $argv
     end
@@ -13,28 +15,38 @@ end
 
 alias so "source ~/.config/fish/config.fish"
 alias :q exit
-alias tree "tree --gitignore"
+command -q tree; and alias tree "tree --gitignore"
 
-alias zig "./zig/zig"
+test -x ./zig/zig; and alias zig "./zig/zig"
 
-# bat
-alias cat bat
-
-# lsd
-alias ls lsd
-alias l "ls -l"
-alias la "ls -a"
-alias lla "ls -la"
-alias lt "ls --tree"
+# optional tool aliases
+command -q bat; and alias cat bat
+if command -q lsd
+    alias ls lsd
+    alias l "ls -l"
+    alias la "ls -a"
+    alias lla "ls -la"
+    alias lt "ls --tree"
+else
+    alias l "ls -l"
+    alias la "ls -a"
+    alias lla "ls -la"
+end
 
 # tmux
-alias tn '~/dotfiles/scripts/tmux-project.sh session'
+function tn
+    "$DOTFILES_DIR/scripts/tmux-project.sh" session $argv
+end
 alias ta "tmux attach-session -t "
-alias tm "~/dotfiles/scripts/tmux-session.sh attach"
+function tm
+    "$DOTFILES_DIR/scripts/tmux-session.sh" attach $argv
+end
 alias tls "tmux ls"
 
 # git
-alias gg "$HOME/dotfiles/scripts/tmux-project.sh git"
+function gg
+    "$DOTFILES_DIR/scripts/tmux-project.sh" git $argv
+end
 alias gs "git status"
 alias gl "git log --oneline --graph --color=always --abbrev-commit --date=short | less -REX"
 alias gc "git commit"
@@ -55,7 +67,7 @@ alias dps "docker ps"
 alias dpp "docker-compose pull --parallel"
 
 # linux
-if test (uname) = Linux
+if test (uname) = Linux; and test -n "$DISPLAY"; and command -q xset
     xset r rate 275 40
 end
 
@@ -88,8 +100,8 @@ function fish_right_prompt
     echo -n $(date +%H:%M:%S)
 end
 
-#sync history between panes
-set -Ux fish_history default
+# sync history between panes
+set -gx fish_history default
 function fish_preexec --on-event fish_preexec
     history merge
 end
@@ -99,30 +111,31 @@ function fish_postexec --on-event fish_postexec
 end
 
 # fzf command
-set -Ux FZF_DEFAULT_COMMAND "rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
+if command -q rg
+    set -gx FZF_DEFAULT_COMMAND "rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
+end
 
 # editor and other settings
-set -Ux EDITOR nvim
-set -Ux TERMINAL alacritty
-set -Ux BROWSER firefox
-set -Ux PAGER "less -RF"
-set -Ux MANPAGER "$PAGER"
-set -Ux MANWIDTH 999
-set -Ux KEYTIMEOUT 1
+set -gx EDITOR nvim
+set -gx TERMINAL ghostty
+set -gx PAGER "less -RF"
+set -gx MANPAGER "$PAGER"
+set -gx MANWIDTH 999
+set -gx KEYTIMEOUT 1
 
 # man page
-set -Ux LESS_TERMCAP_mb (printf "\e[1;34m")
-set -Ux LESS_TERMCAP_md (printf "\e[1;34m")
-set -Ux LESS_TERMCAP_me (printf "\e[0m")
-set -Ux LESS_TERMCAP_se (printf "\e[0m")
-set -Ux LESS_TERMCAP_ue (printf "\e[0m")
-set -Ux LESS_TERMCAP_us (printf "\e[4;32m")
+set -gx LESS_TERMCAP_mb (printf "\e[1;34m")
+set -gx LESS_TERMCAP_md (printf "\e[1;34m")
+set -gx LESS_TERMCAP_me (printf "\e[0m")
+set -gx LESS_TERMCAP_se (printf "\e[0m")
+set -gx LESS_TERMCAP_ue (printf "\e[0m")
+set -gx LESS_TERMCAP_us (printf "\e[4;32m")
 
-# xgd variables
-set -Ux XDG_DATA_HOME $HOME/.local/share
-set -Ux XDG_CONFIG_HOME $HOME/.config
-set -Ux XDG_CACHE_HOME $HOME/.cache
-set -Ux XDG_DOWNLOAD_DIR $HOME/Downloads
+# xdg variables
+set -gx XDG_DATA_HOME $HOME/.local/share
+set -gx XDG_CONFIG_HOME $HOME/.config
+set -gx XDG_CACHE_HOME $HOME/.cache
+set -gx XDG_DOWNLOAD_DIR $HOME/Downloads
 
 # paths
 if status is-login
@@ -143,10 +156,10 @@ test -r $HOME/.custom.fish; and source $HOME/.custom.fish
 test -f ~/.config/fish/scripts/fish-autosuggestions.fish; and source ~/.config/fish/scripts/fish-autosuggestions.fish
 
 # fzf
-fzf --fish | source
+command -q fzf; and fzf --fish | source
 
 # atuin
-atuin init fish --disable-up-arrow | source
+command -q atuin; and atuin init fish --disable-up-arrow | source
 
 # zoxide
-zoxide init fish | source
+command -q zoxide; and zoxide init fish | source

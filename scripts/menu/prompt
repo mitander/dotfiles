@@ -1,3 +1,0 @@
-#!/bin/sh
-
-[ "$(printf "%s\n%s" "no" "yes" | dmenu -i -p "$1")" = "yes" ] && shift && eval "$@"

@@ -1,5 +1,7 @@
+local dotfiles = vim.env.DOTFILES_DIR or vim.fn.expand("~/dotfiles")
+
 return {
-    dir = vim.fn.expand("~/dotfiles/themes/flume"),
+    dir = dotfiles .. "/themes/flume",
     name = "flume.nvim",
     lazy = false,
     priority = 1000,

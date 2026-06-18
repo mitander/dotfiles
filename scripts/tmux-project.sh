@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+
 usage() {
     cat >&2 <<'EOF'
 usage: tmux-project <command> [args]
@@ -233,7 +236,7 @@ vim_window() {
 
     start_command() {
         local cmd
-        cmd="$(shell_quote "$HOME/dotfiles/scripts/tmux-project.sh") __nvim $(shell_quote "$server")"
+        cmd="$(shell_quote "$DOTFILES_DIR/scripts/tmux-project.sh") __nvim $(shell_quote "$server")"
         ((${#args[@]})) && cmd="$cmd $(shell_quote "$(make_argfile)")"
         printf '%s' "$cmd"
     }
@@ -327,7 +330,7 @@ git_window() {
     command -v lazygit >/dev/null 2>&1 || { echo "lazygit not found" >&2; exit 127; }
 
     root="$(root_for_dir "$cwd")"
-    config_file="${LAZYGIT_CONFIG_FILE:-$HOME/dotfiles/lazygit/.config/lazygit/config.yml}"
+    config_file="${LAZYGIT_CONFIG_FILE:-$DOTFILES_DIR/lazygit/.config/lazygit/config.yml}"
     lazygit_cmd=(lazygit)
     if in_tmux && [[ -f "$config_file" ]]; then
         lazygit_cmd+=(--use-config-file "$config_file")

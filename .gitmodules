@@ -1,6 +1,0 @@
-[submodule "tmux/.config/tmux/tmp"]
-	path = tmux/.config/tmux/tmp
-	url = https://github.com/tmux-plugins/tpm
-[submodule "themes/flume"]
-	path = themes/flume
-	url = https://github.com/mitander/flume.git
