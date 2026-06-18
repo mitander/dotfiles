@@ -87,6 +87,26 @@ find_role_window() {
         awk -F '\t' -v role="$role" '$2 == role { print $1; exit }'
 }
 
+ensure_shell_window() {
+    local session="${1:?missing session}" root="${2:?missing root}" target format
+
+    target="$(find_role_window "$session" shell)"
+    if [[ -z "$target" ]]; then
+        format=$'#{window_id}\t#{@project_role}\t#{pane_current_command}'
+        target="$(tmux list-windows -t "$session" -F "$format" |
+            awk -F '\t' '$2 == "" && $3 ~ /^(fish|zsh|bash|sh)$/ { print $1; exit }')"
+    fi
+    if [[ -z "$target" ]]; then
+        target="$(tmux new-window -d -P -F '#{window_id}' -t "$session:" -n sh -c "$root")"
+    fi
+
+    tmux rename-window -t "$target" sh >/dev/null
+    tmux set-option -w -t "$target" automatic-rename off >/dev/null
+    tmux set-option -w -t "$target" @project_role shell >/dev/null
+    tmux set-option -w -t "$target" @project_root "$root" >/dev/null
+    tmux select-window -t "$target" >/dev/null
+}
+
 attach_or_switch() {
     local target="${1:?missing session}"
     if [[ -n "${TMUX:-}" ]]; then
@@ -108,7 +128,10 @@ new_session() {
         local format=$'#{session_id}\t#{@project_root}'
         existing="$(tmux list-sessions -F "$format" |
             awk -F '\t' -v root="$root" '$2 == root { print $1; exit }')"
-        [[ -n "$existing" ]] && attach_or_switch "$existing"
+        if [[ -n "$existing" ]]; then
+            ensure_shell_window "$existing" "$root"
+            attach_or_switch "$existing"
+        fi
     fi
 
     name="$base"
@@ -126,6 +149,7 @@ new_session() {
     tmux set-option -w -t "$window_id" automatic-rename off >/dev/null
     tmux set-option -w -t "$window_id" @project_role shell >/dev/null
     tmux set-option -w -t "$window_id" @project_root "$root" >/dev/null
+    ensure_shell_window "$session_id" "$root"
 
     attach_or_switch "$session_id"
 }

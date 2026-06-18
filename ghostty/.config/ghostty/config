@@ -1,15 +1,14 @@
 # Window Aesthetics
-title = "Ghostty"
+title = " "
 macos-window-shadow = true
-macos-titlebar-style = transparent
-window-save-state = always
+macos-titlebar-proxy-icon = hidden
+window-save-state = never
 
 window-padding-x = 3
 window-padding-y = 3
 window-padding-balance = true
 
 # Behavior & Shell
-command = fish
 shell-integration = detect
 confirm-close-surface = false
 macos-option-as-alt = left

@@ -138,10 +138,10 @@ set -gx XDG_CACHE_HOME $HOME/.cache
 set -gx XDG_DOWNLOAD_DIR $HOME/Downloads
 
 # paths
-if status is-login
-    contains ~/.local/bin $PATH
-    or set PATH ~/.local/bin $PATH
+contains ~/.local/bin $PATH
+or set PATH ~/.local/bin $PATH
 
+if status is-login
     contains /usr/bin $PATH
     or set PATH /usr/bin $PATH
 

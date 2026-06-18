@@ -389,8 +389,10 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
 -- bootstrap lazy if needed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.uv.fs_stat(lazypath) then
-    vim.fn.system({
+local lazy_init = lazypath .. "/lua/lazy/init.lua"
+if not vim.uv.fs_stat(lazy_init) then
+    vim.fn.delete(lazypath, "rf")
+    local out = vim.fn.system({
         "git",
         "clone",
         "--filter=blob:none",
@@ -398,12 +400,19 @@ if not vim.uv.fs_stat(lazypath) then
         "--branch=stable",
         lazypath,
     })
+    if vim.v.shell_error ~= 0 then
+        error("Failed to clone lazy.nvim:\n" .. out)
+    end
 end
 vim.opt.rtp:prepend(lazypath)
 
--- initate lazy
+-- initiate lazy
 if not _G.lazy_initialized then
-    require("lazy").setup({
+    local ok, lazy = pcall(require, "lazy")
+    if not ok then
+        error("Failed to load lazy.nvim from " .. lazypath .. ":\n" .. lazy)
+    end
+    lazy.setup({
         install = { colorscheme = {} },
         spec = "mitander.plugins",
         change_detection = { notify = false },
