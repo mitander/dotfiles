@@ -23,7 +23,10 @@ EOF
 in_tmux() { [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; }
 
 require_dir() {
-    [[ -d "$1" ]] || { echo "not a directory: $1" >&2; exit 1; }
+    [[ -d "$1" ]] || {
+        echo "not a directory: $1" >&2
+        exit 1
+    }
 }
 
 abspath() { cd "$1" && pwd -P; }
@@ -80,8 +83,8 @@ hash_key() {
 
 find_role_window() {
     local session="$1" role="$2" format=$'#{window_id}\t#{@project_role}'
-    tmux list-windows -t "$session" -F "$format" \
-        | awk -F '\t' -v role="$role" '$2 == role { print $1; exit }'
+    tmux list-windows -t "$session" -F "$format" |
+        awk -F '\t' -v role="$role" '$2 == role { print $1; exit }'
 }
 
 attach_or_switch() {
@@ -103,8 +106,8 @@ new_session() {
 
     if tmux list-sessions >/dev/null 2>&1; then
         local format=$'#{session_id}\t#{@project_root}'
-        existing="$(tmux list-sessions -F "$format" \
-            | awk -F '\t' -v root="$root" '$2 == root { print $1; exit }')"
+        existing="$(tmux list-sessions -F "$format" |
+            awk -F '\t' -v root="$root" '$2 == root { print $1; exit }')"
         [[ -n "$existing" ]] && attach_or_switch "$existing"
     fi
 
@@ -134,17 +137,32 @@ role_window() {
     root="$(workspace_root "$cwd")"
 
     case "$role" in
-        shell|sh) role=shell; name=sh; command= ;;
-        shell2|sh2) role=shell2; name=sh2; command= ;;
-        pi|agent|ai) role=pi; name=pi; command=pi ;;
-        *) echo "unknown role: $role" >&2; exit 2 ;;
+    shell | sh)
+        role=shell
+        name=sh
+        command=
+        ;;
+    shell2 | sh2)
+        role=shell2
+        name=sh2
+        command=
+        ;;
+    pi | agent | ai)
+        role=pi
+        name=pi
+        command=pi
+        ;;
+    *)
+        echo "unknown role: $role" >&2
+        exit 2
+        ;;
     esac
 
     if ! in_tmux; then
         cd "$root"
         case "$role" in
-            shell|shell2) exec "${SHELL:-fish}" ;;
-            pi) exec pi ;;
+        shell | shell2) exec "${SHELL:-fish}" ;;
+        pi) exec pi ;;
         esac
     fi
 
@@ -207,7 +225,8 @@ nvim_runner() {
 }
 
 vim_window() {
-    local cwd="$1"; shift
+    local cwd="$1"
+    shift
     local args=("$@")
     local root name start_cwd session session_id server target saved_server window_id vim_pane new_pane
     require_dir "$cwd"
@@ -270,8 +289,8 @@ vim_window() {
         fi
 
         while IFS=$'\t' read -r pane tty; do
-            if ps -o state= -o comm= -t "$tty" 2>/dev/null \
-                | grep -iqE '^[^TXZ ]+ +(\S+/)?g?(view|n?vim?x?)(diff)?$'; then
+            if ps -o state= -o comm= -t "$tty" 2>/dev/null |
+                grep -iqE '^[^TXZ ]+ +(\S+/)?g?(view|n?vim?x?)(diff)?$'; then
                 printf '%s\n' "$pane"
                 return 0
             fi
@@ -327,7 +346,10 @@ vim_window() {
 git_window() {
     local cwd="${1:-$PWD}" root config_file session target name cmd window_id lazygit_cmd
     require_dir "$cwd"
-    command -v lazygit >/dev/null 2>&1 || { echo "lazygit not found" >&2; exit 127; }
+    command -v lazygit >/dev/null 2>&1 || {
+        echo "lazygit not found" >&2
+        exit 127
+    }
 
     root="$(root_for_dir "$cwd")"
     config_file="${LAZYGIT_CONFIG_FILE:-$DOTFILES_DIR/lazygit/.config/lazygit/config.yml}"
@@ -343,8 +365,8 @@ git_window() {
 
     session="$(tmux display-message -p '#S')"
     local format=$'#{window_id}\t#{@lazygit_root}'
-    target="$(tmux list-windows -t "$session" -F "$format" \
-        | awk -F '\t' -v root="$root" '$2 == root { print $1; exit }')"
+    target="$(tmux list-windows -t "$session" -F "$format" |
+        awk -F '\t' -v root="$root" '$2 == root { print $1; exit }')"
 
     if [[ -n "$target" ]]; then
         name="${LAZYGIT_TMUX_WINDOW_PREFIX:-git}"
@@ -362,22 +384,36 @@ git_window() {
 }
 
 cmd="${1:-}"
-[[ -n "$cmd" ]] || { usage; exit 2; }
+[[ -n "$cmd" ]] || {
+    usage
+    exit 2
+}
 shift || true
 
 case "$cmd" in
-    session|new-session) new_session "${1:-$PWD}" ;;
-    shell|sh) role_window shell "${1:-$PWD}" ;;
-    shell2|sh2) role_window shell2 "${1:-$PWD}" ;;
-    agent|pi|ai) role_window pi "${1:-$PWD}" ;;
-    agent-split|pi-split) agent_split "${1:-$PWD}" ;;
-    vim) vim_window "${1:-$PWD}" ;;
-    vim-open)
-        [[ "${1:-}" == -- ]] && shift
-        vim_window "$PWD" "$@"
-        ;;
-    git|lazygit) git_window "${1:-$PWD}" ;;
-    __nvim) nvim_runner "$@" ;;
-    help|-h|--help) usage ;;
-    *) echo "unknown command: $cmd" >&2; usage; exit 2 ;;
+session | new-session) new_session "${1:-$PWD}" ;;
+shell | sh) role_window shell "${1:-$PWD}" ;;
+shell2 | sh2) role_window shell2 "${1:-$PWD}" ;;
+agent | pi | ai) role_window pi "${1:-$PWD}" ;;
+agent-split | pi-split) agent_split "${1:-$PWD}" ;;
+vim) vim_window "${1:-$PWD}" ;;
+vim-open)
+    # Some callers, notably lazygit, invoke editors as `nvim -- file`.
+    # That separator is useful for regular nvim startup, but Neovim remote
+    # treats it as another file when using --remote-tab-silent.
+    args=()
+    for arg in "$@"; do
+        [[ "$arg" == -- ]] && continue
+        args+=("$arg")
+    done
+    vim_window "$PWD" "${args[@]}"
+    ;;
+git | lazygit) git_window "${1:-$PWD}" ;;
+__nvim) nvim_runner "$@" ;;
+help | -h | --help) usage ;;
+*)
+    echo "unknown command: $cmd" >&2
+    usage
+    exit 2
+    ;;
 esac
