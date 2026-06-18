@@ -1,19 +1,25 @@
+# Window Aesthetics
 title = "Ghostty"
 macos-window-shadow = true
-# window-title-font-family = "JetBrainsMono Nerd Font Mono"
+macos-titlebar-style = transparent
+window-save-state = always
 
 window-padding-x = 3
 window-padding-y = 3
 window-padding-balance = true
 
+# Behavior & Shell
 command = fish
-shell-integration = fish
-
-clipboard-read = allow
-clipboard-write = allow
+shell-integration = detect
 confirm-close-surface = false
 macos-option-as-alt = left
 
+# Clipboard
+clipboard-read = allow
+clipboard-write = allow
+copy-on-select = clipboard
+
+# Typography
 font-size = 15
 font-family = "JetBrainsMono Nerd Font Mono"
 font-style = "Medium"
@@ -24,17 +30,19 @@ adjust-cell-height = 10%
 adjust-cell-width = 2%
 alpha-blending = linear
 theme = flume
-# font-feature = -calt
-# font-feature = -liga
-# font-feature = -dlig
 
+# Font quality and thickness adjustments for macOS
+font-thicken = true
+font-thicken-strength = 140
+
+# Cursor
 cursor-style = block
-cursor-opacity=0.96
+cursor-opacity = 0.96
 
-# tmux (\x01 = ctrl-a)
-# search in pane
+# Tmux keybindings (\x01 = ctrl-a)
+# Search in pane
 keybind = cmd+/=text:\x01\x06
-# windows
+# Windows navigation
 keybind = cmd+physical:one=text:\x01\x31
 keybind = cmd+physical:two=text:\x01\x32
 keybind = cmd+physical:three=text:\x01\x33
@@ -45,6 +53,6 @@ keybind = cmd+physical:seven=text:\x01\x37
 keybind = cmd+physical:eight=text:\x01\x38
 keybind = cmd+physical:nine=text:\x01\x39
 
-# vim: ft=conf
-# vim bindings example (select all)
+# Vim keybindings
+# Select all (ggVG)
 keybind = cmd+a=text:\x1bggVG
