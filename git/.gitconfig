@@ -23,3 +23,44 @@
 	default = simple
 [init]
 	defaultBranch = master
+
+[pager]
+	diff = delta
+	log = delta
+	reflog = delta
+	show = delta
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	features = flume
+	navigate = true
+	light = false
+	side-by-side = true
+
+[delta "flume"]
+	syntax-theme = ansi
+	
+	# Diff styles matching flume colors
+	minus-style = syntax "#402834"
+	minus-emph-style = syntax "#602f45"
+	plus-style = syntax "#2f3d2d"
+	plus-emph-style = syntax "#3d5c3b"
+
+	# Line numbers matching flume
+	line-numbers = true
+	line-numbers-minus-style = "#eb6f92"
+	line-numbers-plus-style = "#a3be8c"
+	line-numbers-left-style = "#44415a"
+	line-numbers-right-style = "#44415a"
+	line-numbers-left-format = "{nm:^4} "
+	line-numbers-right-format = "{np:^4} "
+
+	# Borders and headers matching flume
+	commit-decoration-style = "#569fba" box
+	file-style = "#e0def4"
+	file-decoration-style = "#569fba" ul
+	hunk-header-style = "#e0def4"
+	hunk-header-decoration-style = "#44415a" box
+

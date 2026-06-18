@@ -2,6 +2,40 @@
 # q hides/switches away from the lazygit window; Q is the explicit quit.
 quitOnTopLevelReturn: false
 confirmOnQuit: false
+promptToReturnFromSubprocess: false
+gui:
+  showFileTree: true
+  nerdFontsVersion: "3"
+  sidePanelWidth: 0.22
+  theme:
+    activeBorderColor:
+      - "#569fba" # blue / border_focused
+      - bold
+    inactiveBorderColor:
+      - "#44415a" # border_variant
+    searchingActiveBorderColor:
+      - "#f6c177" # yellow
+      - bold
+    optionsTextColor:
+      - "#908caa" # muted
+    selectedLineBgColor:
+      - "#393552" # surface_alt
+    selectedRangeBgColor:
+      - "#2a273f" # active_line / surface
+    cherryPickedCommitBgColor:
+      - "#393552"
+    cherryPickedCommitFgColor:
+      - "#c4a7e7" # magenta
+    unstagedChangesColor:
+      - "#eb6f92" # red
+    stagedChangesColor:
+      - "#a3be8c" # green
+    defaultFgColor:
+      - "#e0def4" # fg
+git:
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
 keybinding:
   universal:
     quit: Q
