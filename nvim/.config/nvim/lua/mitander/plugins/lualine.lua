@@ -25,12 +25,6 @@ return {
                         color = { fg = colors.accent, bg = colors.surface_alt, gui = "bold" },
                     },
                     {
-                        "branch",
-                        icon = "",
-                        color = { fg = colors.green, bg = colors.surface_alt, gui = "bold" },
-                        padding = { right = 1 },
-                    },
-                    {
                         "filename",
                         color = { gui = "bold" },
                         path = 1,
@@ -38,16 +32,6 @@ return {
                     },
                 },
                 lualine_x = {
-                    {
-                        "progress",
-                        color = { fg = colors.text, gui = "bold" },
-                        padding = { right = 1 },
-                    },
-                    {
-                        "location",
-                        color = { fg = colors.cyan, gui = "bold" },
-                        padding = { right = 1 },
-                    },
                     {
                         "diagnostics",
                         sources = { "nvim_diagnostic" },
@@ -58,6 +42,18 @@ return {
                             color_info = { fg = colors.accent },
                         },
                         padding = { right = 1 },
+                    },
+                    {
+                        "branch",
+                        icon = "",
+                        color = { fg = colors.green, bg = colors.surface_alt, gui = "bold" },
+                        padding = { right = 1 },
+                        fmt = function(name)
+                            if name == "master" or name == "main" or name == "" then
+                                return ""
+                            end
+                            return name
+                        end,
                     },
                     {
                         -- lsp client name
@@ -73,9 +69,8 @@ return {
                         padding = { right = 1 },
                     },
                     {
-                        "o:encoding",
-                        fmt = string.upper,
-                        color = { fg = colors.accent, gui = "bold" },
+                        "location",
+                        color = { fg = colors.cyan, gui = "bold" },
                         padding = { right = 1 },
                     },
                 },
