@@ -10,7 +10,7 @@ type IndicatorStyle = "state" | "dot" | "wave" | "spinner";
 let enabled = true;
 let phase: Phase = "idle";
 let indicatorStyle: IndicatorStyle = "state";
-let bottomPadding = true;
+let bottomPadding = false;
 let turnCount = 0;
 let frame = 0;
 let requestRender: (() => void) | undefined;
@@ -143,11 +143,8 @@ function renderFooterLine(width: number, ctx: any, theme: any, footerData: any):
 	const ctxText = contextLabel(ctx);
 	const sep = theme.fg("borderMuted", " │ ");
 
-	const left = [
-		theme.fg("accent", "π"),
-		`${phaseIndicator(theme)} ${phaseLabel(theme)}`,
-		theme.fg("accent", cwd) + (branch ? theme.fg("dim", " on ") + theme.fg("success", branch) : ""),
-	].join(sep);
+	const location = branch ? theme.fg("success", branch) : theme.fg("accent", cwd);
+	const left = [theme.fg("accent", "π"), `${phaseIndicator(theme)} ${phaseLabel(theme)}`, location].join(sep);
 
 	const right = [
 		theme.fg("syntaxKeyword", modelLabel(ctx)),
