@@ -40,19 +40,74 @@ root_for_dir() {
     fi
 }
 
+workspace_name_for_root() {
+    basename "$1"
+}
+
+set_session_workspace() {
+    local session="${1:?missing session}" root="${2:?missing root}" name
+    name="$(workspace_name_for_root "$root")"
+
+    tmux set-option -t "$session" @workspace_root "$root" >/dev/null
+    tmux set-option -t "$session" @workspace_name "$name" >/dev/null
+
+    # Backward-compatible aliases for already-restored sessions/configs.
+    tmux set-option -t "$session" @project_root "$root" >/dev/null
+    tmux set-option -t "$session" @project_name "$name" >/dev/null
+}
+
+workspace_mode_label() {
+    case "$1" in
+    vim) printf 'edit' ;;
+    pi) printf 'agent' ;;
+    git) printf 'git' ;;
+    shell) printf 'shell' ;;
+    shell2) printf 'shell2' ;;
+    *) printf '%s' "$1" ;;
+    esac
+}
+
+workspace_mode_color() {
+    case "$1" in
+    vim) printf '#569fba' ;;   # blue
+    pi) printf '#c4a7e7' ;;    # pink
+    git) printf '#f6c177' ;;   # yellow
+    shell) printf '#a3be8c' ;; # green
+    shell2) printf '#9ccfd8' ;; # cyan
+    *) printf '#e0def4' ;;
+    esac
+}
+
+set_window_workspace_mode() {
+    local target="${1:?missing window}" mode="${2:?missing mode}" root="${3:?missing root}" label color
+    label="$(workspace_mode_label "$mode")"
+    color="$(workspace_mode_color "$mode")"
+
+    tmux set-option -w -t "$target" automatic-rename off >/dev/null
+    tmux set-option -w -t "$target" @workspace_mode "$mode" >/dev/null
+    tmux set-option -w -t "$target" @workspace_mode_label "$label" >/dev/null
+    tmux set-option -w -t "$target" @workspace_mode_color "$color" >/dev/null
+    tmux set-option -w -t "$target" @workspace_root "$root" >/dev/null
+
+    # Backward-compatible aliases for scripts that still look for project roles.
+    tmux set-option -w -t "$target" @project_role "$mode" >/dev/null
+    tmux set-option -w -t "$target" @project_root "$root" >/dev/null
+}
+
 workspace_root() {
-    local cwd="${1:?missing cwd}" root session root_opt
+    local cwd="${1:?missing cwd}" root session root_opt legacy_root_opt
     root="$(root_for_dir "$cwd")"
 
     if in_tmux; then
         session="$(tmux display-message -p '#S')"
-        root_opt="$(tmux show-options -qv -t "$session" @project_root || true)"
+        root_opt="$(tmux show-options -qv -t "$session" @workspace_root || true)"
+        legacy_root_opt="$(tmux show-options -qv -t "$session" @project_root || true)"
         if [[ -n "$root_opt" && -d "$root_opt" ]]; then
             root="$root_opt"
-        else
-            tmux set-option -t "$session" @project_root "$root" >/dev/null
-            tmux set-option -t "$session" @project_name "$(basename "$root")" >/dev/null
+        elif [[ -n "$legacy_root_opt" && -d "$legacy_root_opt" ]]; then
+            root="$legacy_root_opt"
         fi
+        set_session_workspace "$session" "$root"
     fi
 
     printf '%s\n' "$root"
@@ -82,28 +137,28 @@ hash_key() {
 }
 
 find_role_window() {
-    local session="$1" role="$2" format=$'#{window_id}\t#{@project_role}'
+    local session="$1" role="$2" format=$'#{window_id}\t#{@workspace_mode}\t#{@project_role}'
     tmux list-windows -t "$session" -F "$format" |
-        awk -F '\t' -v role="$role" '$2 == role { print $1; exit }'
+        awk -F '\t' -v role="$role" '$2 == role || $3 == role { print $1; exit }'
 }
 
 ensure_shell_window() {
     local session="${1:?missing session}" root="${2:?missing root}" target format
 
+    set_session_workspace "$session" "$root"
+
     target="$(find_role_window "$session" shell)"
     if [[ -z "$target" ]]; then
-        format=$'#{window_id}\t#{@project_role}\t#{pane_current_command}'
+        format=$'#{window_id}\t#{@workspace_mode}\t#{@project_role}\t#{pane_current_command}'
         target="$(tmux list-windows -t "$session" -F "$format" |
-            awk -F '\t' '$2 == "" && $3 ~ /^(fish|zsh|bash|sh)$/ { print $1; exit }')"
+            awk -F '\t' '$2 == "" && $3 == "" && $4 ~ /^(fish|zsh|bash|sh)$/ { print $1; exit }')"
     fi
     if [[ -z "$target" ]]; then
         target="$(tmux new-window -d -P -F '#{window_id}' -t "$session:" -n sh -c "$root")"
     fi
 
     tmux rename-window -t "$target" sh >/dev/null
-    tmux set-option -w -t "$target" automatic-rename off >/dev/null
-    tmux set-option -w -t "$target" @project_role shell >/dev/null
-    tmux set-option -w -t "$target" @project_root "$root" >/dev/null
+    set_window_workspace_mode "$target" shell "$root"
     tmux select-window -t "$target" >/dev/null
 }
 
@@ -125,9 +180,9 @@ new_session() {
     [[ -n "$base" ]] || base=project
 
     if tmux list-sessions >/dev/null 2>&1; then
-        local format=$'#{session_id}\t#{@project_root}'
+        local format=$'#{session_id}\t#{@workspace_root}\t#{@project_root}'
         existing="$(tmux list-sessions -F "$format" |
-            awk -F '\t' -v root="$root" '$2 == root { print $1; exit }')"
+            awk -F '\t' -v root="$root" '$2 == root || $3 == root { print $1; exit }')"
         if [[ -n "$existing" ]]; then
             ensure_shell_window "$existing" "$root"
             attach_or_switch "$existing"
@@ -144,11 +199,8 @@ new_session() {
     session_id="${created%%$'\t'*}"
     window_id="${created#*$'\t'}"
 
-    tmux set-option -t "$session_id" @project_root "$root" >/dev/null
-    tmux set-option -t "$session_id" @project_name "$project" >/dev/null
-    tmux set-option -w -t "$window_id" automatic-rename off >/dev/null
-    tmux set-option -w -t "$window_id" @project_role shell >/dev/null
-    tmux set-option -w -t "$window_id" @project_root "$root" >/dev/null
+    set_session_workspace "$session_id" "$root"
+    set_window_workspace_mode "$window_id" shell "$root"
     ensure_shell_window "$session_id" "$root"
 
     attach_or_switch "$session_id"
@@ -194,14 +246,13 @@ role_window() {
     target="$(find_role_window "$session" "$role")"
     if [[ -n "$target" ]]; then
         tmux rename-window -t "$target" "$name"
+        set_window_workspace_mode "$target" "$role" "$root"
         tmux select-window -t "$target"
         return
     fi
 
     window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root")"
-    tmux set-option -w -t "$window_id" automatic-rename off >/dev/null
-    tmux set-option -w -t "$window_id" @project_role "$role" >/dev/null
-    tmux set-option -w -t "$window_id" @project_root "$root" >/dev/null
+    set_window_workspace_mode "$window_id" "$role" "$root"
     tmux select-window -t "$window_id"
 
     [[ -n "$command" ]] && tmux send-keys -t "$window_id" "$command" Enter
@@ -243,6 +294,7 @@ nvim_runner() {
 
     export TMUX_EDIT_BYPASS=1
     if [[ -n "${TMUX_PANE:-}" ]] && command -v tmux >/dev/null 2>&1; then
+        tmux set-option -w -t "$TMUX_PANE" @workspace_vim_pane "$TMUX_PANE" >/dev/null 2>&1 || true
         tmux set-option -w -t "$TMUX_PANE" @project_vim_pane "$TMUX_PANE" >/dev/null 2>&1 || true
     fi
     exec nvim --listen "$server" "${args[@]}"
@@ -306,7 +358,8 @@ vim_window() {
     find_vim_pane() {
         local target_window="$1" saved pane tty
 
-        saved="$(tmux show-options -wqv -t "$target_window" @project_vim_pane || true)"
+        saved="$(tmux show-options -wqv -t "$target_window" @workspace_vim_pane || true)"
+        [[ -n "$saved" ]] || saved="$(tmux show-options -wqv -t "$target_window" @project_vim_pane || true)"
         if [[ -n "$saved" ]] && tmux display-message -p -t "$saved" '#{pane_id}' >/dev/null 2>&1; then
             printf '%s\n' "$saved"
             return 0
@@ -324,21 +377,23 @@ vim_window() {
     target="$(find_role_window "$session" vim)"
     if [[ -n "$target" ]]; then
         tmux rename-window -t "$target" "$name"
-        saved_server="$(tmux show-options -wqv -t "$target" @project_vim_server || true)"
+        set_window_workspace_mode "$target" vim "$root"
+        saved_server="$(tmux show-options -wqv -t "$target" @workspace_vim_server || true)"
+        [[ -n "$saved_server" ]] || saved_server="$(tmux show-options -wqv -t "$target" @project_vim_server || true)"
         [[ -n "$saved_server" ]] && server="$saved_server"
     fi
 
     if [[ -z "$target" ]]; then
         clean_server
         window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$start_cwd" "$(start_command)")"
-        tmux set-option -w -t "$window_id" automatic-rename off >/dev/null
-        tmux set-option -w -t "$window_id" @project_role vim >/dev/null
-        tmux set-option -w -t "$window_id" @project_root "$root" >/dev/null
+        set_window_workspace_mode "$window_id" vim "$root"
+        tmux set-option -w -t "$window_id" @workspace_vim_server "$server" >/dev/null
         tmux set-option -w -t "$window_id" @project_vim_server "$server" >/dev/null
         tmux select-window -t "$window_id"
         return
     fi
 
+    tmux set-option -w -t "$target" @workspace_vim_server "$server" >/dev/null
     tmux set-option -w -t "$target" @project_vim_server "$server" >/dev/null
     tmux select-window -t "$target"
 
@@ -367,6 +422,38 @@ vim_window() {
     fi
 }
 
+refresh_status_metadata() {
+    local format session root legacy_root win mode legacy_mode lazygit_root
+
+    in_tmux || return 0
+
+    format=$'#{session_id}\t#{@workspace_root}\t#{@project_root}'
+    while IFS=$'\t' read -r session root legacy_root; do
+        [[ -n "$root" ]] || root="$legacy_root"
+        if [[ -n "$root" && -d "$root" ]]; then
+            set_session_workspace "$session" "$root"
+        fi
+    done < <(tmux list-sessions -F "$format" 2>/dev/null || true)
+
+    format=$'#{window_id}\t#{@workspace_mode}\t#{@project_role}\t#{@workspace_root}\t#{@project_root}\t#{@lazygit_root}'
+    while IFS=$'\t' read -r win mode legacy_mode root legacy_root lazygit_root; do
+        [[ -n "$mode" ]] || mode="$legacy_mode"
+        if [[ -z "$mode" && -n "$lazygit_root" ]]; then
+            mode=git
+        fi
+        [[ -n "$root" ]] || root="$legacy_root"
+        [[ -n "$root" ]] || root="$lazygit_root"
+        [[ -n "$mode" && -n "$root" ]] || continue
+
+        set_window_workspace_mode "$win" "$mode" "$root"
+        if [[ "$mode" == git ]]; then
+            tmux set-option -w -t "$win" @lazygit_root "$root" >/dev/null
+        fi
+    done < <(tmux list-windows -a -F "$format" 2>/dev/null || true)
+
+    return 0
+}
+
 git_window() {
     local cwd="${1:-$PWD}" root config_file session target name cmd window_id lazygit_cmd
     require_dir "$cwd"
@@ -375,7 +462,7 @@ git_window() {
         exit 127
     }
 
-    root="$(root_for_dir "$cwd")"
+    root="$(workspace_root "$cwd")"
     config_file="${LAZYGIT_CONFIG_FILE:-$DOTFILES_DIR/lazygit/.config/lazygit/config.yml}"
     lazygit_cmd=(lazygit)
     if in_tmux && [[ -f "$config_file" ]]; then
@@ -388,13 +475,15 @@ git_window() {
     fi
 
     session="$(tmux display-message -p '#S')"
-    local format=$'#{window_id}\t#{@lazygit_root}'
+    local format=$'#{window_id}\t#{@workspace_mode}\t#{@lazygit_root}'
     target="$(tmux list-windows -t "$session" -F "$format" |
-        awk -F '\t' -v root="$root" '$2 == root { print $1; exit }')"
+        awk -F '\t' -v root="$root" '$2 == "git" || $3 == root { print $1; exit }')"
 
     if [[ -n "$target" ]]; then
         name="${LAZYGIT_TMUX_WINDOW_PREFIX:-git}"
         tmux rename-window -t "$target" "$name"
+        set_window_workspace_mode "$target" git "$root"
+        tmux set-option -w -t "$target" @lazygit_root "$root" >/dev/null
         tmux select-window -t "$target"
         return
     fi
@@ -402,7 +491,7 @@ git_window() {
     name="${LAZYGIT_TMUX_WINDOW_PREFIX:-git}"
     cmd="$(quote_argv "${lazygit_cmd[@]}")"
     window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root" "$cmd")"
-    tmux set-option -w -t "$window_id" automatic-rename off >/dev/null
+    set_window_workspace_mode "$window_id" git "$root"
     tmux set-option -w -t "$window_id" @lazygit_root "$root" >/dev/null
     tmux select-window -t "$window_id"
 }
@@ -433,6 +522,7 @@ vim-open)
     vim_window "$PWD" "${args[@]}"
     ;;
 git | lazygit) git_window "${1:-$PWD}" ;;
+__refresh-status) refresh_status_metadata ;;
 __nvim) nvim_runner "$@" ;;
 help | -h | --help) usage ;;
 *)
