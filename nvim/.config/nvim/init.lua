@@ -313,6 +313,131 @@ vim.keymap.set("n", "<leader>rl", function()
 end, { desc = "Reload Neovim configuration" })
 
 local group = vim.api.nvim_create_augroup("mitander", { clear = true })
+vim.api.nvim_set_hl(0, "StartupWisdom", { fg = "#a3be8c", italic = true })
+
+-- calm startup line
+local startup_wisdom = {
+    "slow down and make the small thing work",
+    "boring code is a kindness",
+    "fun counts",
+    "it is only computer",
+    "technology is cool and so are small steps",
+    "read the error, not your fears",
+    "make it work, make it clear, then stop",
+    "pragmatic beats impressive",
+    "touch grass, then touch keys",
+    "ship the simple thing",
+    "computers are toys and tools",
+    "leave the code calmer than you found it",
+    "every bug is a little door",
+    "small programs are real programs",
+    "enjoy the machine",
+    "build gently",
+    "keep the sharp edges kind",
+    "the terminal is a place to play",
+}
+
+local function random_startup_wisdom()
+    math.randomseed(vim.uv.hrtime())
+    return startup_wisdom[math.random(#startup_wisdom)]
+end
+
+local function center_startup_line(line)
+    local width = vim.o.columns
+    local height = vim.o.lines - vim.o.cmdheight - 1
+    local left_pad = math.max(math.floor((width - vim.fn.strdisplaywidth(line)) / 2), 0)
+    local top_pad = math.max(math.floor(height / 2), 0)
+    local centered = {}
+    for _ = 1, top_pad do
+        table.insert(centered, "")
+    end
+    table.insert(centered, string.rep(" ", left_pad) .. line)
+    local message_line = #centered
+    table.insert(centered, "")
+    return centered, message_line
+end
+
+local function is_empty_unnamed_buffer()
+    if vim.api.nvim_buf_get_name(0) ~= "" or vim.api.nvim_buf_line_count(0) > 1 then
+        return false
+    end
+    return vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] == ""
+end
+
+local function pin_startup_cursor(line_nr)
+    vim.api.nvim_win_set_cursor(0, { line_nr, 0 })
+    vim.api.nvim_create_autocmd("CursorMoved", {
+        buffer = 0,
+        callback = function()
+            pcall(vim.api.nvim_win_set_cursor, 0, { line_nr, 0 })
+        end,
+    })
+end
+
+local startup_guicursor
+
+local function set_startup_cursor_hidden(hidden)
+    if hidden then
+        startup_guicursor = vim.o.guicursor
+        local normal = vim.api.nvim_get_hl(0, { name = "Normal" })
+        local bg = normal.bg and string.format("#%06x", normal.bg) or "NONE"
+        vim.api.nvim_set_hl(0, "StartupHiddenCursor", { fg = bg, bg = bg })
+        vim.opt.guicursor = "a:block-StartupHiddenCursor"
+    elseif startup_guicursor then
+        vim.o.guicursor = startup_guicursor
+        startup_guicursor = nil
+    end
+end
+
+local function show_startup_wisdom()
+    if vim.fn.argc() > 0 or vim.bo.filetype == "lazy" or not is_empty_unnamed_buffer() then
+        return
+    end
+
+    vim.bo.buftype = "nofile"
+    vim.bo.bufhidden = "wipe"
+    vim.bo.buflisted = false
+    vim.bo.swapfile = false
+    vim.bo.filetype = "startup"
+    vim.bo.modifiable = true
+    local lines, message_line = center_startup_line(random_startup_wisdom())
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+    vim.api.nvim_buf_add_highlight(0, -1, "StartupWisdom", message_line - 1, 0, -1)
+    pin_startup_cursor(message_line + 1)
+    vim.bo.modifiable = false
+    vim.bo.modified = false
+    vim.wo.number = false
+    vim.wo.relativenumber = false
+    vim.wo.cursorline = false
+    vim.wo.signcolumn = "no"
+    set_startup_cursor_hidden(true)
+    vim.api.nvim_create_autocmd("BufLeave", {
+        buffer = 0,
+        once = true,
+        callback = function()
+            set_startup_cursor_hidden(false)
+            vim.wo.number = true
+            vim.wo.relativenumber = false
+            vim.wo.cursorline = true
+            vim.wo.signcolumn = "yes"
+        end,
+    })
+    vim.api.nvim_create_autocmd("VimLeavePre", {
+        once = true,
+        callback = function()
+            set_startup_cursor_hidden(false)
+        end,
+    })
+    vim.keymap.set("n", "q", "<cmd>qa<cr>", { buffer = true, silent = true, desc = "Quit" })
+    vim.keymap.set("n", "e", function()
+        vim.cmd.enew()
+    end, { buffer = true, silent = true, desc = "Edit new buffer" })
+end
+
+vim.api.nvim_create_autocmd("VimEnter", {
+    group = group,
+    callback = show_startup_wisdom,
+})
 
 -- nopaste on insert leave
 vim.api.nvim_create_autocmd({ "InsertLeave" }, {
@@ -358,7 +483,9 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
     group = group,
     callback = function()
-        vim.opt_local.cursorline = true
+        if vim.bo.filetype ~= "startup" then
+            vim.opt_local.cursorline = true
+        end
     end,
 })
 
