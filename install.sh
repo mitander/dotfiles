@@ -8,6 +8,7 @@ PACKAGES=(fish tmux neovim git ripgrep fzf fd bat lsd lazygit zoxide atuin tree 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33mwarn:\033[0m %s\n' "$*" >&2; }
 have() { command -v "$1" >/dev/null 2>&1; }
+link_target() { realpath "$1" 2>/dev/null || true; }
 
 install_packages() {
   [[ "${DOTFILES_SKIP_PACKAGES:-}" == 1 ]] && return 0
@@ -43,8 +44,12 @@ install_packages() {
 
 ensure_linux_aliases() {
   mkdir -p "$HOME/.local/bin"
-  if ! have fd && have fdfind; then ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"; fi
-  if ! have bat && have batcat; then ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"; fi
+  if ! have fd && have fdfind; then
+    ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
+  fi
+  if ! have bat && have batcat; then
+    ln -sf "$(command -v batcat)" "$HOME/.local/bin/bat"
+  fi
 }
 
 ensure_local_bin_path() {
@@ -61,19 +66,25 @@ nvim_is_modern() {
   version="${version#v}"
   version="${version%%-*}"
   IFS=. read -r major minor _ <<<"$version"
-  [[ "${major:-0}" -gt 0 || "${minor:-0}" -ge 10 ]]
+  ((${major:-0} > 0 || ${minor:-0} >= 10))
 }
 
 install_modern_neovim() {
   [[ "$(uname -s)" == Linux ]] || return 0
   nvim_is_modern && return 0
-  have curl || { warn "curl not found; cannot install modern Neovim release"; return 0; }
+  have curl || {
+    warn "curl not found; cannot install modern Neovim release"
+    return 0
+  }
 
   local arch asset tmp opt_dir target
   case "$(uname -m)" in
-    x86_64|amd64) arch=x86_64 ;;
-    aarch64|arm64) arch=arm64 ;;
-    *) warn "Unsupported Neovim release architecture: $(uname -m)"; return 0 ;;
+    x86_64 | amd64) arch=x86_64 ;;
+    aarch64 | arm64) arch=arm64 ;;
+    *)
+      warn "Unsupported Neovim release architecture: $(uname -m)"
+      return 0
+      ;;
   esac
 
   asset="nvim-linux-$arch.tar.gz"
@@ -97,14 +108,20 @@ install_modern_neovim() {
 install_lazygit_release() {
   [[ "$(uname -s)" == Linux ]] || return 0
   have lazygit && return 0
-  have curl || { warn "curl not found; cannot install lazygit release"; return 0; }
+  have curl || {
+    warn "curl not found; cannot install lazygit release"
+    return 0
+  }
 
   local arch tmp api url
   case "$(uname -m)" in
-    x86_64|amd64) arch=x86_64 ;;
-    aarch64|arm64) arch=arm64 ;;
-    armv6l|armv7l) arch=armv6 ;;
-    *) warn "Unsupported lazygit release architecture: $(uname -m)"; return 0 ;;
+    x86_64 | amd64) arch=x86_64 ;;
+    aarch64 | arm64) arch=arm64 ;;
+    armv6l | armv7l) arch=armv6 ;;
+    *)
+      warn "Unsupported lazygit release architecture: $(uname -m)"
+      return 0
+      ;;
   esac
 
   tmp="$(mktemp -d)"
@@ -147,7 +164,7 @@ remove_stowed_ancestor() {
   for part in "${parts[@]:0:${#parts[@]}-1}"; do
     path="$path/$part"
     if [[ -L "$path" ]]; then
-      target="$(realpath "$path" 2>/dev/null || true)"
+      target="$(link_target "$path")"
       if [[ "$target" == "$DOTFILES_DIR/$package"* ]]; then
         rm -f "$path"
       else
@@ -177,7 +194,7 @@ prepare_stow_package() {
     remove_stowed_ancestor "$package" "$rel"
 
     if [[ -L "$dst" ]]; then
-      current="$(realpath "$dst" 2>/dev/null || true)"
+      current="$(link_target "$dst")"
       if [[ "$current" == "$src" ]]; then
         rm -f "$dst"
       else
@@ -268,7 +285,7 @@ set_login_shell_hint() {
 
 verify_link() {
   local path="$1" expected="$2" actual
-  actual="$(realpath "$path" 2>/dev/null || true)"
+  actual="$(link_target "$path")"
   if [[ "$actual" != "$expected" ]]; then
     warn "$path is not linked correctly (got: ${actual:-missing}, expected: $expected)"
   fi
@@ -280,6 +297,8 @@ verify_config_links() {
   verify_link "$HOME/.config/fish/config.fish" "$DOTFILES_DIR/fish/.config/fish/config.fish"
   verify_link "$HOME/.config/ghostty/config" "$DOTFILES_DIR/ghostty/.config/ghostty/config"
   verify_link "$HOME/.config/lsd/config.yaml" "$DOTFILES_DIR/lsd/.config/lsd/config.yaml"
+  verify_link "$HOME/.pi/agent/themes/flume.json" "$DOTFILES_DIR/pi/.pi/agent/themes/flume.json"
+  verify_link "$HOME/.pi/agent/extensions/flume-ui/index.ts" "$DOTFILES_DIR/pi/.pi/agent/extensions/flume-ui/index.ts"
 }
 
 main() {
@@ -294,7 +313,7 @@ main() {
 
   log "Linking config"
   require_stow
-  for package in fish ghostty nvim tmux git lazygit stylua lsd lldb; do
+  for package in fish ghostty nvim tmux git lazygit stylua lsd lldb pi; do
     link_package "$package"
   done
   verify_config_links
