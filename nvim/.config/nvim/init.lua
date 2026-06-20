@@ -496,6 +496,15 @@ local function show_startup_scratch()
             promote_startup_scratch(bufnr)
         end,
     })
+    vim.api.nvim_create_autocmd("BufWinLeave", {
+        group = group,
+        buffer = bufnr,
+        callback = function(args)
+            if is_startup_scratch(args.buf) then
+                restore_startup_scratch_window_options(0)
+            end
+        end,
+    })
     vim.api.nvim_create_autocmd("BufWipeout", {
         group = group,
         buffer = bufnr,
