@@ -84,53 +84,66 @@ function contextLabel(ctx: any): { text: string; color: string } | undefined {
 	const window = ctx.model?.contextWindow;
 	if (typeof window === "number" && window > 0) {
 		const percent = Math.round((tokens / window) * 100);
-		const color = percent >= 90 ? "error" : percent >= 70 ? "warning" : "thinkingMedium";
+		let color = "thinkingMedium";
+		if (percent >= 90) {
+			color = "error";
+		} else if (percent >= 70) {
+			color = "warning";
+		}
 		return { text: `ctx ${percent}%`, color };
 	}
 
 	return { text: `ctx ${fmtNumber(tokens)}`, color: "thinkingMedium" };
 }
 
+function phaseColor(): string {
+	switch (phase) {
+		case "idle":
+			return "success";
+		case "thinking":
+			return "thinkingMedium";
+		case "tools":
+			return "warning";
+	}
+
+	const exhaustive: never = phase;
+	return exhaustive;
+}
+
+function animatedFrame(frames: string[], idleFrame: string): string {
+	return phase === "idle" ? idleFrame : frames[frame % frames.length];
+}
+
 function phaseIndicator(theme: any): string {
-	if (indicatorStyle === "dot") {
-		return phase === "idle"
-			? theme.fg("success", "●")
-			: phase === "thinking"
-				? theme.fg("thinkingMedium", "●")
-				: theme.fg("warning", "●");
+	switch (indicatorStyle) {
+		case "dot":
+			return theme.fg(phaseColor(), "●");
+		case "wave":
+			return theme.fg(phaseColor(), animatedFrame(["·", "•", "●", "•"], "·"));
+		case "spinner":
+			return theme.fg(phaseColor(), animatedFrame(["-", "\\", "|", "/"], "-"));
+		case "state": {
+			const symbols: Record<Phase, string> = { idle: "○", thinking: "◐", tools: "◆" };
+			return theme.fg(phaseColor(), symbols[phase]);
+		}
 	}
 
-	if (indicatorStyle === "wave") {
-		const frames = ["·", "•", "●", "•"];
-		return phase === "idle"
-			? theme.fg("success", "·")
-			: phase === "thinking"
-				? theme.fg("thinkingMedium", frames[frame % frames.length])
-				: theme.fg("warning", frames[frame % frames.length]);
-	}
-
-	if (indicatorStyle === "spinner") {
-		const frames = ["-", "\\", "|", "/"];
-		return phase === "idle"
-			? theme.fg("success", "-")
-			: phase === "thinking"
-				? theme.fg("thinkingMedium", frames[frame % frames.length])
-				: theme.fg("warning", frames[frame % frames.length]);
-	}
-
-	return phase === "idle"
-		? theme.fg("success", "○")
-		: phase === "thinking"
-			? theme.fg("thinkingMedium", "◐")
-			: theme.fg("warning", "◆");
+	const exhaustive: never = indicatorStyle;
+	return exhaustive;
 }
 
 function phaseLabel(theme: any): string {
-	return phase === "idle"
-		? theme.fg("dim", "idle")
-		: phase === "thinking"
-			? theme.fg("muted", `turn ${turnCount}`)
-			: theme.fg("warning", "tools");
+	switch (phase) {
+		case "idle":
+			return theme.fg("dim", "idle");
+		case "thinking":
+			return theme.fg("muted", `turn ${turnCount}`);
+		case "tools":
+			return theme.fg("warning", "tools");
+	}
+
+	const exhaustive: never = phase;
+	return exhaustive;
 }
 
 function renderFooterLine(width: number, ctx: any, theme: any, footerData: any): string[] {
@@ -156,7 +169,7 @@ function renderFooterLine(width: number, ctx: any, theme: any, footerData: any):
 		.join(sep);
 
 	const statusRaw = statuses.length > 0 ? statuses.join(sep) : "";
-	const innerPadding = 1;
+	const innerPadding = 0;
 	const contentWidth = Math.max(1, width - innerPadding * 2);
 	const reserved = visibleWidth(left) + visibleWidth(right) + 1;
 	const statusMax = Math.max(0, contentWidth - reserved - (statusRaw ? visibleWidth(sep) : 0));
@@ -230,6 +243,20 @@ function refresh(): void {
 	requestRender?.();
 }
 
+function parseToggle(choice: string, current: boolean, resetAliases = false): boolean {
+	switch (choice) {
+		case "on":
+			return true;
+		case "off":
+			return false;
+		case "default":
+		case "reset":
+			return resetAliases ? false : !current;
+		default:
+			return !current;
+	}
+}
+
 export default function flumeUi(pi: ExtensionAPI): void {
 	pi.on("session_start", async (_event, ctx) => {
 		phase = "idle";
@@ -268,8 +295,7 @@ export default function flumeUi(pi: ExtensionAPI): void {
 	pi.registerCommand("flume-footer", {
 		description: "Toggle the Flume one-line footer/statusbar",
 		handler: async (args, ctx) => {
-			const choice = args.trim().toLowerCase();
-			enabled = choice === "on" ? true : choice === "off" || choice === "default" || choice === "reset" ? false : !enabled;
+			enabled = parseToggle(args.trim().toLowerCase(), enabled, true);
 
 			if (enabled) {
 				installFooter(ctx);
@@ -284,8 +310,7 @@ export default function flumeUi(pi: ExtensionAPI): void {
 	pi.registerCommand("flume-footer-padding", {
 		description: "Toggle risky one-line bottom padding for the Flume footer",
 		handler: async (args, ctx) => {
-			const choice = args.trim().toLowerCase();
-			bottomPadding = choice === "on" ? true : choice === "off" ? false : !bottomPadding;
+			bottomPadding = parseToggle(args.trim().toLowerCase(), bottomPadding);
 			requestRender?.();
 			ctx.ui.notify(`Flume footer bottom padding: ${bottomPadding ? "on" : "off"}`, "info");
 		},
