@@ -169,7 +169,7 @@ function renderFooterLine(width: number, ctx: any, theme: any, footerData: any):
 		.join(sep);
 
 	const statusRaw = statuses.length > 0 ? statuses.join(sep) : "";
-	const innerPadding = 0;
+	const innerPadding = 1;
 	const contentWidth = Math.max(1, width - innerPadding * 2);
 	const reserved = visibleWidth(left) + visibleWidth(right) + 1;
 	const statusMax = Math.max(0, contentWidth - reserved - (statusRaw ? visibleWidth(sep) : 0));
