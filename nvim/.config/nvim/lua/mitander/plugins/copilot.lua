@@ -9,10 +9,10 @@ return {
         suggestion = {
             enabled = true,
             auto_trigger = true,
-            hide_during_completion = true,
+            hide_during_completion = false,
             debounce = 75,
             keymap = {
-                accept = "<M-l>",
+                accept = "<Tab>",
                 accept_word = "<M-w>",
                 accept_line = "<M-L>",
                 next = "<M-]>",
@@ -39,19 +39,7 @@ return {
     config = function(_, opts)
         require("copilot").setup(opts)
 
-        -- Keep Copilot ghost text out of the way while blink.cmp's menu is open.
-        vim.api.nvim_create_autocmd("User", {
-            pattern = "BlinkCmpMenuOpen",
-            callback = function()
-                vim.b.copilot_suggestion_hidden = true
-            end,
-        })
-        vim.api.nvim_create_autocmd("User", {
-            pattern = "BlinkCmpMenuClose",
-            callback = function()
-                vim.b.copilot_suggestion_hidden = false
-            end,
-        })
+        -- Copilot owns <Tab>; blink.cmp owns <CR>.
 
         vim.api.nvim_set_hl(0, "CopilotSuggestion", { fg = "#6b7280", italic = true })
         vim.api.nvim_set_hl(0, "CopilotAnnotation", { fg = "#6b7280" })

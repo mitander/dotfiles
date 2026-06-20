@@ -12,21 +12,6 @@ return {
             ["<C-d>"] = { "scroll_documentation_down", "fallback" },
             ["<C-e>"] = { "hide", "fallback" },
             ["<CR>"] = { "accept", "fallback" },
-            ["<Tab>"] = {
-                function(cmp)
-                    local ok, suggestion = pcall(require, "copilot.suggestion")
-                    if ok and suggestion.is_visible() then
-                        suggestion.accept()
-                        return true
-                    end
-
-                    if cmp.is_menu_visible() then
-                        return cmp.select_and_accept()
-                    end
-                end,
-                "snippet_forward",
-                "fallback",
-            },
             ["<S-Tab>"] = { "snippet_backward", "fallback" },
             ["<C-p>"] = { "select_prev", "fallback" },
             ["<C-n>"] = { "select_next", "fallback" },
@@ -66,7 +51,9 @@ return {
         completion = {
             list = {
                 selection = {
+                    -- Start unselected; preview only after explicit menu navigation.
                     preselect = false,
+                    auto_insert = true,
                 },
             },
             accept = {
@@ -129,10 +116,7 @@ return {
             },
         },
         signature = {
-            enabled = true,
-            window = {
-                border = "single",
-            },
+            enabled = false,
         },
     },
 }
