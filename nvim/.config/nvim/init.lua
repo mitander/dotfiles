@@ -313,6 +313,7 @@ vim.keymap.set("n", "<leader>rl", function()
 end, { desc = "Reload Neovim configuration" })
 
 local group = vim.api.nvim_create_augroup("mitander", { clear = true })
+local startup_wisdom_ns = vim.api.nvim_create_namespace("startup_wisdom")
 vim.api.nvim_set_hl(0, "StartupWisdom", { fg = "#a3be8c", italic = true })
 
 -- calm startup line
@@ -342,19 +343,71 @@ local function random_startup_wisdom()
     return startup_wisdom[math.random(#startup_wisdom)]
 end
 
-local function center_startup_line(line)
-    local width = vim.o.columns
+local startup_float = {}
+
+local function startup_float_config(line)
+    local width = vim.fn.strdisplaywidth(line)
     local height = vim.o.lines - vim.o.cmdheight - 1
-    local left_pad = math.max(math.floor((width - vim.fn.strdisplaywidth(line)) / 2), 0)
-    local top_pad = math.max(math.floor(height / 2), 0)
-    local centered = {}
-    for _ = 1, top_pad do
-        table.insert(centered, "")
+    return {
+        relative = "editor",
+        row = math.max(math.floor(height / 2), 0),
+        col = math.max(math.floor((vim.o.columns - width) / 2), 0),
+        width = width,
+        height = 1,
+        style = "minimal",
+        focusable = false,
+        zindex = 10,
+    }
+end
+
+local function pin_startup_cursor()
+    vim.api.nvim_win_set_cursor(0, { 1, 0 })
+    vim.api.nvim_clear_autocmds({ group = group, event = "CursorMoved", buffer = 0 })
+    vim.api.nvim_create_autocmd("CursorMoved", {
+        group = group,
+        buffer = 0,
+        callback = function()
+            pcall(vim.api.nvim_win_set_cursor, 0, { 1, 0 })
+        end,
+    })
+end
+
+local function close_startup_wisdom()
+    if startup_float.win and vim.api.nvim_win_is_valid(startup_float.win) then
+        vim.api.nvim_win_close(startup_float.win, true)
     end
-    table.insert(centered, string.rep(" ", left_pad) .. line)
-    local message_line = #centered
-    table.insert(centered, "")
-    return centered, message_line
+    if startup_float.buf and vim.api.nvim_buf_is_valid(startup_float.buf) then
+        vim.api.nvim_buf_delete(startup_float.buf, { force = true })
+    end
+    startup_float = {}
+end
+
+local function render_startup_wisdom(bufnr)
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    local line = vim.b[bufnr].startup_wisdom
+    if not line then
+        return
+    end
+
+    if not startup_float.buf or not vim.api.nvim_buf_is_valid(startup_float.buf) then
+        startup_float.buf = vim.api.nvim_create_buf(false, true)
+    end
+
+    vim.bo[startup_float.buf].modifiable = true
+    vim.api.nvim_buf_set_lines(startup_float.buf, 0, -1, false, { line })
+    vim.api.nvim_buf_clear_namespace(startup_float.buf, startup_wisdom_ns, 0, -1)
+    vim.api.nvim_buf_add_highlight(startup_float.buf, startup_wisdom_ns, "StartupWisdom", 0, 0, -1)
+    vim.bo[startup_float.buf].modifiable = false
+
+    local config = startup_float_config(line)
+    if startup_float.win and vim.api.nvim_win_is_valid(startup_float.win) then
+        vim.api.nvim_win_set_config(startup_float.win, config)
+    else
+        startup_float.win = vim.api.nvim_open_win(startup_float.buf, false, config)
+        vim.wo[startup_float.win].winhl = "NormalFloat:Normal"
+    end
+
+    pin_startup_cursor()
 end
 
 local function is_empty_unnamed_buffer()
@@ -364,20 +417,13 @@ local function is_empty_unnamed_buffer()
     return vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] == ""
 end
 
-local function pin_startup_cursor(line_nr)
-    vim.api.nvim_win_set_cursor(0, { line_nr, 0 })
-    vim.api.nvim_create_autocmd("CursorMoved", {
-        buffer = 0,
-        callback = function()
-            pcall(vim.api.nvim_win_set_cursor, 0, { line_nr, 0 })
-        end,
-    })
-end
-
 local startup_guicursor
 
 local function set_startup_cursor_hidden(hidden)
     if hidden then
+        if startup_guicursor then
+            return
+        end
         startup_guicursor = vim.o.guicursor
         local normal = vim.api.nvim_get_hl(0, { name = "Normal" })
         local bg = normal.bg and string.format("#%06x", normal.bg) or "NONE"
@@ -399,21 +445,26 @@ local function show_startup_wisdom()
     vim.bo.buflisted = false
     vim.bo.swapfile = false
     vim.bo.filetype = "startup"
+    vim.b.startup_wisdom = random_startup_wisdom()
     vim.bo.modifiable = true
-    local lines, message_line = center_startup_line(random_startup_wisdom())
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
-    vim.api.nvim_buf_add_highlight(0, -1, "StartupWisdom", message_line - 1, 0, -1)
-    pin_startup_cursor(message_line + 1)
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "" })
     vim.bo.modifiable = false
+    render_startup_wisdom()
     vim.bo.modified = false
     vim.wo.number = false
     vim.wo.relativenumber = false
     vim.wo.cursorline = false
     vim.wo.signcolumn = "no"
     set_startup_cursor_hidden(true)
+    vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+        buffer = 0,
+        callback = function()
+            set_startup_cursor_hidden(true)
+            vim.wo.cursorline = false
+        end,
+    })
     vim.api.nvim_create_autocmd("BufLeave", {
         buffer = 0,
-        once = true,
         callback = function()
             set_startup_cursor_hidden(false)
             vim.wo.number = true
@@ -422,10 +473,16 @@ local function show_startup_wisdom()
             vim.wo.signcolumn = "yes"
         end,
     })
+    vim.api.nvim_create_autocmd("BufWipeout", {
+        buffer = 0,
+        once = true,
+        callback = close_startup_wisdom,
+    })
     vim.api.nvim_create_autocmd("VimLeavePre", {
         once = true,
         callback = function()
             set_startup_cursor_hidden(false)
+            close_startup_wisdom()
         end,
     })
     vim.keymap.set("n", "q", "<cmd>qa<cr>", { buffer = true, silent = true, desc = "Quit" })
@@ -437,6 +494,21 @@ end
 vim.api.nvim_create_autocmd("VimEnter", {
     group = group,
     callback = show_startup_wisdom,
+})
+
+vim.api.nvim_create_autocmd("WinResized", {
+    group = group,
+    callback = function()
+        for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            local bufnr = vim.api.nvim_win_get_buf(winid)
+            if vim.bo[bufnr].filetype == "startup" then
+                vim.api.nvim_win_call(winid, function()
+                    render_startup_wisdom(bufnr)
+                end)
+                return
+            end
+        end
+    end,
 })
 
 -- nopaste on insert leave
