@@ -1,5 +1,11 @@
 local sidebar_width = 34
 
+local function dismiss_startup_scratch()
+    if _G.mitander_dismiss_startup_scratch then
+        _G.mitander_dismiss_startup_scratch()
+    end
+end
+
 function _G.mitander_oil_statusline()
     local bufnr = vim.api.nvim_win_get_buf(vim.g.statusline_winid or 0)
     local dir = require("oil").get_current_dir(bufnr)
@@ -127,6 +133,8 @@ local function ensure_target_win(sidebar_winid)
 end
 
 local function open_sidebar(path, focus)
+    dismiss_startup_scratch()
+
     local oil = require("oil")
     local source_win = vim.api.nvim_get_current_win()
     local dir = oil_parent_url(path or current_file_path())
@@ -381,6 +389,12 @@ return {
         vim.api.nvim_create_autocmd("WinClosed", {
             group = vim.api.nvim_create_augroup("mitander_oil_last_window", { clear = true }),
             callback = quit_if_only_oil,
+        })
+
+        vim.api.nvim_create_autocmd("FileType", {
+            group = vim.api.nvim_create_augroup("mitander_oil_startup_scratch", { clear = true }),
+            pattern = "oil",
+            callback = dismiss_startup_scratch,
         })
     end,
 }

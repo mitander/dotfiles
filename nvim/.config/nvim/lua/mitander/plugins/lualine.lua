@@ -29,6 +29,12 @@ return {
                         color = { gui = "bold" },
                         path = 1,
                         padding = { right = 1 },
+                        fmt = function(name)
+                            if vim.b.startup_scratch then
+                                return "[No Name]"
+                            end
+                            return name
+                        end,
                     },
                 },
                 lualine_x = {
@@ -86,6 +92,12 @@ return {
                         path = 1,
                         colors = { gui = "bold " },
                         color = { link = "LineNr" },
+                        fmt = function(name)
+                            if vim.b.startup_scratch then
+                                return "Scratch"
+                            end
+                            return name
+                        end,
                     },
                 },
                 lualine_x = {},

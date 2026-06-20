@@ -1,3 +1,14 @@
+local function dismiss_startup_scratch()
+    if _G.mitander_dismiss_startup_scratch then
+        _G.mitander_dismiss_startup_scratch()
+    end
+end
+
+local function picker()
+    dismiss_startup_scratch()
+    return require("fzf-lua")
+end
+
 local function git_root()
     if vim.fn.executable("git") ~= 1 then
         return nil
@@ -10,7 +21,7 @@ local function git_root()
 end
 
 local function project_files()
-    require("fzf-lua").files({
+    picker().files({
         no_resume = true,
         previewer = false,
         cwd = git_root() or vim.fn.getcwd(),
@@ -20,7 +31,7 @@ end
 local fd_exists = vim.fn.executable("fd") == 1
 
 local function all_files()
-    require("fzf-lua").files({
+    picker().files({
         no_resume = true,
         previewer = false,
         fd_opts = fd_exists and "--no-ignore --color=never --type f --hidden --follow --exclude .git" or nil,
@@ -251,6 +262,7 @@ return {
         vim.ui.select = function(items, opts, on_choice)
             vim.ui.select = select
             require("lazy").load({ plugins = { "fzf-lua" } })
+            dismiss_startup_scratch()
             vim.ui.select(items, opts, on_choice)
         end
     end,
@@ -260,21 +272,21 @@ return {
         {
             "<c-f>",
             function()
-                require("fzf-lua").live_grep({ resume = true })
+                picker().live_grep({ resume = true })
             end,
             desc = "Live grep session",
         },
         {
             "<c-b>",
             function()
-                require("fzf-lua").buffers()
+                picker().buffers()
             end,
             desc = "Buffers",
         },
         {
             "<leader>h",
             function()
-                require("fzf-lua").help_tags()
+                picker().help_tags()
             end,
             desc = "Help tags",
         },
@@ -282,49 +294,49 @@ return {
         {
             "<leader>gl",
             function()
-                require("fzf-lua").git_commits()
+                picker().git_commits()
             end,
             desc = "Git log",
         },
         {
             "<leader>gL",
             function()
-                require("fzf-lua").git_commits()
+                picker().git_commits()
             end,
             desc = "Git commits picker",
         },
         {
             "<leader>gb",
             function()
-                require("fzf-lua").git_branches()
+                picker().git_branches()
             end,
             desc = "Git branches",
         },
         {
             "<leader>gc",
             function()
-                require("fzf-lua").git_bcommits()
+                picker().git_bcommits()
             end,
             desc = "Buffer commits",
         },
         {
             "<leader>gh",
             function()
-                require("fzf-lua").git_bcommits()
+                picker().git_bcommits()
             end,
             desc = "Current file history",
         },
         {
             "<leader>gH",
             function()
-                require("fzf-lua").git_commits()
+                picker().git_commits()
             end,
             desc = "Repo history",
         },
         {
             "<leader>p",
             function()
-                require("fzf-lua").tmux_buffers()
+                picker().tmux_buffers()
             end,
             desc = "Tmux buffers",
         },
@@ -459,5 +471,11 @@ return {
                 },
             })
         end
+
+        vim.api.nvim_create_autocmd("FileType", {
+            group = vim.api.nvim_create_augroup("mitander_fzf_startup_scratch", { clear = true }),
+            pattern = { "fzf", "fzf-lua" },
+            callback = dismiss_startup_scratch,
+        })
     end,
 }
