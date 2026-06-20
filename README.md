@@ -14,7 +14,7 @@ DOTFILES_SKIP_TPM=1 ./install.sh        # skip tmux plugin manager clone
 The installer:
 
 1. installs dependencies when a supported package manager is present
-2. clones the Flume theme repo to `~/c/p/flume` when missing
+2. clones the Flume theme repo to `~/c/p/flume.nvim` when missing
 3. symlinks config files into `$HOME`
 4. installs tmux plugin manager
 5. syncs neovim plugins

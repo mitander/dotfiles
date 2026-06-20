@@ -52,7 +52,6 @@ return {
                     {
                         "branch",
                         icon = "",
-                        color = { fg = colors.green, bg = colors.surface_alt, gui = "bold" },
                         padding = { right = 1 },
                         fmt = function(name)
                             if name == "master" or name == "main" or name == "" then
@@ -76,7 +75,7 @@ return {
                     },
                     {
                         "location",
-                        color = { fg = colors.cyan, gui = "bold" },
+                        color = { fg = colors.accent, gui = "bold" },
                         padding = { right = 1 },
                     },
                 },

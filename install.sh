@@ -229,7 +229,7 @@ ensure_dotfiles_alias() {
 }
 
 ensure_theme_repo() {
-  local theme_dir="$HOME/c/p/flume"
+  local theme_dir="$HOME/c/p/flume.nvim"
   mkdir -p "$(dirname "$theme_dir")" "$DOTFILES_DIR/themes"
 
   if [[ ! -d "$theme_dir/.git" ]]; then
@@ -237,7 +237,7 @@ ensure_theme_repo() {
       warn "$theme_dir exists but is not a git repo; leaving theme setup untouched"
     else
       log "Cloning flume theme repo"
-      git clone https://github.com/mitander/flume.git "$theme_dir"
+      git clone https://github.com/mitander/flume.nvim.git "$theme_dir"
     fi
   fi
 
@@ -245,12 +245,12 @@ ensure_theme_repo() {
     if [[ -e "$DOTFILES_DIR/themes/flume" ]]; then
       warn "$DOTFILES_DIR/themes/flume exists and is not a symlink; leaving it untouched"
     else
-      ln -s ../../c/p/flume "$DOTFILES_DIR/themes/flume"
+      ln -s ../../c/p/flume.nvim "$DOTFILES_DIR/themes/flume"
     fi
   fi
 
-  [[ -f "$DOTFILES_DIR/themes/flume/ghostty/flume" ]] || warn "Flume Ghostty theme missing: $DOTFILES_DIR/themes/flume/ghostty/flume"
-  [[ -f "$DOTFILES_DIR/themes/flume/tmux/colors.conf" ]] || warn "Flume tmux colors missing: $DOTFILES_DIR/themes/flume/tmux/colors.conf"
+  [[ -f "$DOTFILES_DIR/themes/flume/extras/ghostty/flume" ]] || warn "Flume Ghostty theme missing: $DOTFILES_DIR/themes/flume/ghostty/flume"
+  [[ -f "$DOTFILES_DIR/themes/flume/extras/tmux/colors.conf" ]] || warn "Flume tmux colors missing: $DOTFILES_DIR/themes/flume/tmux/colors.conf"
 }
 
 install_tpm() {
