@@ -184,12 +184,6 @@ local function reveal_in_sidebar()
     open_sidebar(current_file_path(), true)
 end
 
-local function move_pane(method)
-    return function()
-        require("tmux")[method]()
-    end
-end
-
 local function select_entry(opts)
     opts = opts or {}
     local oil = require("oil")
@@ -290,31 +284,8 @@ return {
                 desc = "Select entry (double click)",
             },
             ["<bs>"] = "actions.parent",
-            ["<C-h>"] = {
-                callback = move_pane("move_left"),
-                desc = "Move to left pane",
-                mode = "n",
-            },
-            ["<C-j>"] = {
-                callback = move_pane("move_bottom"),
-                desc = "Move to lower pane",
-                mode = "n",
-            },
-            ["<C-k>"] = {
-                callback = move_pane("move_top"),
-                desc = "Move to upper pane",
-                mode = "n",
-            },
-            ["<C-w>k"] = {
-                callback = move_pane("move_top"),
-                desc = "Move to upper pane (fallback)",
-                mode = "n",
-            },
-            ["<C-l>"] = {
-                callback = move_pane("move_right"),
-                desc = "Move to right pane",
-                mode = "n",
-            },
+            ["<C-h>"] = false,
+            ["<C-l>"] = false,
             ["<C-p>"] = false,
             ["<C-n>"] = {
                 callback = close_oil,

@@ -42,6 +42,44 @@ local function open_shell_popup()
     end
 end
 
+local directions = {
+    h = { edge = "pane_at_left", tmux = "L" },
+    j = { edge = "pane_at_bottom", tmux = "D" },
+    k = { edge = "pane_at_top", tmux = "U" },
+    l = { edge = "pane_at_right", tmux = "R" },
+}
+
+local function tmux_navigate(direction)
+    local current = vim.fn.win_getid()
+    local target = vim.fn.win_getid(vim.fn.winnr("1" .. direction))
+    if target ~= 0 and target ~= current then
+        vim.fn.win_gotoid(target)
+        return
+    end
+
+    if not vim.env.TMUX or vim.fn.executable("tmux") ~= 1 then
+        return
+    end
+
+    local spec = directions[direction]
+    if not spec then
+        return
+    end
+
+    local at_edge = vim.fn.system({ "tmux", "display-message", "-p", "#{" .. spec.edge .. "}" }):gsub("%s+", "")
+    if vim.v.shell_error ~= 0 or at_edge == "1" then
+        return
+    end
+
+    vim.fn.system({ "tmux", "select-pane", "-" .. spec.tmux })
+end
+
+local function navigate(direction)
+    return function()
+        tmux_navigate(direction)
+    end
+end
+
 return {
     "aserowy/tmux.nvim",
     event = "VeryLazy",
@@ -57,10 +95,14 @@ return {
             desc = "Tmux new pi split",
         },
         { "<leader>Tp", open_shell_popup, desc = "Tmux shell popup" },
-        { "<C-w>h", function() require("tmux").move_left() end, desc = "Tmux navigate left" },
-        { "<C-w>j", function() require("tmux").move_bottom() end, desc = "Tmux navigate down" },
-        { "<C-w>k", function() require("tmux").move_top() end, desc = "Tmux navigate up" },
-        { "<C-w>l", function() require("tmux").move_right() end, desc = "Tmux navigate right" },
+        { "<C-h>", navigate("h"), desc = "Tmux navigate left" },
+        { "<C-j>", navigate("j"), desc = "Tmux navigate down" },
+        { "<C-k>", navigate("k"), desc = "Tmux navigate up" },
+        { "<C-l>", navigate("l"), desc = "Tmux navigate right" },
+        { "<C-w>h", navigate("h"), desc = "Tmux navigate left" },
+        { "<C-w>j", navigate("j"), desc = "Tmux navigate down" },
+        { "<C-w>k", navigate("k"), desc = "Tmux navigate up" },
+        { "<C-w>l", navigate("l"), desc = "Tmux navigate right" },
     },
     opts = {
         copy_sync = {
@@ -74,7 +116,7 @@ return {
         },
         navigation = {
             cycle_navigation = false,
-            enable_default_keybindings = true,
+            enable_default_keybindings = false,
         },
         resize = {
             enable_default_keybindings = true,
