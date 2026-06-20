@@ -1,6 +1,6 @@
 return {
     "saghen/blink.cmp",
-    event = "InsertEnter",
+    event = { "InsertEnter", "CmdlineEnter" },
     dependencies = "rafamadriz/friendly-snippets",
     version = "v0.*",
     opts = {
@@ -23,6 +23,15 @@ return {
         sources = {
             default = { "lsp", "path", "snippets", "buffer" },
             providers = {
+                cmdline = {
+                    min_keyword_length = function(ctx)
+                        -- Avoid noisy/flickery suggestions for short commands like :q, :w, :wq.
+                        if ctx.mode == "cmdline" and not ctx.line:find(" ") then
+                            return 3
+                        end
+                        return 0
+                    end,
+                },
                 buffer = {
                     name = "Buffer",
                     module = "blink.cmp.sources.buffer",
@@ -45,6 +54,15 @@ return {
                 lsp = {
                     name = "LSP",
                     module = "blink.cmp.sources.lsp",
+                },
+            },
+        },
+        cmdline = {
+            completion = {
+                menu = {
+                    auto_show = function()
+                        return vim.fn.getcmdtype() == ":"
+                    end,
                 },
             },
         },
