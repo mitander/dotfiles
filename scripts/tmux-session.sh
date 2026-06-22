@@ -8,9 +8,9 @@ usage() {
 command -v tmux >/dev/null 2>&1 || { echo "tmux not found" >&2; exit 127; }
 
 if [[ -n "${TMUX:-}" ]] && command -v fzf-tmux >/dev/null 2>&1; then
-  picker=(fzf-tmux -p 80%,70% --header='Select a tmux session.')
+  picker=(fzf-tmux -p 80%,70% --header='Select a tmux session. Click a session to switch, or click outside to cancel.' --bind 'left-click:accept')
 elif command -v fzf >/dev/null 2>&1; then
-  picker=(fzf --header='Select a tmux session.')
+  picker=(fzf --header='Select a tmux session. Click a session to switch.' --bind 'left-click:accept')
 else
   echo "fzf not found" >&2
   exit 127
