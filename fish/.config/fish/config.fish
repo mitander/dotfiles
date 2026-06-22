@@ -156,7 +156,9 @@ test -r $HOME/.custom.fish; and source $HOME/.custom.fish
 test -f ~/.config/fish/scripts/fish-autosuggestions.fish; and source ~/.config/fish/scripts/fish-autosuggestions.fish
 
 # fzf
-command -q fzf; and fzf --fish | source
+if command -q fzf
+    fzf --fish 2>/dev/null | source
+end
 
 # atuin
 command -q atuin; and atuin init fish --disable-up-arrow | source

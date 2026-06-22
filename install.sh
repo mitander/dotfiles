@@ -127,7 +127,7 @@ install_lazygit_release() {
   tmp="$(mktemp -d)"
   log "Installing latest lazygit release to ~/.local/bin"
   api="$(curl -fsSL https://api.github.com/repos/jesseduffield/lazygit/releases/latest || true)"
-  url="$(printf '%s\n' "$api" | grep -o 'https://[^" ]*linux_'"$arch"'\.tar\.gz' | head -n1)"
+  url="$(printf '%s\n' "$api" | grep -o 'https://[^" ]*linux_'"$arch"'\.tar\.gz' | head -n1 || true)"
   if [[ -z "$url" ]]; then
     warn "Could not find lazygit linux_$arch release asset"
     rm -rf "$tmp"
@@ -140,6 +140,56 @@ install_lazygit_release() {
     install -m 0755 "$tmp/lazygit" "$HOME/.local/bin/lazygit"
   else
     warn "Could not download lazygit release"
+  fi
+  rm -rf "$tmp"
+}
+
+fzf_has_shell_integration() {
+  have fzf || return 1
+  fzf --bash >/dev/null 2>&1 && fzf --fish >/dev/null 2>&1
+}
+
+install_fzf_release_if_needed() {
+  [[ "$(uname -s)" == Linux ]] || return 0
+  fzf_has_shell_integration && return 0
+  have curl || {
+    warn "curl not found; cannot install modern fzf release"
+    return 0
+  }
+
+  local arch tmp api url
+  case "$(uname -m)" in
+    x86_64 | amd64) arch=amd64 ;;
+    aarch64 | arm64) arch=arm64 ;;
+    armv5*) arch=armv5 ;;
+    armv6*) arch=armv6 ;;
+    armv7*) arch=armv7 ;;
+    ppc64le) arch=ppc64le ;;
+    riscv64) arch=riscv64 ;;
+    s390x) arch=s390x ;;
+    loongarch64) arch=loong64 ;;
+    *)
+      warn "Unsupported fzf release architecture: $(uname -m)"
+      return 0
+      ;;
+  esac
+
+  tmp="$(mktemp -d)"
+  log "Installing latest fzf release to ~/.local/bin"
+  api="$(curl -fsSL https://api.github.com/repos/junegunn/fzf/releases/latest || true)"
+  url="$(printf '%s\n' "$api" | grep -o 'https://[^" ]*linux_'"$arch"'\.tar\.gz' | head -n1 || true)"
+  if [[ -z "$url" ]]; then
+    warn "Could not find fzf linux_$arch release asset"
+    rm -rf "$tmp"
+    return 0
+  fi
+
+  if curl -fL "$url" -o "$tmp/fzf.tar.gz"; then
+    tar -C "$tmp" -xzf "$tmp/fzf.tar.gz" fzf
+    mkdir -p "$HOME/.local/bin"
+    install -m 0755 "$tmp/fzf" "$HOME/.local/bin/fzf"
+  else
+    warn "Could not download fzf release"
   fi
   rm -rf "$tmp"
 }
@@ -307,6 +357,7 @@ main() {
   ensure_linux_aliases
   ensure_local_bin_path
   install_modern_neovim
+  install_fzf_release_if_needed
   install_lazygit_release
   ensure_dotfiles_alias
   ensure_theme_repo
