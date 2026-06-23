@@ -95,6 +95,27 @@ vim.keymap.set("c", "<esc>b", "<s-left>")
 vim.keymap.set("c", "<esc>f", "<s-right>")
 vim.keymap.set("c", "<esc>d", "<s-right><delete>")
 vim.keymap.set("c", "<c-g>", "<c-c>")
+vim.keymap.set("c", "<enter>", function()
+    local cmdtype = vim.fn.getcmdtype()
+    if cmdtype ~= "/" and cmdtype ~= "?" then
+        return "<cr>"
+    end
+
+    local pattern = vim.fn.getcmdline()
+    if pattern == "" then
+        return "<cr>"
+    end
+
+    local flags = cmdtype == "?" and "bn" or "n"
+    local ok, line = pcall(vim.fn.search, pattern, flags)
+    if ok and line == 0 then
+        pcall(vim.fn.histadd, cmdtype, pattern)
+        vim.fn.setreg("/", pattern)
+        return "<c-c>"
+    end
+
+    return "<cr>"
+end, { expr = true, desc = "Cancel failed searches silently" })
 
 -- better line navigation
 vim.keymap.set("n", "j", "gj")
