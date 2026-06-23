@@ -74,12 +74,12 @@ workspace_mode_label() {
 
 workspace_mode_color() {
     case "$1" in
-    vim) printf '#569fba' ;;   # blue
-    pi) printf '#c4a7e7' ;;    # pink
-    git) printf '#f6c177' ;;   # yellow
-    shell) printf '#a3be8c' ;; # green
-    shell2) printf '#9ccfd8' ;; # cyan
-    *) printf '#e0def4' ;;
+    vim) printf '#6aa6bc' ;;    # accent
+    pi) printf '#b99add' ;;     # magenta
+    git) printf '#d8b574' ;;    # yellow
+    shell) printf '#a3be8c' ;;  # green
+    shell2) printf '#8fc9d2' ;; # cyan
+    *) printf '#d6d2e8' ;;      # text
     esac
 }
 
