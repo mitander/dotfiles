@@ -292,6 +292,13 @@ return {
         },
 
         {
+            "<leader>gs",
+            function()
+                picker().git_status()
+            end,
+            desc = "Git status (modified files)",
+        },
+        {
             "<leader>gl",
             function()
                 picker().git_commits()

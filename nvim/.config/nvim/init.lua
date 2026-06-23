@@ -230,7 +230,7 @@ vim.keymap.set("n", "<leader>rl", function()
 
     -- 2. Clear cached custom user configs
     for name, _ in pairs(package.loaded) do
-        if name:match("^mitander") or name:match("^flume") or name:match("^git_review") then
+        if name:match("^mitander") or name:match("^flume") then
             local is_spec = name:match("^mitander%.plugins%.")
             local spec_filename = is_spec and (name:gsub("^mitander%.plugins%.", "") .. ".lua")
 
