@@ -185,6 +185,10 @@ _G.plugin_spec_mtimes = _G.plugin_spec_mtimes or get_plugin_mtimes()
 
 -- reload configuration
 vim.keymap.set("n", "<leader>rl", function()
+    -- Automatically save all buffers and sync external changes to prevent prompts
+    vim.cmd("silent! wa")
+    pcall(vim.cmd, "checktime")
+
     -- 1. Scan lua/mitander/plugins/ to find changed spec files
     local plugins_dir = vim.fn.stdpath("config") .. "/lua/mitander/plugins"
     local plugin_names = {}
@@ -294,9 +298,13 @@ vim.keymap.set("n", "<leader>rl", function()
     -- 5. Reload init.lua
     dofile(vim.env.MYVIMRC)
 
-    -- 6. Reload flume colorscheme
+    -- 6. Reload flume colorscheme and generated external themes.
+    -- flume.reload() recompiles extras and only reloads Ghostty/Tmux when
+    -- their generated files actually changed.
     local ok, flume = pcall(require, "flume")
-    if ok then
+    if ok and type(flume.reload) == "function" then
+        pcall(flume.reload)
+    elseif ok then
         pcall(flume.setup)
     else
         pcall(vim.cmd, "colorscheme flume")
@@ -624,6 +632,22 @@ vim.api.nvim_create_autocmd("BufEnter", {
         end
         if root_cache[path] then
             vim.api.nvim_set_current_dir(root_cache[path])
+        end
+    end,
+})
+
+-- Auto-compile flume theme and reload external apps on write
+vim.api.nvim_create_autocmd("BufWritePost", {
+    group = group,
+    pattern = "*/flume.nvim/lua/flume/*.lua",
+    callback = function()
+        local ok, flume = pcall(require, "flume")
+        if ok and type(flume.reload) == "function" then
+            pcall(flume.reload)
+        elseif ok then
+            pcall(flume.setup)
+        else
+            pcall(vim.cmd, "colorscheme flume")
         end
     end,
 })

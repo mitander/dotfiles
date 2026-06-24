@@ -15,7 +15,7 @@ end
 
 alias so "source ~/.config/fish/config.fish"
 alias :q exit
-command -q tree; and alias tree "tree --gitignore"
+command -q tree; and alias tree "ls --tree"
 
 test -x ./zig/zig; and alias zig "./zig/zig"
 
