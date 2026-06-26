@@ -76,24 +76,35 @@ function collectUsage(ctx: any): { input: number; output: number; cost: number }
 	return { input, output, cost };
 }
 
-function contextLabel(ctx: any): { text: string; color: string } | undefined {
-	const usage = ctx.getContextUsage?.();
-	const tokens = usage?.tokens;
-	if (typeof tokens !== "number" || !Number.isFinite(tokens)) return undefined;
+const CONTEXT_WARNING_PERCENT = 70;
+const CONTEXT_DANGER_PERCENT = 90;
 
-	const window = ctx.model?.contextWindow;
-	if (typeof window === "number" && window > 0) {
-		const percent = Math.round((tokens / window) * 100);
-		let color = "thinkingMedium";
-		if (percent >= 90) {
-			color = "error";
-		} else if (percent >= 70) {
-			color = "warning";
-		}
+function contextLabel(ctx: any): { text: string; color: string } {
+	const usage = ctx.getContextUsage?.();
+	const usagePercent = usage?.percent;
+	const tokens = usage?.tokens;
+	const window = usage?.contextWindow ?? ctx.model?.contextWindow;
+
+	if (typeof usagePercent === "number" && Number.isFinite(usagePercent)) {
+		const percent = Math.round(usagePercent);
+		const color = percent >= CONTEXT_DANGER_PERCENT ? "error" : percent >= CONTEXT_WARNING_PERCENT ? "warning" : "muted";
 		return { text: `ctx ${percent}%`, color };
 	}
 
-	return { text: `ctx ${fmtNumber(tokens)}`, color: "thinkingMedium" };
+	if (typeof tokens === "number" && Number.isFinite(tokens)) {
+		return { text: `ctx ${fmtNumber(tokens)}`, color: "muted" };
+	}
+
+	if (typeof window === "number" && window > 0) {
+		return { text: "ctx ?%", color: "muted" };
+	}
+
+	return { text: "ctx ?", color: "muted" };
+}
+
+function isContextStatus(value: string): boolean {
+	const plain = value.replace(ANSI_PATTERN, "").trim();
+	return /^(?:⚠\s*)?(?:ctx|Context)\s+(?:\d+(?:\.\d+)?|\?)%?/i.test(plain);
 }
 
 function phaseColor(): string {
@@ -151,17 +162,21 @@ function renderFooterLine(width: number, ctx: any, theme: any, footerData: any):
 	const cwd = basename(ctx.cwd) || ctx.cwd;
 	const branch = footerData.getGitBranch();
 	const statuses = Array.from(footerData.getExtensionStatuses().values()).filter(
-		(value): value is string => typeof value === "string" && value.length > 0,
+		(value): value is string => typeof value === "string" && value.length > 0 && !isContextStatus(value),
 	);
 	const ctxText = contextLabel(ctx);
 	const sep = theme.fg("borderMuted", " │ ");
 
 	const location = branch ? theme.fg("success", branch) : theme.fg("accent", cwd);
-	const left = [theme.fg("accent", "π"), `${phaseIndicator(theme)} ${phaseLabel(theme)}`, location].join(sep);
+	const left = [
+		theme.fg("accent", "π"),
+		`${phaseIndicator(theme)} ${phaseLabel(theme)}`,
+		location,
+		theme.fg(ctxText.color, ctxText.text),
+	].join(sep);
 
 	const right = [
 		theme.fg("syntaxKeyword", modelLabel(ctx)),
-		ctxText ? theme.fg(ctxText.color, ctxText.text) : undefined,
 		theme.fg("muted", `↑${fmtNumber(usage.input)} ↓${fmtNumber(usage.output)}`),
 		usage.cost > 0 ? theme.fg("warning", `$${usage.cost.toFixed(3)}`) : undefined,
 	]
