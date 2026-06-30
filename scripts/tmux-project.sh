@@ -69,7 +69,7 @@ workspace_mode_label() {
     vim) printf 'edit' ;;
     pi) printf 'agent' ;;
     git) printf 'git' ;;
-    tuxedo) printf 'tasks' ;;
+    tuxedo) printf 'todo' ;;
     shell) printf 'term' ;;
     shell2) printf 'term2' ;;
     run) printf 'run' ;;
@@ -864,8 +864,8 @@ git_window() {
     tmux select-window -t "$window_id"
 }
 
-tuxedo_popup() {
-    local cwd="${1:-$PWD}" root todo_file cmd tuxedo_args=()
+tuxedo_window() {
+    local cwd="${1:-$PWD}" root todo_file cmd tuxedo_args=() session target name window_id pane_id
     require_dir "$cwd"
     command -v tuxedo >/dev/null 2>&1 || {
         echo "tuxedo not found" >&2
@@ -891,14 +891,97 @@ tuxedo_popup() {
         exec tuxedo "${tuxedo_args[@]}"
     fi
 
-    tmux display-popup -E \
-        -d "$root" \
-        -w "${TUXEDO_TMUX_POPUP_WIDTH:-90%}" \
-        -h "${TUXEDO_TMUX_POPUP_HEIGHT:-85%}" \
-        -s "bg=#232136,fg=#c9c5d9" \
-        -S "fg=#6aa6bc,bg=#232136" \
-        -T " tuxedo " \
-        "$cmd"
+    session="$(tmux display-message -p '#S')"
+    local format='#{window_id}|#{@workspace_mode}|#{@tuxedo_root}'
+    target="$(tmux list-windows -t "$session" -F "$format" |
+        awk -F '|' -v root="$root" '$2 == "tuxedo" || $3 == root { print $1; exit }')"
+
+    name="todo"
+
+    if [[ -n "$target" ]]; then
+        tmux rename-window -t "$target" "$name"
+        set_window_workspace_mode "$target" tuxedo "$root"
+        tmux set-option -w -t "$target" @tuxedo_root "$root" >/dev/null
+        pane_id="$(active_pane_in_window "$target")"
+        [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" tuxedo "$root"
+        tmux select-window -t "$target"
+        return
+    fi
+
+    window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root" "$cmd")"
+    set_window_workspace_mode "$window_id" tuxedo "$root"
+    pane_id="$(active_pane_in_window "$window_id")"
+    [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" tuxedo "$root"
+    tmux set-option -w -t "$window_id" @tuxedo_root "$root" >/dev/null
+    tmux select-window -t "$window_id"
+}
+
+open_todo_ref() {
+    local cwd="${1:-$PWD}" session session_id tux_pane cursor_y lines=() line ref_file root full_path server
+    require_dir "$cwd"
+    if ! in_tmux; then
+        echo "open-todo-ref requires tmux" >&2
+        exit 2
+    fi
+
+    session="$(tmux display-message -p '#S')"
+    session_id="$(tmux display-message -p '#{session_id}')"
+    tux_pane="$(tmux list-panes -s -t "$session" -F '#{pane_id} #{@workspace_pane_role}' | awk '$2 == "tuxedo" {print $1; exit}')"
+    if [[ -z "$tux_pane" ]]; then
+        tmux display-message "No active todo (tuxedo) pane found"
+        exit 0
+    fi
+
+    cursor_y="$(tmux display-message -t "$tux_pane" -p '#{cursor_y}')"
+    while IFS= read -r line; do
+        lines+=("$line")
+    done < <(tmux capture-pane -t "$tux_pane" -p)
+
+    ref_file=""
+    for l in "${lines[@]}"; do
+        if [[ "$l" =~ [▸›] ]] && [[ "$l" =~ ref:([a-zA-Z0-9_/.-]+) ]]; then
+            ref_file="${BASH_REMATCH[1]}"
+            break
+        fi
+    done
+
+    if [[ -z "$ref_file" ]]; then
+        line="${lines[$cursor_y]}"
+        if [[ "$line" =~ ref:([a-zA-Z0-9_/.-]+) ]]; then
+            ref_file="${BASH_REMATCH[1]}"
+        fi
+    fi
+
+    if [[ -z "$ref_file" ]]; then
+        for l in "${lines[@]}"; do
+            if [[ "$l" =~ ref:([a-zA-Z0-9_/.-]+) ]]; then
+                ref_file="${BASH_REMATCH[1]}"
+                break
+            fi
+        done
+    fi
+
+    if [[ -z "$ref_file" ]]; then
+        tmux display-message "No ref: path found on screen"
+        exit 0
+    fi
+
+    root="$(tmux display-message -t "$tux_pane" -p '#{@workspace_root}')"
+    [[ -n "$root" ]] || root="$(workspace_root "$cwd")"
+
+    full_path="$root/$ref_file"
+    if [[ ! -f "$full_path" ]]; then
+        tmux display-message "File not found: $ref_file"
+        exit 0
+    fi
+
+    server="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/tmux-project-${UID:-$(id -u)}/nvim-$(hash_key "${TMUX%%,*}:$session_id:$root").sock"
+    if [[ -S "$server" ]]; then
+        env TMUX_EDIT_BYPASS=1 nvim --server "$server" --remote "$full_path" >/dev/null 2>&1
+        vim_window "$cwd"
+    else
+        vim_window "$cwd" "$full_path"
+    fi
 }
 
 git_split() {
@@ -978,7 +1061,8 @@ vim-open)
     ;;
 git | lazygit) git_window "${1:-$PWD}" ;;
 git-split | lazygit-split) git_split "${1:-$PWD}" ;;
-tuxedo | tasks | task) tuxedo_popup "${1:-$PWD}" ;;
+tuxedo | tasks | task | todo) tuxedo_window "${1:-$PWD}" ;;
+open-todo-ref) open_todo_ref "${1:-$PWD}" ;;
 run-focused)
     cwd="${1:-$PWD}"
     tmux split-window -h -c "$cwd" "drun; exec fish"

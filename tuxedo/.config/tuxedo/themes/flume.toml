@@ -1,0 +1,27 @@
+# Flume theme for Tuxedo.
+name = Flume
+bg = #232136
+panel = #29263b
+border = #4f4a66
+fg = #d6d2e8
+dim = #8a85a6
+accent = #6aa6bc
+cursor = #3b3654
+selection = #3b3654
+statusbar = #312d46
+status_fg = #d6d2e8
+mode_fg = #232136
+mode_bg = #6aa6bc
+pri_a = #d47b86
+pri_b = #d8b574
+pri_c = #a3be8c
+pri_d = #6fa8dc
+pri_other = #b99add
+project = #8fc9d2
+context = #b99add
+due = #d8b574
+overdue = #d47b86
+today = #e18a94
+done = #67627d
+selected = #3b3654
+matched = #d8b574

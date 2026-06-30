@@ -94,6 +94,7 @@ return {
             end,
             desc = "Tmux new pi split",
         },
+        { "<leader>Tt", open_project_role("tuxedo"), desc = "Tmux project todo window" },
         { "<leader>Tp", open_shell_popup, desc = "Tmux shell popup" },
         { "<C-h>", navigate("h"), desc = "Tmux navigate left" },
         { "<C-j>", navigate("j"), desc = "Tmux navigate down" },
