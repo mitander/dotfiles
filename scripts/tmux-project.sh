@@ -22,6 +22,9 @@ commands:
   normalize-layout [target-window]
   git [cwd]
   git-split [cwd]
+  tuxedo|tasks [cwd]
+  run-focused [cwd]
+  run-tests [cwd]
 EOF
 }
 
@@ -66,8 +69,10 @@ workspace_mode_label() {
     vim) printf 'edit' ;;
     pi) printf 'agent' ;;
     git) printf 'git' ;;
+    tuxedo) printf 'tasks' ;;
     shell) printf 'term' ;;
     shell2) printf 'term2' ;;
+    run) printf 'run' ;;
     *) printf '%s' "$1" ;;
     esac
 }
@@ -77,8 +82,10 @@ workspace_mode_color() {
     vim) printf '#6aa6bc' ;;    # accent
     pi) printf '#b99add' ;;     # magenta
     git) printf '#d8b574' ;;    # yellow
+    tuxedo) printf '#8fc9d2' ;; # cyan
     shell) printf '#a3be8c' ;;  # green
     shell2) printf '#8fc9d2' ;; # cyan
+    run) printf '#d8b574' ;;    # yellow
     *) printf '#d6d2e8' ;;      # text
     esac
 }
@@ -211,6 +218,43 @@ quote_argv() {
     done
 }
 
+ensure_tuxedo_flume_theme() {
+    local config_home tuxedo_dir theme_dir theme_src theme_dst config_file tmp
+
+    config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+    tuxedo_dir="$config_home/tuxedo"
+    theme_dir="$tuxedo_dir/themes"
+    theme_src="$DOTFILES_DIR/tuxedo/.config/tuxedo/themes/flume.toml"
+    theme_dst="$theme_dir/flume.toml"
+    config_file="$tuxedo_dir/config.toml"
+
+    [[ -f "$theme_src" ]] || return 0
+
+    mkdir -p "$theme_dir"
+    ln -sfn "$theme_src" "$theme_dst" 2>/dev/null || cp "$theme_src" "$theme_dst"
+
+    if [[ -f "$config_file" ]]; then
+        tmp="$(mktemp "${TMPDIR:-/tmp}/tuxedo-config.XXXXXX")"
+        awk '
+            BEGIN { done = 0 }
+            /^[[:space:]]*theme[[:space:]]*=/ {
+                if (!done) {
+                    print "theme = Flume"
+                    done = 1
+                }
+                next
+            }
+            { print }
+            END {
+                if (!done) print "theme = Flume"
+            }
+        ' "$config_file" >"$tmp"
+        mv "$tmp" "$config_file"
+    else
+        printf '# tuxedo config\ntheme = Flume\n' >"$config_file"
+    fi
+}
+
 hash_key() {
     if command -v shasum >/dev/null 2>&1; then
         printf '%s' "$1" | shasum -a 256 | awk '{ print substr($1, 1, 20) }'
@@ -313,6 +357,11 @@ role_window() {
         name=agent
         command=pi
         ;;
+    run)
+        role=run
+        name=run
+        command=drun
+        ;;
     *)
         echo "unknown role: $role" >&2
         exit 2
@@ -324,6 +373,7 @@ role_window() {
         case "$role" in
         shell | shell2) exec "${SHELL:-fish}" ;;
         pi) exec pi ;;
+        run) if [ -f scripts/db-run.sh ]; then exec ./scripts/db-run.sh; else exec ./zig/zig build run; fi ;;
         esac
     fi
 
@@ -335,6 +385,10 @@ role_window() {
         pane_id="$(active_pane_in_window "$target")"
         [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" "$role" "$root"
         tmux select-window -t "$target"
+        if [[ "$role" == "run" && -n "$pane_id" ]]; then
+            tmux send-keys -t "$pane_id" C-c
+            tmux send-keys -t "$pane_id" "drun" Enter
+        fi
         return
     fi
 
@@ -373,6 +427,34 @@ pi_split() {
     tmux select-window -t "$target"
     tmux select-pane -t "$pane_id"
     tmux send-keys -t "$pane_id" pi Enter
+}
+
+agent_new() {
+    local cwd="${1:-$PWD}" task="${2:-}" root session window_id pane_id name
+    require_dir "$cwd"
+    root="$(workspace_root "$cwd")"
+    
+    if [[ -z "$task" ]]; then
+        task="run"
+    fi
+    
+    if ! in_tmux; then
+        cd "$root"
+        exec pi --name "$task"
+    fi
+    
+    session="$(tmux display-message -p '#S')"
+    name="ai:${task}"
+    
+    window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root")"
+    set_window_workspace_mode "$window_id" pi "$root"
+    tmux set-option -w -t "$window_id" @workspace_mode_label "$name" >/dev/null
+    
+    pane_id="$(active_pane_in_window "$window_id")"
+    [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" pi "$root"
+    tmux select-window -t "$window_id"
+    
+    tmux send-keys -t "$window_id" "pi --name $(shell_quote "$task")" Enter
 }
 
 nvim_runner() {
@@ -656,42 +738,82 @@ promote_pane() {
 }
 
 refresh_status_metadata() {
-    local format session root legacy_root win mode legacy_mode lazygit_root pane pane_role legacy_pane_role pane_root pane_cwd
+    local format session root legacy_root win mode legacy_mode lazygit_root pane pane_role legacy_pane_role pane_root pane_cwd tty cur_cmd
 
     in_tmux || return 0
 
-    format=$'#{session_id}\t#{@workspace_root}\t#{@project_root}'
-    while IFS=$'\t' read -r session root legacy_root; do
+    # 1. Sessions: only set if root is empty/invalid
+    format='#{session_id}|#{@workspace_root}|#{@project_root}'
+    while IFS='|' read -r session root legacy_root; do
         [[ -n "$root" ]] || root="$legacy_root"
-        if [[ -n "$root" && -d "$root" ]]; then
-            set_session_workspace "$session" "$root"
+        if [[ -z "$root" || ! -d "$root" ]]; then
+            # Find the root of the first window's active pane path
+            local first_win_cwd
+            first_win_cwd="$(tmux list-windows -t "$session" -F '#{pane_current_path}' 2>/dev/null | head -n 1 || true)"
+            if [[ -n "$first_win_cwd" && -d "$first_win_cwd" ]]; then
+                root="$(root_for_dir "$first_win_cwd")"
+                set_session_workspace "$session" "$root"
+            fi
         fi
     done < <(tmux list-sessions -F "$format" 2>/dev/null || true)
 
-    format=$'#{window_id}\t#{@workspace_mode}\t#{@project_role}\t#{@workspace_root}\t#{@project_root}\t#{@lazygit_root}'
-    while IFS=$'\t' read -r win mode legacy_mode root legacy_root lazygit_root; do
+    # 2. Windows: only set if mode or root is missing
+    format='#{window_id}|#{@workspace_mode}|#{@project_role}|#{@workspace_root}|#{@project_root}|#{@lazygit_root}'
+    while IFS='|' read -r win mode legacy_mode root legacy_root lazygit_root; do
         [[ -n "$mode" ]] || mode="$legacy_mode"
+        [[ -n "$root" ]] || root="$legacy_root"
+        
+        # If already set, do not set it again
+        if [[ -n "$mode" && -n "$root" ]]; then
+            continue
+        fi
+
         if [[ -z "$mode" && -n "$lazygit_root" ]]; then
             mode=git
+            root="$lazygit_root"
         fi
-        [[ -n "$root" ]] || root="$legacy_root"
-        [[ -n "$root" ]] || root="$lazygit_root"
-        [[ -n "$mode" && -n "$root" ]] || continue
-
-        set_window_workspace_mode "$win" "$mode" "$root"
-        if [[ "$mode" == git ]]; then
-            tmux set-option -w -t "$win" @lazygit_root "$root" >/dev/null
+        
+        if [[ -n "$mode" && -n "$root" ]]; then
+            set_window_workspace_mode "$win" "$mode" "$root"
         fi
     done < <(tmux list-windows -a -F "$format" 2>/dev/null || true)
 
-    format=$'#{pane_id}\t#{@workspace_pane_role}\t#{@project_pane_role}\t#{@workspace_root}\t#{pane_current_path}'
-    while IFS=$'\t' read -r pane pane_role legacy_pane_role pane_root pane_cwd; do
+    # 3. Panes & AI Session Detection
+    local ai_window_list=" "
+    
+    format='#{pane_id}|#{window_id}|#{@workspace_pane_role}|#{@project_pane_role}|#{@workspace_root}|#{pane_current_path}|#{pane_tty}|#{pane_current_command}'
+    while IFS='|' read -r pane win pane_role legacy_pane_role pane_root pane_cwd tty cur_cmd; do
         [[ -n "$pane_role" ]] || pane_role="$legacy_pane_role"
-        [[ -n "$pane_role" ]] || continue
-        [[ -n "$pane_root" && -d "$pane_root" ]] || pane_root="$pane_cwd"
-        [[ -n "$pane_root" && -d "$pane_root" ]] || continue
-        set_pane_workspace_role "$pane" "$pane_role" "$(root_for_dir "$pane_root")"
+        
+        if [[ -n "$pane_role" ]]; then
+            if [[ -z "$pane_root" || ! -d "$pane_root" ]]; then
+                # Only run root_for_dir (which calls git) if pane_root is not set yet
+                pane_root="$(root_for_dir "${pane_cwd:-$PWD}")"
+                set_pane_workspace_role "$pane" "$pane_role" "$pane_root"
+            fi
+        fi
+
+        # AI detection: is this pane running an active AI process?
+        # Check command name or processes under its TTY (fast check)
+        if [[ "$cur_cmd" =~ ^(pi|agy|claude|copilot|gemini)$ ]] || \
+           ( [[ -n "$tty" ]] && ps -o comm= -t "$tty" 2>/dev/null | grep -iqE 'pi|agy|claude|copilot|gemini' ); then
+            if [[ ! " $ai_window_list " =~ " $win " ]]; then
+                ai_window_list="$ai_window_list$win "
+            fi
+        fi
     done < <(tmux list-panes -a -F "$format" 2>/dev/null || true)
+
+    # 4. Apply the AI flags to windows
+    format='#{window_id}|#{@window_has_ai}'
+    while IFS='|' read -r win has_ai; do
+        local target_state=0
+        if [[ " $ai_window_list " =~ " $win " ]]; then
+            target_state=1
+        fi
+        if [[ "$has_ai" != "$target_state" ]]; then
+            tmux set-option -w -t "$win" @window_has_ai "$target_state" >/dev/null
+        fi
+    done < <(tmux list-windows -a -F "$format" 2>/dev/null || true)
 
     return 0
 }
@@ -740,6 +862,43 @@ git_window() {
     [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" git "$root"
     tmux set-option -w -t "$window_id" @lazygit_root "$root" >/dev/null
     tmux select-window -t "$window_id"
+}
+
+tuxedo_popup() {
+    local cwd="${1:-$PWD}" root todo_file cmd tuxedo_args=()
+    require_dir "$cwd"
+    command -v tuxedo >/dev/null 2>&1 || {
+        echo "tuxedo not found" >&2
+        exit 127
+    }
+    ensure_tuxedo_flume_theme
+
+    root="$(workspace_root "$cwd")"
+
+    if [[ -n "${TODO_FILE:-}" || -n "${TODO_DIR:-}" ]]; then
+        tuxedo_args=()
+    elif [[ -f "$root/todo.txt" ]]; then
+        tuxedo_args=("$root/todo.txt")
+    else
+        todo_file="${TUXEDO_TODO_FILE:-$HOME/todo.txt}"
+        mkdir -p "$(dirname "$todo_file")"
+        tuxedo_args=("$todo_file")
+    fi
+    cmd="$(quote_argv tuxedo "${tuxedo_args[@]}")"
+
+    if ! in_tmux; then
+        cd "$root"
+        exec tuxedo "${tuxedo_args[@]}"
+    fi
+
+    tmux display-popup -E \
+        -d "$root" \
+        -w "${TUXEDO_TMUX_POPUP_WIDTH:-90%}" \
+        -h "${TUXEDO_TMUX_POPUP_HEIGHT:-85%}" \
+        -s "bg=#232136,fg=#c9c5d9" \
+        -S "fg=#6aa6bc,bg=#232136" \
+        -T " tuxedo " \
+        "$cmd"
 }
 
 git_split() {
@@ -797,6 +956,8 @@ session | new-session) new_session "${1:-$PWD}" ;;
 shell | sh) role_window shell "${1:-$PWD}" ;;
 shell2 | sh2) role_window shell2 "${1:-$PWD}" ;;
 agent | pi | ai) role_window pi "${1:-$PWD}" ;;
+run) role_window run "${1:-$PWD}" ;;
+agent-new | ai-new) agent_new "${1:-$PWD}" "${2:-}" ;;
 pi-split | agent-split) pi_split "${1:-$PWD}" ;;
 pane-to) pane_to_role "${1:?missing role}" "${2:-$PWD}" ;;
 promote-pane) promote_pane ;;
@@ -817,6 +978,15 @@ vim-open)
     ;;
 git | lazygit) git_window "${1:-$PWD}" ;;
 git-split | lazygit-split) git_split "${1:-$PWD}" ;;
+tuxedo | tasks | task) tuxedo_popup "${1:-$PWD}" ;;
+run-focused)
+    cwd="${1:-$PWD}"
+    tmux split-window -h -c "$cwd" "drun; exec fish"
+    ;;
+run-tests)
+    cwd="${1:-$PWD}"
+    tmux split-window -h -c "$cwd" "dtest run; exec fish"
+    ;;
 __refresh-status) refresh_status_metadata ;;
 __nvim) nvim_runner "$@" ;;
 help | -h | --help) usage ;;
@@ -826,3 +996,4 @@ help | -h | --help) usage ;;
     exit 2
     ;;
 esac
+

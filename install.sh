@@ -3,7 +3,7 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
-PACKAGES=(fish tmux neovim git ripgrep fzf fd bat lsd lazygit zoxide atuin tree stylua shfmt stow)
+PACKAGES=(fish tmux neovim git ripgrep fzf fd bat lsd lazygit tuxedo zoxide atuin tree stylua shfmt stow)
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33mwarn:\033[0m %s\n' "$*" >&2; }
@@ -347,6 +347,7 @@ verify_config_links() {
   verify_link "$HOME/.config/fish/config.fish" "$DOTFILES_DIR/fish/.config/fish/config.fish"
   verify_link "$HOME/.config/ghostty/config" "$DOTFILES_DIR/ghostty/.config/ghostty/config"
   verify_link "$HOME/.config/lsd/config.yaml" "$DOTFILES_DIR/lsd/.config/lsd/config.yaml"
+  verify_link "$HOME/.config/tuxedo/themes/flume.toml" "$DOTFILES_DIR/tuxedo/.config/tuxedo/themes/flume.toml"
   verify_link "$HOME/.pi/agent/themes/flume.json" "$DOTFILES_DIR/pi/.pi/agent/themes/flume.json"
   verify_link "$HOME/.pi/agent/extensions/flume-ui/index.ts" "$DOTFILES_DIR/pi/.pi/agent/extensions/flume-ui/index.ts"
 }
@@ -364,7 +365,7 @@ main() {
 
   log "Linking config"
   require_stow
-  for package in fish ghostty nvim tmux git lazygit stylua lsd lldb pi; do
+  for package in fish ghostty nvim tmux git lazygit tuxedo stylua lsd lldb pi; do
     link_package "$package"
   done
   verify_config_links

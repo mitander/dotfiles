@@ -165,3 +165,36 @@ command -q atuin; and atuin init fish --disable-up-arrow | source
 
 # zoxide
 command -q zoxide; and zoxide init fish | source
+
+# depthbound developer DX helpers
+function drun
+    if test -f scripts/db-run.sh
+        ./scripts/db-run.sh $argv
+    else if test -f build.zig
+        if test -f ./zig/zig
+            ./zig/zig build run $argv
+        else
+            zig build run $argv
+        end
+    else
+        echo "No scripts/db-run.sh or build.zig found in the current directory."
+    end
+end
+
+function dtest
+    if test -f scripts/db-test.py
+        ./scripts/db-test.py $argv
+    else if test -f build.zig
+        if test -f ./zig/zig
+            ./zig/zig build test $argv
+        else
+            zig build test $argv
+        end
+    else
+        echo "No scripts/db-test.py or build.zig found in the current directory."
+    end
+end
+
+abbr -a dr drun
+abbr -a dt dtest
+
