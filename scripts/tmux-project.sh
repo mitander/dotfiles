@@ -40,9 +40,9 @@ require_dir() {
 abspath() { cd "$1" && pwd -P; }
 
 root_for_dir() {
-    local cwd="${1:?missing cwd}"
-    if git -C "$cwd" rev-parse --show-toplevel >/dev/null 2>&1; then
-        git -C "$cwd" rev-parse --show-toplevel
+    local cwd="${1:?missing cwd}" root
+    if root="$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)"; then
+        printf '%s\n' "$root"
     else
         abspath "$cwd"
     fi
@@ -56,12 +56,10 @@ set_session_workspace() {
     local session="${1:?missing session}" root="${2:?missing root}" name
     name="$(workspace_name_for_root "$root")"
 
-    tmux set-option -t "$session" @workspace_root "$root" >/dev/null
-    tmux set-option -t "$session" @workspace_name "$name" >/dev/null
-
-    # Backward-compatible aliases for already-restored sessions/configs.
-    tmux set-option -t "$session" @project_root "$root" >/dev/null
-    tmux set-option -t "$session" @project_name "$name" >/dev/null
+    tmux set-option -q -t "$session" @workspace_root "$root" \; \
+        set-option -q -t "$session" @workspace_name "$name" \; \
+        set-option -q -t "$session" @project_root "$root" \; \
+        set-option -q -t "$session" @project_name "$name"
 }
 
 workspace_mode_label() {
@@ -95,15 +93,13 @@ set_window_workspace_mode() {
     label="$(workspace_mode_label "$mode")"
     color="$(workspace_mode_color "$mode")"
 
-    tmux set-option -w -t "$target" automatic-rename off >/dev/null
-    tmux set-option -w -t "$target" @workspace_mode "$mode" >/dev/null
-    tmux set-option -w -t "$target" @workspace_mode_label "$label" >/dev/null
-    tmux set-option -w -t "$target" @workspace_mode_color "$color" >/dev/null
-    tmux set-option -w -t "$target" @workspace_root "$root" >/dev/null
-
-    # Backward-compatible aliases for scripts that still look for project roles.
-    tmux set-option -w -t "$target" @project_role "$mode" >/dev/null
-    tmux set-option -w -t "$target" @project_root "$root" >/dev/null
+    tmux set-option -wq -t "$target" automatic-rename off \; \
+        set-option -wq -t "$target" @workspace_mode "$mode" \; \
+        set-option -wq -t "$target" @workspace_mode_label "$label" \; \
+        set-option -wq -t "$target" @workspace_mode_color "$color" \; \
+        set-option -wq -t "$target" @workspace_root "$root" \; \
+        set-option -wq -t "$target" @project_role "$mode" \; \
+        set-option -wq -t "$target" @project_root "$root"
 }
 
 set_pane_workspace_role() {
@@ -111,13 +107,11 @@ set_pane_workspace_role() {
     label="$(workspace_mode_label "$role")"
     color="$(workspace_mode_color "$role")"
 
-    tmux set-option -p -t "$target" @workspace_pane_role "$role" >/dev/null
-    tmux set-option -p -t "$target" @workspace_pane_role_label "$label" >/dev/null
-    tmux set-option -p -t "$target" @workspace_pane_role_color "$color" >/dev/null
-    tmux set-option -p -t "$target" @workspace_root "$root" >/dev/null
-
-    # Backward-compatible alias naming.
-    tmux set-option -p -t "$target" @project_pane_role "$role" >/dev/null
+    tmux set-option -pq -t "$target" @workspace_pane_role "$role" \; \
+        set-option -pq -t "$target" @workspace_pane_role_label "$label" \; \
+        set-option -pq -t "$target" @workspace_pane_role_color "$color" \; \
+        set-option -pq -t "$target" @workspace_root "$root" \; \
+        set-option -pq -t "$target" @project_pane_role "$role"
 }
 
 active_pane_in_window() {
@@ -738,7 +732,7 @@ promote_pane() {
 }
 
 refresh_status_metadata() {
-    local format session root legacy_root win mode legacy_mode lazygit_root pane pane_role legacy_pane_role pane_root pane_cwd tty cur_cmd
+    local format session root legacy_root win mode legacy_mode lazygit_root pane pane_role legacy_pane_role pane_root pane_cwd
 
     in_tmux || return 0
 
@@ -778,42 +772,16 @@ refresh_status_metadata() {
         fi
     done < <(tmux list-windows -a -F "$format" 2>/dev/null || true)
 
-    # 3. Panes & AI Session Detection
-    local ai_window_list=" "
-    
-    format='#{pane_id}|#{window_id}|#{@workspace_pane_role}|#{@project_pane_role}|#{@workspace_root}|#{pane_current_path}|#{pane_tty}|#{pane_current_command}'
-    while IFS='|' read -r pane win pane_role legacy_pane_role pane_root pane_cwd tty cur_cmd; do
+    # 3. Panes: only fill missing pane roots after restore.
+    format='#{pane_id}|#{@workspace_pane_role}|#{@project_pane_role}|#{@workspace_root}|#{pane_current_path}'
+    while IFS='|' read -r pane pane_role legacy_pane_role pane_root pane_cwd; do
         [[ -n "$pane_role" ]] || pane_role="$legacy_pane_role"
         
-        if [[ -n "$pane_role" ]]; then
-            if [[ -z "$pane_root" || ! -d "$pane_root" ]]; then
-                # Only run root_for_dir (which calls git) if pane_root is not set yet
-                pane_root="$(root_for_dir "${pane_cwd:-$PWD}")"
-                set_pane_workspace_role "$pane" "$pane_role" "$pane_root"
-            fi
-        fi
-
-        # AI detection: is this pane running an active AI process?
-        # Check command name or processes under its TTY (fast check)
-        if [[ "$cur_cmd" =~ ^(pi|agy|claude|copilot|gemini)$ ]] || \
-           ( [[ -n "$tty" ]] && ps -o comm= -t "$tty" 2>/dev/null | grep -iqE 'pi|agy|claude|copilot|gemini' ); then
-            if [[ ! " $ai_window_list " =~ " $win " ]]; then
-                ai_window_list="$ai_window_list$win "
-            fi
+        if [[ -n "$pane_role" && ( -z "$pane_root" || ! -d "$pane_root" ) ]]; then
+            pane_root="$(root_for_dir "${pane_cwd:-$PWD}")"
+            set_pane_workspace_role "$pane" "$pane_role" "$pane_root"
         fi
     done < <(tmux list-panes -a -F "$format" 2>/dev/null || true)
-
-    # 4. Apply the AI flags to windows
-    format='#{window_id}|#{@window_has_ai}'
-    while IFS='|' read -r win has_ai; do
-        local target_state=0
-        if [[ " $ai_window_list " =~ " $win " ]]; then
-            target_state=1
-        fi
-        if [[ "$has_ai" != "$target_state" ]]; then
-            tmux set-option -w -t "$win" @window_has_ai "$target_state" >/dev/null
-        fi
-    done < <(tmux list-windows -a -F "$format" 2>/dev/null || true)
 
     return 0
 }
