@@ -12,7 +12,7 @@ return {
                     inactive = { c = { fg = colors.placeholder, bg = colors.surface, gui = "bold" } },
                 },
                 disabled_filetypes = {
-                    statusline = { "oil" },
+                    statusline = { "oil", "NvimTree" },
                 },
             },
             sections = {
