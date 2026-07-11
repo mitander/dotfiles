@@ -623,6 +623,10 @@ local root_cache = {}
 vim.api.nvim_create_autocmd("BufEnter", {
     group = group,
     callback = function()
+        if vim.env.NVIM_SCREENSHOT_MODE == "1" then
+            return
+        end
+
         local path = vim.api.nvim_buf_get_name(0)
         if path == "" or vim.bo.buftype ~= "" or path:match("^%w+://") then
             return
