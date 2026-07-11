@@ -212,6 +212,27 @@ quote_argv() {
     done
 }
 
+lazygit_config_files() {
+    local files="" base_config tmux_config
+
+    if [[ -n "${LAZYGIT_CONFIG_FILE:-}" ]]; then
+        files="$LAZYGIT_CONFIG_FILE"
+    else
+        base_config="$DOTFILES_DIR/lazygit/.config/lazygit/config.yml"
+        [[ -f "$base_config" ]] && files="$base_config"
+    fi
+
+    if in_tmux; then
+        tmux_config="${LAZYGIT_TMUX_CONFIG_FILE:-$DOTFILES_DIR/lazygit/.config/lazygit/tmux.yml}"
+        if [[ -f "$tmux_config" ]]; then
+            [[ -n "$files" ]] && files+=","
+            files+="$tmux_config"
+        fi
+    fi
+
+    printf '%s\n' "$files"
+}
+
 ensure_tuxedo_flume_theme() {
     local config_home tuxedo_dir theme_dir theme_src theme_dst config_file tmp
 
@@ -787,7 +808,7 @@ refresh_status_metadata() {
 }
 
 git_window() {
-    local cwd="${1:-$PWD}" root config_file session target name cmd window_id pane_id lazygit_cmd
+    local cwd="${1:-$PWD}" root config_files session target name cmd window_id pane_id lazygit_cmd
     require_dir "$cwd"
     command -v lazygit >/dev/null 2>&1 || {
         echo "lazygit not found" >&2
@@ -795,11 +816,9 @@ git_window() {
     }
 
     root="$(workspace_root "$cwd")"
-    config_file="${LAZYGIT_CONFIG_FILE:-$DOTFILES_DIR/lazygit/.config/lazygit/config.yml}"
     lazygit_cmd=(lazygit)
-    if in_tmux && [[ -f "$config_file" ]]; then
-        lazygit_cmd+=(--use-config-file "$config_file")
-    fi
+    config_files="$(lazygit_config_files)"
+    [[ -n "$config_files" ]] && lazygit_cmd+=(--use-config-file "$config_files")
 
     if ! in_tmux; then
         cd "$root"
@@ -953,7 +972,7 @@ open_todo_ref() {
 }
 
 git_split() {
-    local cwd="${1:-$PWD}" root config_file session target name cmd pane_id lazygit_cmd
+    local cwd="${1:-$PWD}" root config_files session target name cmd pane_id lazygit_cmd
     require_dir "$cwd"
     command -v lazygit >/dev/null 2>&1 || {
         echo "lazygit not found" >&2
@@ -967,11 +986,9 @@ git_split() {
 
     root="$(workspace_root "$cwd")"
     session="$(tmux display-message -p '#S')"
-    config_file="${LAZYGIT_CONFIG_FILE:-$DOTFILES_DIR/lazygit/.config/lazygit/config.yml}"
     lazygit_cmd=(lazygit)
-    if [[ -f "$config_file" ]]; then
-        lazygit_cmd+=(--use-config-file "$config_file")
-    fi
+    config_files="$(lazygit_config_files)"
+    [[ -n "$config_files" ]] && lazygit_cmd+=(--use-config-file "$config_files")
     cmd="$(quote_argv "${lazygit_cmd[@]}")"
 
     local format=$'#{window_id}\t#{@workspace_mode}\t#{@lazygit_root}'

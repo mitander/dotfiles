@@ -1,0 +1,11 @@
+# Loaded by tmux-project when lazygit runs inside tmux.
+keybinding:
+  universal:
+    quit: Q
+    quit-alt1: <disabled>
+    quitWithoutChangingDirectory: <disabled>
+customCommands:
+  - key: q
+    context: global
+    description: Hide lazygit tmux window
+    command: tmux select-window -l
