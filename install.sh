@@ -59,6 +59,22 @@ ensure_local_bin_path() {
   esac
 }
 
+install_myran() {
+  [[ "${DOTFILES_SKIP_MYRAN:-}" == 1 ]] && return 0
+  local source_dir="${MYRAN_SOURCE_DIR:-$HOME/c/p/myran}"
+  if ! have cargo; then
+    warn "cargo not found; cannot install myr"
+    return 0
+  fi
+  if [[ ! -f "$source_dir/crates/myran-cli/Cargo.toml" ]]; then
+    warn "Myran source not found at $source_dir; set MYRAN_SOURCE_DIR to install myr"
+    return 0
+  fi
+
+  log "Installing myr to ~/.local/bin"
+  cargo install --locked --force --root "$HOME/.local" --path "$source_dir/crates/myran-cli"
+}
+
 nvim_is_modern() {
   have nvim || return 1
   local version major minor
@@ -367,6 +383,7 @@ main() {
   install_packages
   ensure_linux_aliases
   ensure_local_bin_path
+  install_myran
   install_modern_neovim
   install_fzf_release_if_needed
   install_lazygit_release

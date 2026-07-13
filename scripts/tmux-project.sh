@@ -23,6 +23,8 @@ commands:
   git [cwd]
   git-split [cwd]
   tuxedo|tasks [cwd]
+  run [cwd]
+  pick-run [cwd]
   run-focused [cwd]
   run-tests [cwd]
 EOF
@@ -326,7 +328,7 @@ new_session() {
 }
 
 role_window() {
-    local role="${1:?missing role}" cwd="${2:-$PWD}" root name command session target window_id pane_id
+    local role="${1:?missing role}" cwd="${2:-$PWD}" run_action="${3:-run}" root name command session target window_id pane_id
     require_dir "$cwd"
 
     root="$(workspace_root "$cwd")"
@@ -350,7 +352,7 @@ role_window() {
     run)
         role=run
         name=run
-        command=drun
+        command="myr $run_action"
         ;;
     *)
         echo "unknown role: $role" >&2
@@ -363,7 +365,7 @@ role_window() {
         case "$role" in
         shell | shell2) exec "${SHELL:-fish}" ;;
         pi) exec pi ;;
-        run) if [ -f scripts/db-run.sh ]; then exec ./scripts/db-run.sh; else exec ./zig/zig build run; fi ;;
+        run) exec myr "$run_action" ;;
         esac
     fi
 
@@ -376,8 +378,7 @@ role_window() {
         [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" "$role" "$root"
         tmux select-window -t "$target"
         if [[ "$role" == "run" && -n "$pane_id" ]]; then
-            tmux send-keys -t "$pane_id" C-c
-            tmux send-keys -t "$pane_id" "drun" Enter
+            tmux send-keys -t "$pane_id" "$command" Enter
         fi
         return
     fi
@@ -996,7 +997,8 @@ session | new-session) new_session "${1:-$PWD}" ;;
 shell | sh) role_window shell "${1:-$PWD}" ;;
 shell2 | sh2) role_window shell2 "${1:-$PWD}" ;;
 agent | pi | ai) role_window pi "${1:-$PWD}" ;;
-run) role_window run "${1:-$PWD}" ;;
+run) role_window run "${1:-$PWD}" run ;;
+pick-run) role_window run "${1:-$PWD}" pick-run ;;
 agent-new | ai-new) agent_new "${1:-$PWD}" "${2:-}" ;;
 pi-split | agent-split) pi_split "${1:-$PWD}" ;;
 pane-to) pane_to_role "${1:?missing role}" "${2:-$PWD}" ;;
