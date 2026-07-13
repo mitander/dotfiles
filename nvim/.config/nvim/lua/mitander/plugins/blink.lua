@@ -1,3 +1,38 @@
+local quiet_cmdline_commands = {
+    q = true,
+    qa = true,
+    qall = true,
+    quit = true,
+    w = true,
+    wa = true,
+    wall = true,
+    write = true,
+    wq = true,
+    wqa = true,
+    wqall = true,
+    x = true,
+    xa = true,
+    xall = true,
+    exit = true,
+    xit = true,
+}
+
+local function should_show_cmdline_menu(ctx)
+    if vim.fn.getcmdtype() ~= ":" then
+        return false
+    end
+
+    local line = vim.trim(ctx.line or "")
+    if line == "" then
+        return false
+    end
+
+    -- Keep routine, complete write/quit commands quiet. This is intentionally
+    -- an exact allowlist: partial and unrelated short commands still complete.
+    local command = line:match("^([%a]+)!?$")
+    return not (command and quiet_cmdline_commands[command:lower()])
+end
+
 return {
     "saghen/blink.cmp",
     event = { "InsertEnter", "CmdlineEnter" },
@@ -23,15 +58,6 @@ return {
         sources = {
             default = { "lsp", "path", "snippets", "buffer" },
             providers = {
-                cmdline = {
-                    min_keyword_length = function(ctx)
-                        -- Avoid noisy/flickery suggestions for short commands like :q, :w, :wq.
-                        if ctx.mode == "cmdline" and not ctx.line:find(" ") then
-                            return 3
-                        end
-                        return 0
-                    end,
-                },
                 buffer = {
                     name = "Buffer",
                     module = "blink.cmp.sources.buffer",
@@ -58,11 +84,14 @@ return {
             },
         },
         cmdline = {
+            keymap = {
+                -- The cmdline preset does not inherit the top-level <CR> map.
+                -- Accept the highlighted item and execute it in one keypress.
+                ["<CR>"] = { "accept_and_enter", "fallback" },
+            },
             completion = {
                 menu = {
-                    auto_show = function()
-                        return vim.fn.getcmdtype() == ":"
-                    end,
+                    auto_show = should_show_cmdline_menu,
                 },
             },
         },
