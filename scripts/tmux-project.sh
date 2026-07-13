@@ -76,16 +76,16 @@ workspace_mode_label() {
 }
 
 workspace_mode_color() {
+    local role
     case "$1" in
-    vim) printf '#6aa6bc' ;;    # accent
-    pi) printf '#b99add' ;;     # magenta
-    git) printf '#d8b574' ;;    # yellow
-    tuxedo) printf '#8fc9d2' ;; # cyan
-    shell) printf '#a3be8c' ;;  # green
-    shell2) printf '#8fc9d2' ;; # cyan
-    run) printf '#d8b574' ;;    # yellow
-    *) printf '#d6d2e8' ;;      # text
+    vim) role=accent ;;
+    pi) role=magenta ;;
+    git | run) role=yellow ;;
+    tuxedo | shell2) role=cyan ;;
+    shell) role=green ;;
+    *) role=text ;;
     esac
+    tmux show-option -gv "@flume_$role"
 }
 
 set_window_workspace_mode() {
@@ -747,17 +747,12 @@ refresh_status_metadata() {
         fi
     done < <(tmux list-sessions -F "$format" 2>/dev/null || true)
 
-    # 2. Windows: only set if mode or root is missing
+    # 2. Windows: restore missing metadata and refresh variant-derived colors.
     format='#{window_id}|#{@workspace_mode}|#{@project_role}|#{@workspace_root}|#{@project_root}|#{@lazygit_root}'
     while IFS='|' read -r win mode legacy_mode root legacy_root lazygit_root; do
         [[ -n "$mode" ]] || mode="$legacy_mode"
         [[ -n "$root" ]] || root="$legacy_root"
         
-        # If already set, do not set it again
-        if [[ -n "$mode" && -n "$root" ]]; then
-            continue
-        fi
-
         if [[ -z "$mode" && -n "$lazygit_root" ]]; then
             mode=git
             root="$lazygit_root"
@@ -768,13 +763,15 @@ refresh_status_metadata() {
         fi
     done < <(tmux list-windows -a -F "$format" 2>/dev/null || true)
 
-    # 3. Panes: only fill missing pane roots after restore.
+    # 3. Panes: restore missing roots and refresh variant-derived colors.
     format='#{pane_id}|#{@workspace_pane_role}|#{@project_pane_role}|#{@workspace_root}|#{pane_current_path}'
     while IFS='|' read -r pane pane_role legacy_pane_role pane_root pane_cwd; do
         [[ -n "$pane_role" ]] || pane_role="$legacy_pane_role"
         
-        if [[ -n "$pane_role" && ( -z "$pane_root" || ! -d "$pane_root" ) ]]; then
-            pane_root="$(root_for_dir "${pane_cwd:-$PWD}")"
+        if [[ -n "$pane_role" ]]; then
+            if [[ -z "$pane_root" || ! -d "$pane_root" ]]; then
+                pane_root="$(root_for_dir "${pane_cwd:-$PWD}")"
+            fi
             set_pane_workspace_role "$pane" "$pane_role" "$pane_root"
         fi
     done < <(tmux list-panes -a -F "$format" 2>/dev/null || true)
