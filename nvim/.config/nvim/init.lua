@@ -183,6 +183,20 @@ end
 
 _G.plugin_spec_mtimes = _G.plugin_spec_mtimes or get_plugin_mtimes()
 
+local function apply_flume_variant()
+    local variant = vim.g.flume_variant == "light" and "light" or "dark"
+    local colorscheme = variant == "light" and "flume-light" or "flume"
+    local ok, flume = pcall(require, "flume")
+    if not ok then
+        pcall(vim.cmd, "colorscheme " .. colorscheme)
+        return
+    end
+
+    flume.setup({ variant = variant })
+    require("flume.sync").run({ variant = variant, quiet = true })
+    vim.api.nvim_exec_autocmds("ColorScheme", { pattern = colorscheme, modeline = false })
+end
+
 -- reload configuration
 vim.keymap.set("n", "<leader>rl", function()
     -- Automatically save all buffers and sync external changes to prevent prompts
@@ -298,17 +312,8 @@ vim.keymap.set("n", "<leader>rl", function()
     -- 5. Reload init.lua
     dofile(vim.env.MYVIMRC)
 
-    -- 6. Reload flume colorscheme and generated external themes.
-    -- flume.reload() recompiles extras and only reloads Ghostty/Tmux when
-    -- their generated files actually changed.
-    local ok, flume = pcall(require, "flume")
-    if ok and type(flume.reload) == "function" then
-        pcall(flume.reload)
-    elseif ok then
-        pcall(flume.setup)
-    else
-        pcall(vim.cmd, "colorscheme flume")
-    end
+    -- 6. Reload the variant selected by the shared Flume state file.
+    apply_flume_variant()
 
     -- 7. Trigger lazy.nvim's official reload mechanism for ONLY the changed plugins
     if #plugin_names > 0 then
@@ -640,19 +645,12 @@ vim.api.nvim_create_autocmd("BufEnter", {
     end,
 })
 
--- Auto-compile flume theme and reload external apps on write
+-- Reload the explicit light theme after editing its Lua sources
 vim.api.nvim_create_autocmd("BufWritePost", {
     group = group,
     pattern = "*/flume.nvim/lua/flume/*.lua",
     callback = function()
-        local ok, flume = pcall(require, "flume")
-        if ok and type(flume.reload) == "function" then
-            pcall(flume.reload)
-        elseif ok then
-            pcall(flume.setup)
-        else
-            pcall(vim.cmd, "colorscheme flume")
-        end
+        apply_flume_variant()
     end,
 })
 

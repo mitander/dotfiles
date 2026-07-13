@@ -299,8 +299,17 @@ ensure_theme_repo() {
     fi
   fi
 
-  [[ -f "$DOTFILES_DIR/themes/flume/extras/ghostty/flume" ]] || warn "Flume Ghostty theme missing: $DOTFILES_DIR/themes/flume/ghostty/flume"
-  [[ -f "$DOTFILES_DIR/themes/flume/extras/tmux/colors.conf" ]] || warn "Flume tmux colors missing: $DOTFILES_DIR/themes/flume/tmux/colors.conf"
+  for extra in \
+    extras/current/ghostty \
+    extras/current/tmux.conf \
+    extras/current/lsd.yaml \
+    extras/current/lazygit.yml \
+    extras/current/fzf.opts \
+    extras/current/delta.gitconfig \
+    extras/current/pi.json \
+    extras/current/tuxedo.toml; do
+    [[ -f "$DOTFILES_DIR/themes/flume/$extra" ]] || warn "Flume current artifact missing: $extra"
+  done
 }
 
 install_tpm() {
@@ -347,6 +356,7 @@ verify_config_links() {
   verify_link "$HOME/.config/fish/config.fish" "$DOTFILES_DIR/fish/.config/fish/config.fish"
   verify_link "$HOME/.config/ghostty/config" "$DOTFILES_DIR/ghostty/.config/ghostty/config"
   verify_link "$HOME/.config/lsd/config.yaml" "$DOTFILES_DIR/lsd/.config/lsd/config.yaml"
+  verify_link "$HOME/.config/lazygit/flume-theme.yml" "$DOTFILES_DIR/lazygit/.config/lazygit/flume-theme.yml"
   verify_link "$HOME/.config/tuxedo/themes/flume.toml" "$DOTFILES_DIR/tuxedo/.config/tuxedo/themes/flume.toml"
   verify_link "$HOME/.pi/agent/themes/flume.json" "$DOTFILES_DIR/pi/.pi/agent/themes/flume.json"
   verify_link "$HOME/.pi/agent/extensions/flume-ui/index.ts" "$DOTFILES_DIR/pi/.pi/agent/extensions/flume-ui/index.ts"

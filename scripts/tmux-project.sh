@@ -213,13 +213,19 @@ quote_argv() {
 }
 
 lazygit_config_files() {
-    local files="" base_config tmux_config
+    local files="" base_config theme_config tmux_config
 
     if [[ -n "${LAZYGIT_CONFIG_FILE:-}" ]]; then
         files="$LAZYGIT_CONFIG_FILE"
     else
         base_config="$DOTFILES_DIR/lazygit/.config/lazygit/config.yml"
         [[ -f "$base_config" ]] && files="$base_config"
+    fi
+
+    theme_config="${LAZYGIT_THEME_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/flume/lazygit.yml}"
+    if [[ -f "$theme_config" ]]; then
+        [[ -n "$files" ]] && files+=","
+        files+="$theme_config"
     fi
 
     if in_tmux; then
@@ -234,40 +240,9 @@ lazygit_config_files() {
 }
 
 ensure_tuxedo_flume_theme() {
-    local config_home tuxedo_dir theme_dir theme_src theme_dst config_file tmp
-
-    config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
-    tuxedo_dir="$config_home/tuxedo"
-    theme_dir="$tuxedo_dir/themes"
-    theme_src="$DOTFILES_DIR/tuxedo/.config/tuxedo/themes/flume.toml"
-    theme_dst="$theme_dir/flume.toml"
-    config_file="$tuxedo_dir/config.toml"
-
-    [[ -f "$theme_src" ]] || return 0
-
-    mkdir -p "$theme_dir"
-    ln -sfn "$theme_src" "$theme_dst" 2>/dev/null || cp "$theme_src" "$theme_dst"
-
-    if [[ -f "$config_file" ]]; then
-        tmp="$(mktemp "${TMPDIR:-/tmp}/tuxedo-config.XXXXXX")"
-        awk '
-            BEGIN { done = 0 }
-            /^[[:space:]]*theme[[:space:]]*=/ {
-                if (!done) {
-                    print "theme = Flume"
-                    done = 1
-                }
-                next
-            }
-            { print }
-            END {
-                if (!done) print "theme = Flume"
-            }
-        ' "$config_file" >"$tmp"
-        mv "$tmp" "$config_file"
-    else
-        printf '# tuxedo config\ntheme = Flume\n' >"$config_file"
-    fi
+    # `flume-theme dark|light` owns the active Tuxedo theme and config.
+    [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/flume/variant" ]] ||
+        "$DOTFILES_DIR/scripts/flume-theme.sh" dark >/dev/null
 }
 
 hash_key() {

@@ -28,7 +28,9 @@ font-style-bold-italic = "Bold Italic"
 adjust-cell-height = 12%
 adjust-cell-width = 2%
 alpha-blending = linear
+# Stable theme name; FlumeReload updates the linked current artifact.
 theme = flume
+window-theme = auto
 
 # Font quality and thickness adjustments for macOS
 font-thicken = true

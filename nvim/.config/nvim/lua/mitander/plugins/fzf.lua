@@ -230,6 +230,9 @@ local function smart_rg_glob(query, opts)
     return build_search(terms), table.concat(args, " ")
 end
 local file_cmd = fd_exists and "fd --color=never --type f --hidden --follow --exclude .git" or nil
+local delta_current = "delta --config="
+    .. vim.fn.expand("~/dotfiles/themes/flume/extras/current/delta.gitconfig")
+    .. " --paging=never"
 
 local file_picker_winopts = {
     height = 0.72,
@@ -349,6 +352,8 @@ return {
         },
     },
     opts = {
+        fzf_colors = { true },
+        fzf_opts = { ["--no-bold"] = true },
         keymap = {
             fzf = {
                 true,
@@ -422,22 +427,22 @@ return {
                 winopts = {
                     preview = { vertical = "down:70%", horizontal = "right:70%" },
                 },
-                preview_pager = vim.fn.executable("delta") == 1 and "delta --width=$COLUMNS",
+                preview_pager = vim.fn.executable("delta") == 1 and (delta_current .. " --width=$COLUMNS"),
             },
             diff = {
                 preview = "git diff --color {ref1} {ref} -- {file}",
-                preview_pager = vim.fn.executable("delta") == 1 and "delta --width=$COLUMNS",
+                preview_pager = vim.fn.executable("delta") == 1 and (delta_current .. " --width=$COLUMNS"),
             },
             hunks = {
                 cmd = "git --no-pager diff --color=always {ref1} {ref} -- {file}",
             },
             commits = {
                 winopts = { preview = { vertical = "down:60%" } },
-                preview_pager = vim.fn.executable("delta") == 1 and "delta --width=$COLUMNS",
+                preview_pager = vim.fn.executable("delta") == 1 and (delta_current .. " --width=$COLUMNS"),
             },
             bcommits = {
                 winopts = { preview = { vertical = "down:60%" } },
-                preview_pager = vim.fn.executable("delta") == 1 and "delta --width=$COLUMNS",
+                preview_pager = vim.fn.executable("delta") == 1 and (delta_current .. " --width=$COLUMNS"),
             },
             branches = {
                 winopts = {

@@ -44,6 +44,11 @@ end
 alias tls "tmux ls"
 
 # git
+function lazygit
+    set -l configs "$DOTFILES_DIR/lazygit/.config/lazygit/config.yml,$HOME/.config/flume/lazygit.yml"
+    command lazygit --use-config-file $configs $argv
+end
+
 function gg
     "$DOTFILES_DIR/scripts/tmux-project.sh" git $argv
 end
@@ -110,6 +115,10 @@ function fish_postexec --on-event fish_postexec
     history save
 end
 
+# Initial FZF value; the function below refreshes it for every invocation.
+set -l flume_fzf_opts "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
+test -r "$flume_fzf_opts"; and set -gx FZF_DEFAULT_OPTS (string trim <"$flume_fzf_opts")
+
 # fzf command
 if command -q rg
     set -gx FZF_DEFAULT_COMMAND "rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
@@ -158,6 +167,13 @@ test -f ~/.config/fish/scripts/fish-autosuggestions.fish; and source ~/.config/f
 # fzf
 if command -q fzf
     fzf --fish 2>/dev/null | source
+    function fzf
+        set -l opts_file "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
+        if test -r "$opts_file"
+            set -lx FZF_DEFAULT_OPTS (string trim <"$opts_file")
+        end
+        command fzf $argv
+    end
 end
 
 # atuin

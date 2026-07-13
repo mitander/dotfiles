@@ -7,6 +7,9 @@ usage() {
 
 command -v tmux >/dev/null 2>&1 || { echo "tmux not found" >&2; exit 127; }
 
+fzf_opts_file="${DOTFILES_DIR:-$HOME/dotfiles}/themes/flume/extras/current/fzf.opts"
+[[ -r "$fzf_opts_file" ]] && FZF_DEFAULT_OPTS="$(<"$fzf_opts_file")" && export FZF_DEFAULT_OPTS
+
 if [[ -n "${TMUX:-}" ]] && command -v fzf-tmux >/dev/null 2>&1; then
   picker=(fzf-tmux -p 80%,70% --header='[Cancel]' --bind 'left-click:accept,click-header:abort')
 elif command -v fzf >/dev/null 2>&1; then
