@@ -56,6 +56,8 @@ return {
             jsonls = {},
             clangd = {},
             rust_analyzer = {},
+            pyright = {},
+            ts_ls = {},
             zls = {
                 cmd = { zls_bin },
                 root_dir = zls_root_dir,
