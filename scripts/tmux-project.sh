@@ -328,7 +328,7 @@ new_session() {
 }
 
 watch_run_window() {
-    local root="${1:?missing root}" target="${2:?missing window}" marker="${3:?missing marker}" current_token
+    local root="${1:?missing root}" target="${2:?missing window}" marker="${3:?missing marker}" current_token pane
 
     while tmux display-message -p -t "$target" '#{window_id}' >/dev/null 2>&1; do
         if [[ -e "$marker" ]]; then
@@ -338,7 +338,9 @@ watch_run_window() {
                 current_token="$(tmux show-options -wqv -t "$target" @myran_run_watch_token || true)"
                 if [[ "$current_token" == "$marker" ]]; then
                     tmux set-option -wu -t "$target" @myran_run_watch_token >/dev/null 2>&1 || true
-                    tmux kill-window -t "$target"
+                    tmux set-option -wq -t "$target" @myran_run_state completed
+                    pane="$(active_pane_in_window "$target")"
+                    [[ -n "$pane" ]] && tmux set-option -pq -t "$pane" @myran_run_state completed
                 fi
             fi
             return
@@ -356,8 +358,18 @@ start_run_in_pane() {
     watcher_command="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __watch-run "$root" "$target" "$marker")"
 
     tmux set-option -wq -t "$target" @myran_run_watch_token "$marker"
+    tmux set-option -wq -t "$target" @myran_run_state active
+    tmux set-option -pq -t "$pane" @myran_run_state active
     tmux send-keys -t "$pane" "$pane_command" Enter
     tmux run-shell -b -t "$target" "$watcher_command"
+}
+
+dismiss_run_window() {
+    local target="${1:-$(tmux display-message -p '#{window_id}')}" state
+    state="$(tmux show-options -wqv -t "$target" @myran_run_state || true)"
+    if [[ "$state" == completed ]]; then
+        tmux kill-window -t "$target" >/dev/null 2>&1 || true
+    fi
 }
 
 close_run_window() {
@@ -1080,6 +1092,7 @@ git-split | lazygit-split) git_split "${1:-$PWD}" ;;
 tuxedo | tasks | task | todo) tuxedo_window "${1:-$PWD}" ;;
 open-todo-ref) open_todo_ref "${1:-$PWD}" ;;
 close-run) close_run_window "${1:-$PWD}" "${2:-}" ;;
+dismiss-run) dismiss_run_window "${1:-}" ;;
 run-focused)
     cwd="${1:-$PWD}"
     tmux split-window -h -c "$cwd" "drun; exec fish"
