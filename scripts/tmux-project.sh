@@ -327,6 +327,59 @@ new_session() {
     attach_or_switch "$session_id"
 }
 
+watch_run_window() {
+    local root="${1:?missing root}" target="${2:?missing window}" marker="${3:?missing marker}" current_token
+
+    while tmux display-message -p -t "$target" '#{window_id}' >/dev/null 2>&1; do
+        if [[ -e "$marker" ]]; then
+            rm -f "$marker"
+            cd "$root"
+            if myr wait && tmux display-message -p -t "$target" '#{window_id}' >/dev/null 2>&1; then
+                current_token="$(tmux show-options -wqv -t "$target" @myran_run_watch_token || true)"
+                if [[ "$current_token" == "$marker" ]]; then
+                    tmux set-option -wu -t "$target" @myran_run_watch_token >/dev/null 2>&1 || true
+                    tmux kill-window -t "$target"
+                fi
+            fi
+            return
+        fi
+        sleep 0.025
+    done
+    rm -f "$marker"
+}
+
+start_run_in_pane() {
+    local pane="${1:?missing pane}" target="${2:?missing window}" root="${3:?missing root}" command="${4:?missing command}" marker pane_command watcher_command
+    marker="$(mktemp "${TMPDIR:-/tmp}/myran-run.XXXXXX")"
+    rm -f "$marker"
+    pane_command="$command; touch $(shell_quote "$marker")"
+    watcher_command="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __watch-run "$root" "$target" "$marker")"
+
+    tmux set-option -wq -t "$target" @myran_run_watch_token "$marker"
+    tmux send-keys -t "$pane" "$pane_command" Enter
+    tmux run-shell -b -t "$target" "$watcher_command"
+}
+
+close_run_window() {
+    local cwd="${1:-$PWD}" target="${2:-$(tmux display-message -p '#{window_id}')}" root cancel_error
+    root="$(workspace_root "$cwd")"
+    tmux set-option -wq -t "$target" @myran_run_watch_token "closing-$$-$RANDOM"
+
+    for _ in {1..80}; do
+        if cancel_error="$(cd "$root" && myr cancel 2>&1)"; then
+            tmux kill-window -t "$target" >/dev/null 2>&1 || true
+            return
+        fi
+        if [[ "$cancel_error" == *"has no active instance"* ]]; then
+            tmux kill-window -t "$target" >/dev/null 2>&1 || true
+            return
+        fi
+        sleep 0.025
+    done
+
+    tmux display-message "Myran cancel failed: $cancel_error"
+}
+
 role_window() {
     local role="${1:?missing role}" cwd="${2:-$PWD}" run_action="${3:-run}" root name command session target window_id pane_id
     require_dir "$cwd"
@@ -378,7 +431,7 @@ role_window() {
         [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" "$role" "$root"
         tmux select-window -t "$target"
         if [[ "$role" == "run" && -n "$pane_id" ]]; then
-            tmux send-keys -t "$pane_id" "$command" Enter
+            start_run_in_pane "$pane_id" "$target" "$root" "$command"
         fi
         return
     fi
@@ -389,7 +442,11 @@ role_window() {
     [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" "$role" "$root"
     tmux select-window -t "$window_id"
 
-    [[ -n "$command" ]] && tmux send-keys -t "$window_id" "$command" Enter
+    if [[ "$role" == "run" && -n "$command" ]]; then
+        start_run_in_pane "$pane_id" "$window_id" "$root" "$command"
+    elif [[ -n "$command" ]]; then
+        tmux send-keys -t "$window_id" "$command" Enter
+    fi
     return 0
 }
 
@@ -1022,6 +1079,7 @@ git | lazygit) git_window "${1:-$PWD}" ;;
 git-split | lazygit-split) git_split "${1:-$PWD}" ;;
 tuxedo | tasks | task | todo) tuxedo_window "${1:-$PWD}" ;;
 open-todo-ref) open_todo_ref "${1:-$PWD}" ;;
+close-run) close_run_window "${1:-$PWD}" "${2:-}" ;;
 run-focused)
     cwd="${1:-$PWD}"
     tmux split-window -h -c "$cwd" "drun; exec fish"
@@ -1031,6 +1089,7 @@ run-tests)
     tmux split-window -h -c "$cwd" "dtest run; exec fish"
     ;;
 __refresh-status) refresh_status_metadata ;;
+__watch-run) watch_run_window "${1:?missing root}" "${2:?missing window}" "${3:?missing marker}" ;;
 __nvim) nvim_runner "$@" ;;
 help | -h | --help) usage ;;
 *)
