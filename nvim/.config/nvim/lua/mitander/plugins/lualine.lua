@@ -110,7 +110,7 @@ return {
         lualine.setup(opts)
         vim.api.nvim_create_autocmd("ColorScheme", {
             group = vim.api.nvim_create_augroup("mitander_lualine_flume", { clear = true }),
-            pattern = { "flume", "flume-light" },
+            pattern = { "flume", "flume-dusk", "flume-mist", "flume-ash" },
             callback = function()
                 lualine.setup(make_opts())
                 lualine.refresh({ force = true })

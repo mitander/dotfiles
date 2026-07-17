@@ -80,11 +80,7 @@ workspace_mode_label() {
 workspace_mode_color() {
     local role
     case "$1" in
-    vim) role=accent ;;
-    pi) role=magenta ;;
-    git | run) role=yellow ;;
-    tuxedo | shell2) role=cyan ;;
-    shell) role=green ;;
+    vim | pi | git | run | tuxedo | shell | shell2) role=accent ;;
     *) role=text ;;
     esac
     tmux show-option -gv "@flume_$role"
@@ -224,7 +220,7 @@ lazygit_config_files() {
         [[ -f "$base_config" ]] && files="$base_config"
     fi
 
-    theme_config="${LAZYGIT_THEME_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/flume/lazygit.yml}"
+    theme_config="${LAZYGIT_THEME_CONFIG_FILE:-$DOTFILES_DIR/themes/flume/extras/current/lazygit.yml}"
     if [[ -f "$theme_config" ]]; then
         [[ -n "$files" ]] && files+=","
         files+="$theme_config"
@@ -239,12 +235,6 @@ lazygit_config_files() {
     fi
 
     printf '%s\n' "$files"
-}
-
-ensure_tuxedo_flume_theme() {
-    # `flume-theme dark|light` owns the active Tuxedo theme and config.
-    [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/flume/variant" ]] ||
-        "$DOTFILES_DIR/scripts/flume-theme.sh" dark >/dev/null
 }
 
 hash_key() {
@@ -927,8 +917,6 @@ tuxedo_window() {
         echo "tuxedo not found" >&2
         exit 127
     }
-    ensure_tuxedo_flume_theme
-
     root="$(workspace_root "$cwd")"
 
     if [[ -n "${TODO_FILE:-}" || -n "${TODO_DIR:-}" ]]; then

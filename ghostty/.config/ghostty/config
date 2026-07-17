@@ -28,7 +28,7 @@ font-style-bold-italic = "Bold Italic"
 adjust-cell-height = 12%
 adjust-cell-width = 2%
 alpha-blending = linear
-# Stable theme name; FlumeReload updates the linked current artifact.
+# Stable theme name; Flume synchronization updates the active artifact.
 theme = flume
 window-theme = auto
 

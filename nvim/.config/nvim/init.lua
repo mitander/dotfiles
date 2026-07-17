@@ -184,16 +184,14 @@ end
 _G.plugin_spec_mtimes = _G.plugin_spec_mtimes or get_plugin_mtimes()
 
 local function apply_flume_variant()
-    local variant = vim.g.flume_variant == "light" and "light" or "dark"
-    local colorscheme = variant == "light" and "flume-light" or "flume"
     local ok, flume = pcall(require, "flume")
     if not ok then
-        pcall(vim.cmd, "colorscheme " .. colorscheme)
         return
     end
 
-    flume.setup({ variant = variant })
-    require("flume.sync").run({ variant = variant, quiet = true })
+    local variant = require("mitander.plugins.colors").variant
+    flume.setup({ variant = variant, transparent = false })
+    local colorscheme = require("flume.palette").get(variant).colorscheme
     vim.api.nvim_exec_autocmds("ColorScheme", { pattern = colorscheme, modeline = false })
 end
 
@@ -312,7 +310,7 @@ vim.keymap.set("n", "<leader>rl", function()
     -- 5. Reload init.lua
     dofile(vim.env.MYVIMRC)
 
-    -- 6. Reload the variant selected by the shared Flume state file.
+    -- 6. Reapply the configured editor variant. Global extras sync is explicit.
     apply_flume_variant()
 
     -- 7. Trigger lazy.nvim's official reload mechanism for ONLY the changed plugins
@@ -645,13 +643,11 @@ vim.api.nvim_create_autocmd("BufEnter", {
     end,
 })
 
--- Reload the explicit light theme after editing its Lua sources
+-- Reapply Flume after editing its Lua sources.
 vim.api.nvim_create_autocmd("BufWritePost", {
     group = group,
     pattern = "*/flume.nvim/lua/flume/*.lua",
-    callback = function()
-        apply_flume_variant()
-    end,
+    callback = apply_flume_variant,
 })
 
 -- bootstrap lazy if needed

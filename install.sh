@@ -296,6 +296,7 @@ ensure_dotfiles_alias() {
 
 ensure_theme_repo() {
   local theme_dir="$HOME/c/p/flume.nvim"
+  local theme_branch="feat/issue-2-light-schemas"
   mkdir -p "$(dirname "$theme_dir")" "$DOTFILES_DIR/themes"
 
   if [[ ! -d "$theme_dir/.git" ]]; then
@@ -303,7 +304,7 @@ ensure_theme_repo() {
       warn "$theme_dir exists but is not a git repo; leaving theme setup untouched"
     else
       log "Cloning flume theme repo"
-      git clone https://github.com/mitander/flume.nvim.git "$theme_dir"
+      git clone --branch "$theme_branch" https://github.com/mitander/flume.nvim.git "$theme_dir"
     fi
   fi
 
@@ -316,15 +317,13 @@ ensure_theme_repo() {
   fi
 
   for extra in \
-    extras/current/ghostty \
-    extras/current/tmux.conf \
-    extras/current/lsd.yaml \
-    extras/current/lazygit.yml \
-    extras/current/fzf.opts \
-    extras/current/delta.gitconfig \
-    extras/current/pi.json \
-    extras/current/tuxedo.toml; do
-    [[ -f "$DOTFILES_DIR/themes/flume/$extra" ]] || warn "Flume current artifact missing: $extra"
+    extras/ghostty/flume \
+    extras/kitty/flume.conf \
+    extras/tmux/colors.conf \
+    extras/lsd/colors.yaml \
+    extras/pi/flume.json \
+    extras/tuxedo/flume.toml; do
+    [[ -f "$DOTFILES_DIR/themes/flume/$extra" ]] || warn "Flume extra missing: $extra"
   done
 }
 
@@ -372,7 +371,6 @@ verify_config_links() {
   verify_link "$HOME/.config/fish/config.fish" "$DOTFILES_DIR/fish/.config/fish/config.fish"
   verify_link "$HOME/.config/ghostty/config" "$DOTFILES_DIR/ghostty/.config/ghostty/config"
   verify_link "$HOME/.config/lsd/config.yaml" "$DOTFILES_DIR/lsd/.config/lsd/config.yaml"
-  verify_link "$HOME/.config/lazygit/flume-theme.yml" "$DOTFILES_DIR/lazygit/.config/lazygit/flume-theme.yml"
   verify_link "$HOME/.config/tuxedo/themes/flume.toml" "$DOTFILES_DIR/tuxedo/.config/tuxedo/themes/flume.toml"
   verify_link "$HOME/.pi/agent/themes/flume.json" "$DOTFILES_DIR/pi/.pi/agent/themes/flume.json"
   verify_link "$HOME/.pi/agent/extensions/flume-ui/index.ts" "$DOTFILES_DIR/pi/.pi/agent/extensions/flume-ui/index.ts"

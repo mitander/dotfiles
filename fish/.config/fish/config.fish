@@ -45,7 +45,7 @@ alias tls "tmux ls"
 
 # git
 function lazygit
-    set -l configs "$DOTFILES_DIR/lazygit/.config/lazygit/config.yml,$HOME/.config/flume/lazygit.yml"
+    set -l configs "$DOTFILES_DIR/lazygit/.config/lazygit/config.yml,$DOTFILES_DIR/themes/flume/extras/current/lazygit.yml"
     command lazygit --use-config-file $configs $argv
 end
 
@@ -167,6 +167,7 @@ test -f ~/.config/fish/scripts/fish-autosuggestions.fish; and source ~/.config/f
 # fzf
 if command -q fzf
     fzf --fish 2>/dev/null | source
+
     function fzf
         set -l opts_file "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
         if test -r "$opts_file"
