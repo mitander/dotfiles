@@ -328,7 +328,7 @@ new_session() {
 }
 
 watch_run_window() {
-    local root="${1:?missing root}" target="${2:?missing window}" marker="${3:?missing marker}" current_token pane
+    local root="${1:?missing root}" target="${2:?missing window}" marker="${3:?missing marker}" current_token pane run_kind
 
     while tmux display-message -p -t "$target" '#{window_id}' >/dev/null 2>&1; do
         if [[ -e "$marker" ]]; then
@@ -338,9 +338,14 @@ watch_run_window() {
                 current_token="$(tmux show-options -wqv -t "$target" @myran_run_watch_token || true)"
                 if [[ "$current_token" == "$marker" ]]; then
                     tmux set-option -wu -t "$target" @myran_run_watch_token >/dev/null 2>&1 || true
-                    tmux set-option -wq -t "$target" @myran_run_state completed
-                    pane="$(active_pane_in_window "$target")"
-                    [[ -n "$pane" ]] && tmux set-option -pq -t "$pane" @myran_run_state completed
+                    run_kind="$(myr run-kind)"
+                    if [[ "$run_kind" == application ]]; then
+                        tmux kill-window -t "$target"
+                    else
+                        tmux set-option -wq -t "$target" @myran_run_state completed
+                        pane="$(active_pane_in_window "$target")"
+                        [[ -n "$pane" ]] && tmux set-option -pq -t "$pane" @myran_run_state completed
+                    fi
                 fi
             fi
             return
@@ -351,7 +356,29 @@ watch_run_window() {
 }
 
 start_run_in_pane() {
-    local pane="${1:?missing pane}" target="${2:?missing window}" root="${3:?missing root}" command="${4:?missing command}" marker pane_command watcher_command
+    local pane="${1:?missing pane}" target="${2:?missing window}" root="${3:?missing root}" command="${4:?missing command}" marker pane_command watcher_command run_state cancel_error
+    run_state="$(tmux show-options -wqv -t "$target" @myran_run_state || true)"
+    if [[ "$run_state" == active ]]; then
+        tmux set-option -wq -t "$target" @myran_run_watch_token "replacing-$$-$RANDOM"
+        for _ in {1..80}; do
+            if cancel_error="$(cd "$root" && myr cancel 2>&1)"; then
+                cancel_error=
+                break
+            fi
+            if [[ "$cancel_error" == *"has no active instance"* ]]; then
+                cancel_error=
+                break
+            fi
+            sleep 0.025
+        done
+        if [[ -n "$cancel_error" ]]; then
+            tmux display-message "Myran replacement failed: $cancel_error"
+            return 1
+        fi
+        (cd "$root" && myr wait)
+        sleep 0.05
+    fi
+
     marker="$(mktemp "${TMPDIR:-/tmp}/myran-run.XXXXXX")"
     rm -f "$marker"
     pane_command="$command; touch $(shell_quote "$marker")"
@@ -417,7 +444,7 @@ role_window() {
     run)
         role=run
         name=run
-        command="myr $run_action"
+        command="myr $run_action --foreground"
         ;;
     *)
         echo "unknown role: $role" >&2
