@@ -382,7 +382,7 @@ start_run_in_pane() {
 }
 
 pick_run_modal() {
-    local cwd="${1:-$PWD}" root session target popup_command callback
+    local cwd="${1:-$PWD}" root session target popup_command client_width client_height popup_width popup_height
     root="$(workspace_root "$cwd")"
     session="$(tmux display-message -p '#S')"
     target="$(find_role_window "$session" run)"
@@ -390,9 +390,27 @@ pick_run_modal() {
         close_run_window "$root" "$target" || return 1
     fi
 
-    callback="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __start-selected-run "$root")"
-    popup_command="cd $(shell_quote "$root") || exit; MYRAN_PICKER_INLINE=1 myr __pick-default; status=\$?; if [ \$status -eq 0 ]; then tmux run-shell -b $(shell_quote "$callback"); elif [ \$status -ne 130 ]; then exit \$status; fi"
-    tmux display-popup -E -b rounded -T " Run " -w 96 -h 20 -d "$root" "$popup_command"
+    client_width="$(tmux display-message -p '#{client_width}')"
+    client_height="$(tmux display-message -p '#{client_height}')"
+    popup_width=80%
+    popup_height=70%
+    [[ "$client_width" =~ ^[0-9]+$ ]] && ((client_width >= 112)) && popup_width=96
+    [[ "$client_height" =~ ^[0-9]+$ ]] && ((client_height >= 28)) && popup_height=20
+
+    popup_command="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __pick-default-modal "$root")"
+    tmux display-popup -E -b rounded -T " Run " -w "$popup_width" -h "$popup_height" -d "$root" "$popup_command"
+}
+
+pick_default_modal() {
+    local root="${1:?missing root}" status
+    if (cd "$root" && MYRAN_PICKER_INLINE=1 myr __pick-default); then
+        role_window run "$root" run
+        return
+    else
+        status=$?
+    fi
+    [[ "$status" -eq 130 ]] && return 0
+    return "$status"
 }
 
 run_or_pick() {
@@ -1143,7 +1161,7 @@ run-tests)
     ;;
 __refresh-status) refresh_status_metadata ;;
 __watch-run) watch_run_window "${1:?missing root}" "${2:?missing window}" "${3:?missing marker}" ;;
-__start-selected-run) role_window run "${1:?missing root}" run ;;
+__pick-default-modal) pick_default_modal "${1:?missing root}" ;;
 __nvim) nvim_runner "$@" ;;
 help | -h | --help) usage ;;
 *)
