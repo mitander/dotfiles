@@ -381,6 +381,30 @@ start_run_in_pane() {
     tmux run-shell -b -t "$target" "$watcher_command"
 }
 
+pick_run_modal() {
+    local cwd="${1:-$PWD}" root session target popup_command callback
+    root="$(workspace_root "$cwd")"
+    session="$(tmux display-message -p '#S')"
+    target="$(find_role_window "$session" run)"
+    if [[ -n "$target" ]]; then
+        close_run_window "$root" "$target" || return 1
+    fi
+
+    callback="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __start-selected-run "$root")"
+    popup_command="cd $(shell_quote "$root") && MYRAN_PICKER_INLINE=1 myr __pick-default && tmux run-shell -b $(shell_quote "$callback")"
+    tmux display-popup -E -w 70% -h 50% -d "$root" "$popup_command"
+}
+
+run_or_pick() {
+    local cwd="${1:-$PWD}" root
+    root="$(workspace_root "$cwd")"
+    if (cd "$root" && myr run-kind >/dev/null 2>&1); then
+        role_window run "$root" run
+    else
+        pick_run_modal "$root"
+    fi
+}
+
 dismiss_run_window() {
     local target="${1:-$(tmux display-message -p '#{window_id}')}" state
     state="$(tmux show-options -wqv -t "$target" @myran_run_state || true)"
@@ -407,6 +431,7 @@ close_run_window() {
     done
 
     tmux display-message "Myran cancel failed: $cancel_error"
+    return 1
 }
 
 role_window() {
@@ -1081,8 +1106,8 @@ session | new-session) new_session "${1:-$PWD}" ;;
 shell | sh) role_window shell "${1:-$PWD}" ;;
 shell2 | sh2) role_window shell2 "${1:-$PWD}" ;;
 agent | pi | ai) role_window pi "${1:-$PWD}" ;;
-run) role_window run "${1:-$PWD}" run ;;
-pick-run) role_window run "${1:-$PWD}" pick-run ;;
+run) run_or_pick "${1:-$PWD}" ;;
+pick-run) pick_run_modal "${1:-$PWD}" ;;
 agent-new | ai-new) agent_new "${1:-$PWD}" "${2:-}" ;;
 pi-split | agent-split) pi_split "${1:-$PWD}" ;;
 pane-to) pane_to_role "${1:?missing role}" "${2:-$PWD}" ;;
@@ -1118,6 +1143,7 @@ run-tests)
     ;;
 __refresh-status) refresh_status_metadata ;;
 __watch-run) watch_run_window "${1:?missing root}" "${2:?missing window}" "${3:?missing marker}" ;;
+__start-selected-run) role_window run "${1:?missing root}" run ;;
 __nvim) nvim_runner "$@" ;;
 help | -h | --help) usage ;;
 *)
