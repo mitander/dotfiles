@@ -391,8 +391,8 @@ pick_run_modal() {
     fi
 
     callback="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __start-selected-run "$root")"
-    popup_command="cd $(shell_quote "$root") && MYRAN_PICKER_INLINE=1 myr __pick-default && tmux run-shell -b $(shell_quote "$callback")"
-    tmux display-popup -E -w 70% -h 50% -d "$root" "$popup_command"
+    popup_command="cd $(shell_quote "$root") || exit; MYRAN_PICKER_INLINE=1 myr __pick-default; status=\$?; if [ \$status -eq 0 ]; then tmux run-shell -b $(shell_quote "$callback"); elif [ \$status -ne 130 ]; then exit \$status; fi"
+    tmux display-popup -E -b rounded -T " Run " -w 96 -h 20 -d "$root" "$popup_command"
 }
 
 run_or_pick() {
