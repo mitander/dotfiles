@@ -341,7 +341,7 @@ complete_run_window() {
             run_status="✗ $exit_code"
         fi
         pane="$(active_pane_in_window "$target")"
-        commands="$(quote_argv set-option -wu -t "$target" @myran_run_watch_token) ; $(quote_argv set-option -wq -t "$target" @myran_run_status "$run_status") ; $(quote_argv set-option -wq -t "$target" @myran_run_state completed)"
+        commands="$(quote_argv set-option -wu -t "$target" @myran_run_watch_token) ; $(quote_argv set-option -wq -t "$target" pane-border-status top) ; $(quote_argv set-option -wq -t "$target" @myran_run_status "$run_status") ; $(quote_argv set-option -wq -t "$target" @myran_run_state completed)"
         if [[ -n "$pane" ]]; then
             commands="$commands ; $(quote_argv set-option -pq -t "$pane" @myran_run_state completed)"
         fi
@@ -410,8 +410,8 @@ start_run_in_pane() {
     pane_command="exec $(quote_argv myr __run-view "$marker")"
     watcher_command="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __watch-run "$root" "$target" "$marker")"
 
-    tmux set-option -wq -t "$target" pane-border-status bottom
-    tmux set-option -wq -t "$target" pane-border-format " run · #{@myran_run_label} · #{@myran_run_status} #{R:─,#{pane_width}}"
+    tmux set-option -wq -t "$target" pane-border-status top
+    tmux set-option -wq -t "$target" pane-border-format "#[fg=#{@flume_accent},bold] run · #{@myran_run_label} · #{@myran_run_status} #[fg=#{@flume_text},nobold]#{R:─,#{pane_width}}#[default]"
     tmux set-option -wq -t "$target" @myran_run_label "$run_label"
     tmux set-option -wq -t "$target" @myran_run_status "…"
     tmux set-option -wq -t "$target" @myran_run_watch_token "$marker"
@@ -422,6 +422,7 @@ start_run_in_pane() {
     tmux send-keys -R -t "$pane"
     tmux clear-history -t "$pane"
     tmux respawn-pane -k -t "$pane" -c "$root" "$pane_command"
+    tmux set-option -wq -t "$target" pane-border-status top
     tmux run-shell -b -t "$target" "$watcher_command"
 }
 
