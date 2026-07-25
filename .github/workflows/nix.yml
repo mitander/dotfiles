@@ -1,0 +1,44 @@
+name: Nix
+
+on:
+  pull_request:
+    paths:
+      - "flake.nix"
+      - "flake.lock"
+      - "home/**"
+      - "scripts/dotfiles-nix.sh"
+      - ".github/workflows/nix.yml"
+  push:
+    branches: [main]
+    paths:
+      - "flake.nix"
+      - "flake.lock"
+      - "home/**"
+      - "scripts/dotfiles-nix.sh"
+      - ".github/workflows/nix.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  home-manager:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            system: aarch64-darwin
+          - os: ubuntu-latest
+            system: x86_64-linux
+          - os: ubuntu-24.04-arm
+            system: aarch64-linux
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - name: Evaluate all profiles
+        run: nix flake check --all-systems --no-build
+      - name: Build native Home Manager profile
+        run: nix build ".#checks.${{ matrix.system }}.home" --no-link
