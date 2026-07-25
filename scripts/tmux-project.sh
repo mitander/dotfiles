@@ -332,7 +332,7 @@ read_run_view_completion() {
 complete_run_window() {
     local target="${1:?missing window}" marker="${2:?missing marker}" exit_code="${3:?missing exit code}" run_kind="${4:?missing run kind}" pane run_status commands condition
     condition="#{==:#{@myran_run_watch_token},$marker}"
-    if [[ "$run_kind" == application ]]; then
+    if [[ "$run_kind" == application && "$exit_code" == 0 ]]; then
         commands="$(quote_argv set-option -wu -t "$target" @myran_run_watch_token) ; $(quote_argv kill-window -t "$target")"
     else
         if [[ "$exit_code" == 0 ]]; then
