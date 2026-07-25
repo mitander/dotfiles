@@ -183,16 +183,14 @@ end
 
 _G.plugin_spec_mtimes = _G.plugin_spec_mtimes or get_plugin_mtimes()
 
-local function apply_flume_variant()
+local function apply_flume_schema()
     local ok, flume = pcall(require, "flume")
     if not ok then
         return
     end
 
-    local variant = require("mitander.plugins.colors").variant
-    flume.setup({ variant = variant, transparent = false })
-    local colorscheme = require("flume.palette").get(variant).colorscheme
-    vim.api.nvim_exec_autocmds("ColorScheme", { pattern = colorscheme, modeline = false })
+    local schema = require("mitander.plugins.colors").schema
+    flume.setup({ schema = schema, transparent = false })
 end
 
 -- reload configuration
@@ -310,8 +308,8 @@ vim.keymap.set("n", "<leader>rl", function()
     -- 5. Reload init.lua
     dofile(vim.env.MYVIMRC)
 
-    -- 6. Reapply the configured editor variant. Global extras sync is explicit.
-    apply_flume_variant()
+    -- 6. Reapply the configured editor schema. Global extras sync is explicit.
+    apply_flume_schema()
 
     -- 7. Trigger lazy.nvim's official reload mechanism for ONLY the changed plugins
     if #plugin_names > 0 then
@@ -647,7 +645,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
 vim.api.nvim_create_autocmd("BufWritePost", {
     group = group,
     pattern = "*/flume.nvim/lua/flume/*.lua",
-    callback = apply_flume_variant,
+    callback = apply_flume_schema,
 })
 
 -- bootstrap lazy if needed
