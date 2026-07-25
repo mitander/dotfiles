@@ -1,8 +1,12 @@
 {
+  config,
   pkgs,
   username,
+  dotfilesDirectory,
   ...
-}: {
+}: let
+  live = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/${path}";
+in {
   home = {
     # This value defines the first Home Manager release used by this
     # configuration. Do not change it during routine upgrades.
@@ -35,28 +39,22 @@
   programs.home-manager.enable = true;
 
   xdg.configFile = {
-    ".lldbinit".source = ../lldb/.config/.lldbinit;
-    "fish/config.fish".source = ../fish/.config/fish/config.fish;
-    "ghostty/config".source = ../ghostty/.config/ghostty/config;
-    "lazygit/config.yml".source = ../lazygit/.config/lazygit/config.yml;
-    "lsd/config.yaml".source = ../lsd/.config/lsd/config.yaml;
-    "nvim" = {
-      source = ../nvim/.config/nvim;
-      recursive = true;
-    };
-    "stylua/.luarc.json".source = ../stylua/.config/stylua/.luarc.json;
-    "stylua/.stylua.toml".source = ../stylua/.config/stylua/.stylua.toml;
+    ".lldbinit".source = live "lldb/.config/.lldbinit";
+    "fish/config.fish".source = live "fish/.config/fish/config.fish";
+    "ghostty/config".source = live "ghostty/.config/ghostty/config";
+    "lazygit/config.yml".source = live "lazygit/.config/lazygit/config.yml";
+    "lsd/config.yaml".source = live "lsd/.config/lsd/config.yaml";
+    "nvim".source = live "nvim/.config/nvim";
+    "stylua/.luarc.json".source = live "stylua/.config/stylua/.luarc.json";
+    "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
   };
 
   home.file = {
-    ".gitconfig".source = ../git/.gitconfig;
-    ".pi/agent/extensions/flume-ui/index.ts".source = ../pi/.pi/agent/extensions/flume-ui/index.ts;
-    ".tmux.conf".source = ../tmux/.tmux.conf;
-    ".tmux/workspace-status.conf".source = ../tmux/.tmux/workspace-status.conf;
-    ".local/bin/tmux-residency" = {
-      source = ../scripts/tmux-residency.sh;
-      executable = true;
-    };
+    ".gitconfig".source = live "git/.gitconfig";
+    ".pi/agent/extensions/flume-ui/index.ts".source = live "pi/.pi/agent/extensions/flume-ui/index.ts";
+    ".tmux.conf".source = live "tmux/.tmux.conf";
+    ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
+    ".local/bin/tmux-residency".source = live "scripts/tmux-residency.sh";
   };
 
   # LazyGit's tmux.yml is loaded directly from the repository by

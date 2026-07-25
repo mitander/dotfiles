@@ -31,11 +31,12 @@
           system,
           username,
           homeDirectory,
+          dotfilesDirectory,
           platformModule,
         }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = pkgsFor system;
-          extraSpecialArgs = { inherit inputs username; };
+          extraSpecialArgs = { inherit inputs username dotfilesDirectory; };
           modules = [
             ./home/common.nix
             platformModule
@@ -52,6 +53,7 @@
           system = "aarch64-darwin";
           username = "mitander";
           homeDirectory = "/Users/mitander";
+          dotfilesDirectory = "/Users/mitander/dotfiles";
           platformModule = ./home/darwin.nix;
         };
 
@@ -59,6 +61,7 @@
           system = "aarch64-linux";
           username = "mitander";
           homeDirectory = "/home/mitander";
+          dotfilesDirectory = "/home/mitander/dotfiles";
           platformModule = ./home/linux.nix;
         };
 
@@ -66,6 +69,7 @@
           system = "x86_64-linux";
           username = "mitander";
           homeDirectory = "/home/mitander";
+          dotfilesDirectory = "/home/mitander/dotfiles";
           platformModule = ./home/linux.nix;
         };
       };

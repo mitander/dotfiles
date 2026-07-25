@@ -25,6 +25,11 @@ Activation requires an explicit guard:
 DOTFILES_ALLOW_ACTIVATE=1 ./scripts/dotfiles-nix.sh switch
 ```
 
+Managed configuration uses live out-of-store links into this checkout. Editing
+Fish, Neovim, tmux, Ghostty, Git, or other declared dotfiles takes effect
+immediately; run `switch` only after changing packages, profiles, or Home Manager
+declarations. Each profile explicitly defines its expected checkout path.
+
 Read [`docs/nix-migration.md`](docs/nix-migration.md) before activation. It
 documents supported profiles, ownership transfer, rollback, and the work that
 is deliberately deferred.
