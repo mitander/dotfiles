@@ -83,9 +83,33 @@
         system:
         let
           profile = profileForSystem.${system};
+          pkgs = pkgsFor system;
         in
         {
           home = homes.${profile}.activationPackage;
+          tmux-residency = pkgs.runCommand "tmux-residency-check" {
+            nativeBuildInputs = with pkgs; [
+              bash
+              coreutils
+              fish
+              gawk
+              gnugrep
+              tmux
+            ];
+          } ''
+            export HOME="$TMPDIR/home"
+            export DOTFILES_TEST_ROOT="$TMPDIR/dotfiles"
+            mkdir -p "$HOME" "$DOTFILES_TEST_ROOT/scripts" "$DOTFILES_TEST_ROOT/tmux"
+            cp ${./scripts/tmux-residency.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-residency.sh"
+            cp ${./scripts/tmux-session.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-session.sh"
+            cp ${./tmux/.tmux.conf} "$DOTFILES_TEST_ROOT/tmux/.tmux.conf"
+            chmod +x "$DOTFILES_TEST_ROOT/scripts/"*.sh
+            bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-residency.sh"
+            bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-session.sh"
+            bash ${./tests/tmux-residency.sh}
+            bash ${./tests/tmux-config.sh}
+            touch "$out"
+          '';
         }
       );
 

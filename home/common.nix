@@ -53,6 +53,10 @@
     ".pi/agent/extensions/flume-ui/index.ts".source = ../pi/.pi/agent/extensions/flume-ui/index.ts;
     ".tmux.conf".source = ../tmux/.tmux.conf;
     ".tmux/workspace-status.conf".source = ../tmux/.tmux/workspace-status.conf;
+    ".local/bin/tmux-residency" = {
+      source = ../scripts/tmux-residency.sh;
+      executable = true;
+    };
   };
 
   # LazyGit's tmux.yml is loaded directly from the repository by

@@ -29,6 +29,31 @@ Read [`docs/nix-migration.md`](docs/nix-migration.md) before activation. It
 documents supported profiles, ownership transfer, rollback, and the work that
 is deliberately deferred.
 
+## Workspace Residency
+
+Workspace Residency currently runs in observation mode: tmux records when a
+Workspace has been detached for 15 minutes, but does not stop any tools. The
+implementation is event-driven; it adds no keypress, mouse, status-line, or
+periodic polling work.
+
+```text
+prefix + I   observe an immediate cooling decision
+prefix + w   open the Workspace picker
+```
+
+Useful diagnostics:
+
+```sh
+~/.local/bin/tmux-residency status
+~/.local/bin/tmux-residency benchmark 100
+./tests/tmux-residency.sh
+```
+
+The Workspace picker deliberately shows only names and roots; detached grace and
+cooling state are internal details. The tmux configuration falls back to the
+repository script when the Home Manager command is absent, preserving the legacy
+rollback.
+
 ## Legacy bootstrap
 
 The existing installer remains supported during migration:
