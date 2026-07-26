@@ -106,12 +106,15 @@
             mkdir -p "$HOME" "$DOTFILES_TEST_ROOT/scripts" "$DOTFILES_TEST_ROOT/tmux"
             cp ${./scripts/tmux-residency.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-residency.sh"
             cp ${./scripts/tmux-session.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-session.sh"
+            cp ${./scripts/tmux-project.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-project.sh"
             cp ${./tmux/.tmux.conf} "$DOTFILES_TEST_ROOT/tmux/.tmux.conf"
             chmod +x "$DOTFILES_TEST_ROOT/scripts/"*.sh
             bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-residency.sh"
             bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-session.sh"
+            bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-project.sh"
             bash ${./tests/tmux-residency.sh}
             bash ${./tests/tmux-config.sh}
+            bash ${./tests/tmux-run-events.sh}
             touch "$out"
           '';
         }

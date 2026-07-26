@@ -648,6 +648,36 @@ vim.api.nvim_create_autocmd("BufWritePost", {
     callback = apply_flume_schema,
 })
 
+-- Claim pane navigation for nested editors such as `git commit`. Dedicated edit
+-- panes are already identified by their workspace role; this covers editors
+-- launched from ordinary shell panes without adding work to the keypress path.
+local function set_tmux_navigation(owned)
+    if not vim.env.TMUX_PANE or vim.fn.executable("tmux") ~= 1 then
+        return
+    end
+    local command
+    if owned then
+        command = { "tmux", "set-option", "-pq", "-t", vim.env.TMUX_PANE, "@workspace_navigation", "application" }
+    else
+        command = { "tmux", "set-option", "-pu", "-t", vim.env.TMUX_PANE, "@workspace_navigation" }
+    end
+    vim.fn.system(command)
+end
+
+vim.api.nvim_create_autocmd("VimEnter", {
+    group = group,
+    callback = function()
+        set_tmux_navigation(true)
+    end,
+})
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+    group = group,
+    callback = function()
+        set_tmux_navigation(false)
+    end,
+})
+
 -- bootstrap lazy if needed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 local lazy_init = lazypath .. "/lua/lazy/init.lua"

@@ -55,9 +55,11 @@ Useful diagnostics:
 ```
 
 The Workspace picker deliberately shows only names and roots; detached grace and
-cooling state are internal details. The tmux configuration falls back to the
-repository script when the Home Manager command is absent, preserving the legacy
-rollback.
+cooling state are internal details. Run completion is delivered by tmux's
+`pane-died` event instead of a 25 ms watcher, and Ctrl-h/j/k/l routing uses pane
+metadata instead of process probes on each keypress. The tmux configuration falls
+back to the repository script when the Home Manager command is absent, preserving
+the legacy rollback.
 
 ## Legacy bootstrap
 

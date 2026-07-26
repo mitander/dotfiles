@@ -330,7 +330,7 @@ read_run_view_completion() {
 }
 
 complete_run_window() {
-    local target="${1:?missing window}" marker="${2:?missing marker}" exit_code="${3:?missing exit code}" run_kind="${4:?missing run kind}" pane run_status commands condition
+    local target="${1:?missing window}" marker="${2:?missing marker}" exit_code="${3:?missing exit code}" run_kind="${4:?missing run kind}" pane="${5:-}" run_status commands condition
     condition="#{==:#{@myran_run_watch_token},$marker}"
     if [[ "$run_kind" == application && "$exit_code" == 0 ]]; then
         commands="$(quote_argv set-option -wu -t "$target" @myran_run_watch_token) ; $(quote_argv kill-window -t "$target")"
@@ -340,48 +340,33 @@ complete_run_window() {
         else
             run_status="✗ $exit_code"
         fi
-        pane="$(active_pane_in_window "$target")"
+        [[ -n "$pane" ]] || pane="$(active_pane_in_window "$target")"
         commands="$(quote_argv set-option -wu -t "$target" @myran_run_watch_token) ; $(quote_argv set-option -wq -t "$target" pane-border-status top) ; $(quote_argv set-option -wq -t "$target" @myran_run_status "$run_status") ; $(quote_argv set-option -wq -t "$target" @myran_run_state completed)"
         if [[ -n "$pane" ]]; then
-            commands="$commands ; $(quote_argv set-option -pq -t "$pane" @myran_run_state completed)"
+            commands="$commands ; $(quote_argv set-option -pu -t "$pane" @myran_run_marker) ; $(quote_argv set-option -pq -t "$pane" @myran_run_state completed)"
         fi
     fi
     tmux if-shell -F -t "$target" "$condition" "$commands"
 }
 
-watch_run_window() {
-    local root="${1:?missing root}" target="${2:?missing window}" marker="${3:?missing marker}" current_token pane pane_dead completion exit_code run_kind
-    : "$root"
+run_pane_exited() {
+    local pane="${1:?missing pane}" target="${2:?missing window}" marker="${3:-}" completion exit_code run_kind
+    [[ -n "$marker" ]] || return 0
 
-    while tmux display-message -p -t "$target" '#{window_id}' >/dev/null 2>&1; do
-        current_token="$(tmux show-options -wqv -t "$target" @myran_run_watch_token || true)"
-        if [[ "$current_token" != "$marker" ]]; then
-            rm -f "$marker"
-            return
-        fi
-        if [[ -e "$marker" ]]; then
-            completion="$(read_run_view_completion "$marker" 2>/dev/null || printf '125\tresult')"
-            exit_code="${completion%%$'\t'*}"
-            run_kind="${completion#*$'\t'}"
-            rm -f "$marker"
-            complete_run_window "$target" "$marker" "$exit_code" "$run_kind"
-            return
-        fi
-        pane="$(active_pane_in_window "$target")"
-        if [[ -n "$pane" ]]; then
-            pane_dead="$(tmux display-message -p -t "$pane" '#{pane_dead}' 2>/dev/null || true)"
-            if [[ "$pane_dead" == 1 ]]; then
-                complete_run_window "$target" "$marker" 125 result
-                return
-            fi
-        fi
-        sleep 0.025
-    done
+    if [[ -e "$marker" ]]; then
+        completion="$(read_run_view_completion "$marker" 2>/dev/null || printf '125\tresult')"
+        exit_code="${completion%%$'\t'*}"
+        run_kind="${completion#*$'\t'}"
+    else
+        exit_code=125
+        run_kind=result
+    fi
     rm -f "$marker"
+    complete_run_window "$target" "$marker" "$exit_code" "$run_kind" "$pane"
 }
 
 start_run_in_pane() {
-    local pane="${1:?missing pane}" target="${2:?missing window}" root="${3:?missing root}" marker pane_command watcher_command run_state cancel_error run_label
+    local pane="${1:?missing pane}" target="${2:?missing window}" root="${3:?missing root}" marker start_channel pane_command run_state cancel_error run_label
     run_state="$(tmux show-options -wqv -t "$target" @myran_run_state || true)"
     if [[ "$run_state" == active ]]; then
         tmux set-option -wq -t "$target" @myran_run_watch_token "replacing-$$-$RANDOM"
@@ -407,8 +392,8 @@ start_run_in_pane() {
     run_label="$(cd "$root" && myr __run-label)"
     marker="$(mktemp "${TMPDIR:-/tmp}/myran-run.XXXXXX")"
     rm -f "$marker"
-    pane_command="exec $(quote_argv myr __run-view "$marker")"
-    watcher_command="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __watch-run "$root" "$target" "$marker")"
+    start_channel="myran-run-start-$$-${RANDOM}"
+    pane_command="$(quote_argv tmux wait-for "$start_channel") && exec $(quote_argv myr __run-view "$marker")"
 
     tmux set-option -wq -t "$target" pane-border-status top
     tmux set-option -wq -t "$target" pane-border-format "#[fg=#{@flume_accent},bold] run · #{@myran_run_label} · #{@myran_run_status} #[fg=#{@flume_text},nobold]#{R:─,#{pane_width}}#[default]"
@@ -417,13 +402,15 @@ start_run_in_pane() {
     tmux set-option -wq -t "$target" @myran_run_watch_token "$marker"
     tmux set-option -wq -t "$target" @myran_run_state active
     tmux set-option -pq -t "$pane" @myran_run_state active
+    tmux set-option -pu -t "$pane" @myran_run_marker >/dev/null 2>&1 || true
     tmux set-option -pq -t "$pane" remain-on-exit on
     tmux set-option -pq -t "$pane" remain-on-exit-format ""
     tmux send-keys -R -t "$pane"
     tmux clear-history -t "$pane"
     tmux respawn-pane -k -t "$pane" -c "$root" "$pane_command"
+    tmux set-option -pq -t "$pane" @myran_run_marker "$marker"
+    tmux wait-for -S "$start_channel"
     tmux set-option -wq -t "$target" pane-border-status top
-    tmux run-shell -b -t "$target" "$watcher_command"
 }
 
 pick_run_modal() {
@@ -1205,7 +1192,7 @@ run-tests)
     tmux split-window -h -c "$cwd" "dtest run; exec fish"
     ;;
 __refresh-status) refresh_status_metadata ;;
-__watch-run) watch_run_window "${1:?missing root}" "${2:?missing window}" "${3:?missing marker}" ;;
+__run-pane-exited) run_pane_exited "${1:?missing pane}" "${2:?missing window}" "${3:-}" ;;
 __pick-default-modal) pick_default_modal "${1:?missing root}" ;;
 __nvim) nvim_runner "$@" ;;
 help | -h | --help) usage ;;

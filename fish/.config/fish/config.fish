@@ -115,6 +115,25 @@ function fish_postexec --on-event fish_postexec
     history save
 end
 
+# Terminal applications claim Ctrl-h/j/k/l once at process start rather than
+# making tmux probe the tty process tree on every navigation keypress.
+function __workspace_navigation_set
+    test -n "$TMUX_PANE"; or return
+    command -q tmux; or return
+    command tmux set-option -pq -t "$TMUX_PANE" @workspace_navigation application
+end
+
+function __workspace_navigation_clear
+    test -n "$TMUX_PANE"; or return
+    command -q tmux; or return
+    command tmux set-option -pu -t "$TMUX_PANE" @workspace_navigation >/dev/null 2>&1
+end
+
+# Clear claims left by nested applications after the top-level shell command.
+function __workspace_navigation_postexec --on-event fish_postexec
+    __workspace_navigation_clear
+end
+
 # Initial FZF value; the function below refreshes it for every invocation.
 set -l flume_fzf_opts "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
 test -r "$flume_fzf_opts"; and set -gx FZF_DEFAULT_OPTS (string trim <"$flume_fzf_opts")
@@ -173,7 +192,21 @@ if command -q fzf
         if test -r "$opts_file"
             set -lx FZF_DEFAULT_OPTS (string trim <"$opts_file")
         end
+        __workspace_navigation_set
         command fzf $argv
+        set -l fzf_status $status
+        __workspace_navigation_clear
+        return $fzf_status
+    end
+end
+
+if command -q hx
+    function hx
+        __workspace_navigation_set
+        command hx $argv
+        set -l hx_status $status
+        __workspace_navigation_clear
+        return $hx_status
     end
 end
 
