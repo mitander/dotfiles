@@ -118,6 +118,8 @@ return {
                 "flume-kapsel-light",
                 "flume-dusk",
                 "flume-dawn",
+                "flume-mira",
+                "flume-mesa",
             },
             callback = function()
                 lualine.setup(make_opts())

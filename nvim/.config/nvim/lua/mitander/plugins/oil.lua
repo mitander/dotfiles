@@ -14,13 +14,31 @@ function _G.mitander_oil_statusline()
 end
 
 local show_detail = false
+local show_line_count = false
+local line_count_cache = {}
+
+local function update_columns()
+    local columns = { "icon" }
+    if show_line_count then
+        table.insert(columns, { "lines", align = "right" })
+    end
+    if show_detail then
+        vim.list_extend(columns, { "permissions", "size", "mtime" })
+    end
+    require("oil").set_columns(columns)
+end
+
 local function toggle_detail()
     show_detail = not show_detail
-    if show_detail then
-        require("oil").set_columns({ "icon", "permissions", "size", "mtime" })
-    else
-        require("oil").set_columns({ "icon" })
+    update_columns()
+end
+
+local function toggle_line_count()
+    show_line_count = not show_line_count
+    if show_line_count then
+        line_count_cache = {}
     end
+    update_columns()
 end
 
 local function is_oil_sidebar(winid)
@@ -313,6 +331,10 @@ return {
                 callback = toggle_detail,
                 desc = "Toggle detail columns",
             },
+            ["gl"] = {
+                callback = toggle_line_count,
+                desc = "Toggle file line counts",
+            },
         },
         use_default_keymaps = true,
         view_options = {
@@ -332,6 +354,94 @@ return {
         },
     },
     config = function(_, opts)
+        local function redraw_oil_buffer(bufnr)
+            if vim.api.nvim_buf_is_valid(bufnr) and vim.bo[bufnr].filetype == "oil" then
+                require("oil.view").render_buffer_async(bufnr, { refetch = false })
+            end
+        end
+
+        local function add_tokei_report(values, dir, report)
+            local stats = report.stats or {}
+            local count = (stats.code or 0) + (stats.comments or 0) + (stats.blanks or 0)
+            local prefix = dir:sub(-1) == "/" and dir or (dir .. "/")
+            if not vim.startswith(report.name, prefix) then
+                return
+            end
+
+            local relative = report.name:sub(#prefix + 1)
+            local top_level = relative:match("^[^/]+")
+            if top_level then
+                local path = vim.fs.joinpath(dir, top_level)
+                values[path] = (values[path] or 0) + count
+            end
+        end
+
+        local function scan_with_tokei(dir, bufnr)
+            local scan = {
+                values = {},
+                buffers = { [bufnr] = true },
+            }
+            line_count_cache[dir] = scan
+
+            vim.system({ "tokei", "--output", "json", "--files", "--hidden", dir }, { text = true }, function(result)
+                vim.schedule(function()
+                    if line_count_cache[dir] ~= scan then
+                        return
+                    end
+
+                    if result.code == 0 then
+                        local ok, output = pcall(vim.json.decode, result.stdout)
+                        if ok then
+                            for language, data in pairs(output) do
+                                if language ~= "Total" then
+                                    for _, report in ipairs(data.reports or {}) do
+                                        add_tokei_report(scan.values, dir, report)
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    for waiting_bufnr in pairs(scan.buffers) do
+                        redraw_oil_buffer(waiting_bufnr)
+                    end
+                    scan.buffers = nil
+                end)
+            end)
+
+            return scan
+        end
+
+        require("oil.columns").register("lines", {
+            render = function(entry, _, bufnr)
+                local constants = require("oil.constants")
+                local name = entry[constants.FIELD_NAME]
+                if name == ".." then
+                    return nil
+                end
+
+                local dir = require("oil").get_current_dir(bufnr)
+                if not dir then
+                    return nil
+                end
+
+                local scan = line_count_cache[dir]
+                if not scan then
+                    scan = scan_with_tokei(dir, bufnr)
+                elseif scan.buffers then
+                    scan.buffers[bufnr] = true
+                end
+
+                local count = scan.values[vim.fs.joinpath(dir, name)]
+                if count then
+                    return tostring(count)
+                end
+            end,
+            parse = function(line)
+                return line:match("^(%d+)%s+(.*)$")
+            end,
+        })
+
         vim.keymap.set("n", "<c-n>", toggle_sidebar, { desc = "Toggle oil sidebar" })
         vim.keymap.set("n", "<leader>e", reveal_in_sidebar, { desc = "Reveal current file in oil" })
         require("oil").setup(opts)

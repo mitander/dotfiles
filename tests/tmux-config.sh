@@ -18,15 +18,16 @@ fail() {
 
 mkdir -p \
   "$TEST_ROOT/home/dotfiles/scripts" \
+  "$TEST_ROOT/home/dotfiles/extras/tmux" \
   "$TEST_ROOT/home/dotfiles/tmux/.tmux" \
   "$TEST_ROOT/home/.tmux/plugins/tpm" \
   "$TEST_ROOT/state"
 cp "$SOURCE_ROOT/scripts/tmux-residency.sh" "$TEST_ROOT/home/dotfiles/scripts/tmux-residency.sh"
 cp "$SOURCE_ROOT/scripts/tmux-project.sh" "$TEST_ROOT/home/dotfiles/scripts/tmux-project.sh"
 cp "$SOURCE_ROOT/tmux/.tmux.conf" "$TEST_ROOT/home/dotfiles/tmux/.tmux.conf"
+cp "$SOURCE_ROOT/tmux/.tmux/workspace-status.conf" "$TEST_ROOT/home/dotfiles/tmux/.tmux/workspace-status.conf"
+cp "$SOURCE_ROOT/extras/tmux/colors.conf" "$TEST_ROOT/home/dotfiles/extras/tmux/colors.conf"
 chmod +x "$TEST_ROOT/home/dotfiles/scripts/tmux-residency.sh" "$TEST_ROOT/home/dotfiles/scripts/tmux-project.sh"
-: >"$TEST_ROOT/home/dotfiles/tmux/.tmux/flume-theme.conf"
-: >"$TEST_ROOT/home/dotfiles/tmux/.tmux/workspace-status.conf"
 printf '#!/bin/sh\nexit 0\n' >"$TEST_ROOT/home/.tmux/plugins/tpm/tpm"
 chmod +x "$TEST_ROOT/home/.tmux/plugins/tpm/tpm"
 
@@ -45,6 +46,8 @@ root_bindings="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" list-keys -T root)"
 [[ "$root_bindings" != *'ps -o state='* ]] || fail 'navigation still probes processes on keypress'
 script="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" show-option -gqv @workspace_residency_script)"
 [[ "$script" == "$TEST_ROOT/home/dotfiles/scripts/tmux-residency.sh" ]] || fail 'legacy residency fallback was not selected'
+status_style="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" show-option -gv status-style)"
+[[ "$status_style" == *'bg=#232136'* && "$status_style" == *'fg=#c9c5d9'* ]] || fail 'tracked fallback theme was not applied'
 
 # The session-created hook is coalesced, then observes the detached session.
 for _ in $(seq 1 30); do

@@ -1,5 +1,5 @@
 local dotfiles = vim.env.DOTFILES_DIR or vim.fn.expand("~/dotfiles")
-local schema = "kapsel-dark" -- "dark", "light", "kapsel-dark", or "kapsel-light"
+local schema = "dusk" -- "dusk", "dawn", "mira", or "mesa"
 
 return {
     schema = schema,
