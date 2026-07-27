@@ -1,6 +1,14 @@
 # general
 set -q DOTFILES_DIR; or set -gx DOTFILES_DIR "$HOME/dotfiles"
 
+# Prefer the Home Manager package profile while keeping the host login shell
+# unchanged. Add the Nix daemon profile first so the user profile ends up first.
+for nix_bin in /nix/var/nix/profiles/default/bin $HOME/.nix-profile/bin
+    if test -d $nix_bin; and not contains $nix_bin $PATH
+        set -gx PATH $nix_bin $PATH
+    end
+end
+
 function nvim
     if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"; and test -x "$DOTFILES_DIR/scripts/tmux-project.sh"
         "$DOTFILES_DIR/scripts/tmux-project.sh" vim-open -- $argv
@@ -247,4 +255,3 @@ end
 
 abbr -a dr drun
 abbr -a dt dtest
-

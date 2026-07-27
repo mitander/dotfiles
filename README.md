@@ -6,10 +6,10 @@ and Linux on ARM64/x86-64.
 ## Nix migration
 
 The repository now contains a pinned Nix flake and conservative Home Manager
-profiles. Home Manager installs the common CLI package set and owns the migrated
-LSD, Stylua, Git, LazyGit, Ghostty, Fish, tmux, Neovim, Pi-extension, and LLDB configuration paths listed in [`docs/nix-migration.md`](docs/nix-migration.md).
-Other Stow-managed configuration, the login shell, native graphical applications,
-and host GPU/audio/display settings remain unchanged.
+profiles. Home Manager installs the common CLI package set and owns the live
+configuration links declared in [`home/common.nix`](home/common.nix). The login
+shell, native graphical applications, Flume-generated themes, mutable application
+state, and host GPU/audio/display settings remain host-managed.
 
 After installing Nix and opening a fresh terminal:
 
@@ -29,10 +29,6 @@ Managed configuration uses live out-of-store links into this checkout. Editing
 Fish, Neovim, tmux, Ghostty, Git, or other declared dotfiles takes effect
 immediately; run `switch` only after changing packages, profiles, or Home Manager
 declarations. Each profile explicitly defines its expected checkout path.
-
-Read [`docs/nix-migration.md`](docs/nix-migration.md) before activation. It
-documents supported profiles, ownership transfer, rollback, and the work that
-is deliberately deferred.
 
 ## Workspace Residency
 
@@ -59,31 +55,22 @@ cooling state are internal details. Run completion is delivered by tmux's
 `pane-died` event instead of a 25 ms watcher, and Ctrl-h/j/k/l routing uses pane
 metadata instead of process probes on each keypress. The tmux configuration falls
 back to the repository script when the Home Manager command is absent, preserving
-the legacy rollback.
+generation rollback.
 
-## Legacy bootstrap
+## Safe bootstrap
 
-The existing installer remains supported during migration:
+Clone the repository at the path required by the selected profile, then run the
+non-destructive bootstrap:
 
 ```sh
 git clone https://github.com/mitander/dotfiles.git ~/dotfiles
 cd ~/dotfiles
-./install.sh
-
-DOTFILES_SKIP_PACKAGES=1 ./install.sh
-DOTFILES_SKIP_NVIM_SYNC=1 ./install.sh
-DOTFILES_SKIP_TPM=1 ./install.sh
+./install.sh           # doctor + build; does not activate
+./install.sh --check   # also evaluate every supported system
+./install.sh --activate
 ```
 
-The legacy installer:
-
-1. installs dependencies when a supported package manager is present;
-2. clones the Flume theme repository when missing;
-3. links configuration files into `$HOME` with GNU Stow;
-4. installs tmux plugin manager; and
-5. synchronizes Neovim plugins.
-
-Do not run Stow and Home Manager against the same destination. The full legacy
-installer can overwrite migrated links; use the package-specific rollback
-commands in [`docs/nix-migration.md`](docs/nix-migration.md) while Home Manager
-is active. Remaining configuration packages will move one at a time.
+`install.sh` never invokes a host package manager and does not install Nix
+automatically. Ordinary dotfile edits are live-linked and require no activation.
+Use Git for configuration rollback and Home Manager generations for package or
+declaration rollback.

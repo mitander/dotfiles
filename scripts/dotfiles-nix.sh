@@ -36,12 +36,51 @@ profile() {
   esac
 }
 
+checkout_for_profile() {
+  case "$1" in
+    mitander@darwin)
+      printf '%s\n' "/Users/mitander/dotfiles"
+      ;;
+    mitander@linux-aarch64 | mitander@linux-x86_64)
+      printf '%s\n' "/home/mitander/dotfiles"
+      ;;
+    *)
+      printf 'Unknown profile: %s\n' "$1" >&2
+      return 1
+      ;;
+  esac
+}
+
+verify_checkout() {
+  local selected="$1" expected
+  expected="$(checkout_for_profile "$selected")"
+
+  if [[ ! -d "$expected" || ! -f "$expected/flake.nix" ]]; then
+    printf 'Expected live-linked dotfiles checkout is missing: %s\n' "$expected" >&2
+    return 1
+  fi
+
+  if [[ ! "$ROOT/flake.nix" -ef "$expected/flake.nix" ]]; then
+    cat >&2 <<EOF
+This profile live-links configuration from:
+  $expected
+
+But this command is running from:
+  $ROOT
+
+Move or clone the repository to the expected path, or define a profile for this
+checkout before activating it.
+EOF
+    return 1
+  fi
+}
+
 require_nix() {
   if ! command -v nix >/dev/null 2>&1; then
     cat >&2 <<'EOF'
 Nix is not installed or is not on PATH.
 Install Nix using an installer you have reviewed, restart the shell, and rerun
-this command. The legacy ./install.sh remains available in the meantime.
+this command.
 EOF
     return 1
   fi
@@ -58,17 +97,15 @@ home_manager() {
 doctor() {
   local selected
   selected="$(profile)"
-  printf 'root:    %s\n' "$ROOT"
-  printf 'profile: %s\n' "$selected"
-  printf 'host:    %s %s\n' "$(uname -s)" "$(uname -m)"
+  printf 'root:     %s\n' "$ROOT"
+  printf 'profile:  %s\n' "$selected"
+  printf 'checkout: %s\n' "$(checkout_for_profile "$selected")"
+  printf 'host:     %s %s\n' "$(uname -s)" "$(uname -m)"
 
+  verify_checkout "$selected"
   require_nix
   run_nix flake metadata "$FLAKE" --no-write-lock-file >/dev/null
   run_nix eval "$FLAKE#homeConfigurations.\"$selected\".activationPackage.drvPath" --raw >/dev/null
-
-  if command -v stow >/dev/null 2>&1; then
-    printf 'legacy:  GNU Stow is present; existing links remain untouched\n'
-  fi
 
   printf 'status:  selected Home Manager profile evaluates successfully\n'
 }
@@ -86,6 +123,7 @@ switch_generation() {
   local selected backup_extension
   require_nix
   selected="$(profile)"
+  verify_checkout "$selected"
 
   if [[ "${DOTFILES_ALLOW_ACTIVATE:-}" != 1 ]]; then
     cat >&2 <<EOF

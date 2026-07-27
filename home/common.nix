@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   username,
   dotfilesDirectory,
@@ -27,7 +28,6 @@ in {
       neovim
       ripgrep
       shfmt
-      stow
       stylua
       tmux
       tree
@@ -37,6 +37,16 @@ in {
   };
 
   programs.home-manager.enable = true;
+
+  home.activation.checkDotfilesCheckout = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+    dotfiles_expected_checkout=${lib.escapeShellArg dotfilesDirectory}
+    if [[ ! -d "$dotfiles_expected_checkout" || ! -f "$dotfiles_expected_checkout/flake.nix" ]]; then
+      echo "Expected live-linked dotfiles checkout is missing: $dotfiles_expected_checkout" >&2
+      echo "Clone this repository there or activate a profile with the correct path." >&2
+      exit 1
+    fi
+    unset dotfiles_expected_checkout
+  '';
 
   xdg.configFile = {
     ".lldbinit".source = live "lldb/.config/.lldbinit";
