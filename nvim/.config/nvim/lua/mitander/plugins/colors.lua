@@ -1,9 +1,15 @@
 local dotfiles = vim.env.DOTFILES_DIR or vim.fn.expand("~/dotfiles")
-local schema = "dusk" -- "dusk", "dawn", "mira", or "mesa"
+local flume = dotfiles .. "/themes/flume"
+local schema_file = flume .. "/extras/current/schema"
+local schema = "mesa"
+
+if vim.fn.filereadable(schema_file) == 1 then
+    schema = vim.trim(vim.fn.readfile(schema_file, "", 1)[1] or schema)
+end
 
 return {
     schema = schema,
-    dir = dotfiles .. "/themes/flume",
+    dir = flume,
     name = "flume.nvim",
     lazy = false,
     priority = 1000,

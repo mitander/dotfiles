@@ -111,13 +111,8 @@ return {
         vim.api.nvim_create_autocmd("ColorScheme", {
             group = vim.api.nvim_create_augroup("mitander_lualine_flume", { clear = true }),
             pattern = {
-                "flume",
-                "flume-dark",
-                "flume-light",
-                "flume-kapsel-dark",
-                "flume-kapsel-light",
                 "flume-dusk",
-                "flume-dawn",
+                "flume-opal",
                 "flume-mira",
                 "flume-mesa",
             },
