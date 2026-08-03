@@ -2,12 +2,17 @@
 set -q DOTFILES_DIR; or set -gx DOTFILES_DIR "$HOME/dotfiles"
 
 # Prefer the Home Manager package profile while keeping the host login shell
-# unchanged. Add the Nix daemon profile first so the user profile ends up first.
+# unchanged. Move existing Nix entries as well as adding missing ones: GUI apps
+# can inherit a PATH where Homebrew appears before the Nix profile.
 for nix_bin in /nix/var/nix/profiles/default/bin $HOME/.nix-profile/bin
-    if test -d $nix_bin; and not contains $nix_bin $PATH
-        set -gx PATH $nix_bin $PATH
+    if test -d $nix_bin
+        while set -l path_index (contains -i -- $nix_bin $PATH)
+            set -e PATH[$path_index]
+        end
+        set -p PATH $nix_bin
     end
 end
+set -gx PATH $PATH
 
 function nvim
     if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"; and test -x "$DOTFILES_DIR/scripts/tmux-project.sh"
