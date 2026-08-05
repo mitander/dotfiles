@@ -343,11 +343,9 @@ vim.keymap.set("n", "<leader>rl", function()
 end, { desc = "Reload Neovim configuration" })
 
 local group = vim.api.nvim_create_augroup("mitander", { clear = true })
-local startup_scratch_ns = vim.api.nvim_create_namespace("startup_scratch")
-vim.api.nvim_set_hl(0, "StartupScratchMessage", { fg = "#a3be8c", italic = true })
 
--- calm startup scratch
-local startup_messages = {
+-- Show a calm welcome without changing the editing buffer or its window options.
+local welcome_messages = {
     "slow down and make the small thing work",
     "boring code is a kindness",
     "fun counts",
@@ -368,198 +366,66 @@ local startup_messages = {
     "the terminal is a place to play",
 }
 
-local function random_startup_message()
+local function show_welcome()
+    if vim.fn.argc() > 0 or vim.api.nvim_buf_get_name(0) ~= "" or vim.api.nvim_buf_line_count(0) ~= 1 then
+        return
+    end
+    if vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] ~= "" then
+        return
+    end
+
+    local source_buf = vim.api.nvim_get_current_buf()
     math.randomseed(vim.uv.hrtime())
-    return startup_messages[math.random(#startup_messages)]
-end
+    local message = welcome_messages[math.random(#welcome_messages)]
+    local width = vim.fn.strdisplaywidth(message)
+    local welcome_buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(welcome_buf, 0, -1, false, { message })
+    vim.bo[welcome_buf].modifiable = false
 
-local function is_empty_unnamed_buffer()
-    if vim.api.nvim_buf_get_name(0) ~= "" or vim.api.nvim_buf_line_count(0) > 1 then
-        return false
-    end
-    return vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] == ""
-end
+    local welcome_win = vim.api.nvim_open_win(welcome_buf, false, {
+        relative = "editor",
+        row = math.max(math.floor((vim.o.lines - 1) / 2), 0),
+        col = math.max(math.floor((vim.o.columns - width) / 2), 0),
+        width = width,
+        height = 1,
+        style = "minimal",
+        focusable = false,
+        noautocmd = true,
+        zindex = 1,
+    })
+    vim.wo[welcome_win].winhighlight = "Normal:WelcomeMessage,NormalFloat:WelcomeMessage"
 
-local function is_startup_scratch(bufnr)
-    return vim.api.nvim_buf_is_valid(bufnr) and vim.b[bufnr].startup_scratch == true
-end
-
-local function apply_startup_scratch_window_options(winid)
-    winid = winid == 0 and vim.api.nvim_get_current_win() or winid
-    if not vim.api.nvim_win_is_valid(winid) then
-        return
-    end
-
-    if not vim.w[winid].startup_scratch_options then
-        vim.w[winid].startup_scratch_options = {
-            number = vim.wo[winid].number,
-            relativenumber = vim.wo[winid].relativenumber,
-            cursorline = vim.wo[winid].cursorline,
-            signcolumn = vim.wo[winid].signcolumn,
-        }
-    end
-
-    vim.wo[winid].number = false
-    vim.wo[winid].relativenumber = false
-    vim.wo[winid].cursorline = false
-    vim.wo[winid].signcolumn = "no"
-end
-
-local function restore_startup_scratch_window_options(winid)
-    winid = winid == 0 and vim.api.nvim_get_current_win() or winid
-    if not vim.api.nvim_win_is_valid(winid) then
-        return
-    end
-
-    local opts = vim.w[winid].startup_scratch_options
-    if opts then
-        vim.wo[winid].number = opts.number
-        vim.wo[winid].relativenumber = opts.relativenumber
-        vim.wo[winid].cursorline = opts.cursorline
-        vim.wo[winid].signcolumn = opts.signcolumn
-        vim.w[winid].startup_scratch_options = nil
-    else
-        vim.wo[winid].number = vim.o.number
-        vim.wo[winid].relativenumber = vim.o.relativenumber
-        vim.wo[winid].cursorline = vim.o.cursorline
-        vim.wo[winid].signcolumn = vim.o.signcolumn
-    end
-end
-
-local function clear_startup_scratch(bufnr)
-    if not vim.api.nvim_buf_is_valid(bufnr) then
-        return
-    end
-
-    vim.bo[bufnr].modifiable = true
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
-    vim.api.nvim_buf_clear_namespace(bufnr, startup_scratch_ns, 0, -1)
-    vim.b[bufnr].startup_scratch = nil
-    vim.b[bufnr].startup_scratch_message = nil
-    vim.bo[bufnr].buflisted = true
-    vim.bo[bufnr].bufhidden = ""
-    vim.bo[bufnr].filetype = ""
-    vim.bo[bufnr].modified = false
-end
-
-local function render_startup_scratch(bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
-    if not is_startup_scratch(bufnr) then
-        return
-    end
-
-    vim.api.nvim_buf_clear_namespace(bufnr, startup_scratch_ns, 0, -1)
-
-    local message = vim.b[bufnr].startup_scratch_message
-    if not message then
-        return
-    end
-
-    local height = vim.o.lines - vim.o.cmdheight - 2
-    local row = math.max(math.floor(height / 2), 0)
-    local col = math.max(math.floor((vim.o.columns - vim.fn.strdisplaywidth(message)) / 2), 0)
-    local lines = {}
-
-    for _ = 1, row do
-        lines[#lines + 1] = ""
-    end
-    lines[#lines + 1] = string.rep(" ", col) .. message
-
-    vim.bo[bufnr].modifiable = true
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-    vim.bo[bufnr].modifiable = false
-    vim.bo[bufnr].modified = false
-    vim.api.nvim_buf_add_highlight(bufnr, startup_scratch_ns, "StartupScratchMessage", row, col, -1)
-end
-
-local function promote_startup_scratch(bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
-    if not is_startup_scratch(bufnr) then
-        return
-    end
-
-    clear_startup_scratch(bufnr)
-    for _, winid in ipairs(vim.fn.win_findbuf(bufnr)) do
-        restore_startup_scratch_window_options(winid)
-    end
-end
-
-function _G.mitander_dismiss_startup_scratch()
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-        if is_startup_scratch(bufnr) then
-            for _, winid in ipairs(vim.fn.win_findbuf(bufnr)) do
-                if vim.api.nvim_win_is_valid(winid) then
-                    local replacement = vim.api.nvim_create_buf(true, false)
-                    vim.api.nvim_win_set_buf(winid, replacement)
-                    restore_startup_scratch_window_options(winid)
-                end
-            end
-
-            if vim.api.nvim_buf_is_valid(bufnr) then
-                pcall(vim.api.nvim_buf_delete, bufnr, { force = true })
-            end
+    local function dismiss_welcome()
+        if vim.api.nvim_win_is_valid(welcome_win) then
+            vim.api.nvim_win_close(welcome_win, true)
         end
     end
-end
 
-local function show_startup_scratch()
-    if vim.fn.argc() > 0 or vim.bo.filetype == "lazy" or not is_empty_unnamed_buffer() then
-        return
-    end
-
-    local bufnr = vim.api.nvim_get_current_buf()
-    vim.b[bufnr].startup_scratch = true
-    vim.b[bufnr].startup_scratch_message = random_startup_message()
-    vim.bo[bufnr].buflisted = false
-    vim.bo[bufnr].bufhidden = "wipe"
-    vim.bo[bufnr].swapfile = false
-    vim.bo[bufnr].filetype = "startup"
-    vim.bo[bufnr].modified = false
-    apply_startup_scratch_window_options(0)
-    render_startup_scratch(bufnr)
-
-    vim.api.nvim_create_autocmd("InsertEnter", {
+    vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter", "BufLeave", "WinLeave" }, {
         group = group,
-        buffer = bufnr,
+        buffer = source_buf,
         once = true,
-        callback = function()
-            promote_startup_scratch(bufnr)
-        end,
+        callback = dismiss_welcome,
     })
-    vim.api.nvim_create_autocmd("BufWinLeave", {
+    vim.api.nvim_create_autocmd("VimLeavePre", {
         group = group,
-        buffer = bufnr,
-        callback = function(args)
-            if is_startup_scratch(args.buf) then
-                restore_startup_scratch_window_options(0)
-            end
-        end,
-    })
-    vim.api.nvim_create_autocmd("BufWipeout", {
-        group = group,
-        buffer = bufnr,
         once = true,
-        callback = function()
-            vim.api.nvim_buf_clear_namespace(bufnr, startup_scratch_ns, 0, -1)
-        end,
+        callback = dismiss_welcome,
     })
 end
 
+local function apply_welcome_highlight()
+    vim.api.nvim_set_hl(0, "WelcomeMessage", { fg = "#a3be8c", italic = true })
+end
+
+apply_welcome_highlight()
+vim.api.nvim_create_autocmd("ColorScheme", {
+    group = group,
+    callback = apply_welcome_highlight,
+})
 vim.api.nvim_create_autocmd("VimEnter", {
     group = group,
-    callback = show_startup_scratch,
-})
-
-vim.api.nvim_create_autocmd("WinResized", {
-    group = group,
-    callback = function()
-        for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-            local bufnr = vim.api.nvim_win_get_buf(winid)
-            if is_startup_scratch(bufnr) then
-                render_startup_scratch(bufnr)
-            end
-        end
-    end,
+    callback = show_welcome,
 })
 
 -- nopaste on insert leave
@@ -606,9 +472,7 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
     group = group,
     callback = function()
-        if vim.bo.filetype ~= "startup" then
-            vim.opt_local.cursorline = true
-        end
+        vim.opt_local.cursorline = true
     end,
 })
 

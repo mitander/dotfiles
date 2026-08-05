@@ -1,11 +1,4 @@
-local function dismiss_startup_scratch()
-    if _G.mitander_dismiss_startup_scratch then
-        _G.mitander_dismiss_startup_scratch()
-    end
-end
-
 local function picker()
-    dismiss_startup_scratch()
     return require("fzf-lua")
 end
 
@@ -262,7 +255,6 @@ return {
         vim.ui.select = function(items, opts, on_choice)
             vim.ui.select = select
             require("lazy").load({ plugins = { "fzf-lua" } })
-            dismiss_startup_scratch()
             vim.ui.select(items, opts, on_choice)
         end
     end,
@@ -477,10 +469,5 @@ return {
             })
         end
 
-        vim.api.nvim_create_autocmd("FileType", {
-            group = vim.api.nvim_create_augroup("mitander_fzf_startup_scratch", { clear = true }),
-            pattern = { "fzf", "fzf-lua" },
-            callback = dismiss_startup_scratch,
-        })
     end,
 }

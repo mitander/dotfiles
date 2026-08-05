@@ -1,18 +1,11 @@
 local sidebar_width = 34
 
-local function dismiss_startup_scratch()
-    if _G.mitander_dismiss_startup_scratch then
-        _G.mitander_dismiss_startup_scratch()
-    end
-end
-
 local function has_current_file()
     local bufnr = vim.api.nvim_get_current_buf()
     return vim.bo[bufnr].buftype == "" and vim.api.nvim_buf_get_name(bufnr) ~= ""
 end
 
 local function toggle_tree()
-    dismiss_startup_scratch()
     require("nvim-tree.api").tree.toggle({
         find_file = has_current_file(),
         update_root = false,
@@ -172,7 +165,6 @@ return {
             if vim.bo.filetype ~= "NvimTree" then
                 return
             end
-            dismiss_startup_scratch()
             vim.opt_local.statusline = "%!v:lua.mitander_nvim_tree_statusline()"
         end
 

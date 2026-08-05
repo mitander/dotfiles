@@ -26,12 +26,6 @@ local function make_opts()
                     color = { gui = "bold" },
                     path = 1,
                     padding = { right = 1 },
-                    fmt = function(name)
-                        if vim.b.startup_scratch then
-                            return "[No Name]"
-                        end
-                        return name
-                    end,
                 },
             },
             lualine_x = {
@@ -86,12 +80,6 @@ local function make_opts()
                     "filename",
                     path = 1,
                     color = { link = "LineNr" },
-                    fmt = function(name)
-                        if vim.b.startup_scratch then
-                            return "Scratch"
-                        end
-                        return name
-                    end,
                 },
             },
             lualine_x = {},
