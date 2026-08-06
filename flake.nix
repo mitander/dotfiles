@@ -114,7 +114,6 @@
             bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-project.sh"
             bash ${./tests/tmux-residency.sh}
             bash ${./tests/tmux-config.sh}
-            bash ${./tests/tmux-run-events.sh}
             touch "$out"
           '';
         }

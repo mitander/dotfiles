@@ -23,10 +23,6 @@ commands:
   git [cwd]
   git-split [cwd]
   tuxedo|tasks [cwd]
-  run [cwd]
-  pick-run [cwd]
-  run-focused [cwd]
-  run-tests [cwd]
 EOF
 }
 
@@ -317,175 +313,8 @@ new_session() {
     attach_or_switch "$session_id"
 }
 
-read_run_view_completion() {
-    local marker="${1:?missing marker}" bytes version status run_kind
-    bytes="$(wc -c < "$marker" | tr -d ' ')"
-    [[ "$bytes" =~ ^[0-9]+$ ]] && ((bytes <= 80)) || return 1
-    version="$(sed -n '1p' "$marker")"
-    status="$(sed -n '2p' "$marker")"
-    run_kind="$(sed -n '3p' "$marker")"
-    [[ "$version" == 2 && "$status" =~ ^[0-9]+$ ]] || return 1
-    [[ "$run_kind" == result || "$run_kind" == application ]] || return 1
-    printf '%s\t%s' "$status" "$run_kind"
-}
-
-complete_run_window() {
-    local target="${1:?missing window}" marker="${2:?missing marker}" exit_code="${3:?missing exit code}" run_kind="${4:?missing run kind}" pane="${5:-}" run_status commands condition
-    condition="#{==:#{@myran_run_watch_token},$marker}"
-    if [[ "$run_kind" == application && "$exit_code" == 0 ]]; then
-        commands="$(quote_argv set-option -wu -t "$target" @myran_run_watch_token) ; $(quote_argv kill-window -t "$target")"
-    else
-        if [[ "$exit_code" == 0 ]]; then
-            run_status=✓
-        else
-            run_status="✗ $exit_code"
-        fi
-        [[ -n "$pane" ]] || pane="$(active_pane_in_window "$target")"
-        commands="$(quote_argv set-option -wu -t "$target" @myran_run_watch_token) ; $(quote_argv set-option -wq -t "$target" pane-border-status top) ; $(quote_argv set-option -wq -t "$target" @myran_run_status "$run_status") ; $(quote_argv set-option -wq -t "$target" @myran_run_state completed)"
-        if [[ -n "$pane" ]]; then
-            commands="$commands ; $(quote_argv set-option -pu -t "$pane" @myran_run_marker) ; $(quote_argv set-option -pq -t "$pane" @myran_run_state completed)"
-        fi
-    fi
-    tmux if-shell -F -t "$target" "$condition" "$commands"
-}
-
-run_pane_exited() {
-    local pane="${1:?missing pane}" target="${2:?missing window}" marker="${3:-}" completion exit_code run_kind
-    [[ -n "$marker" ]] || return 0
-
-    if [[ -e "$marker" ]]; then
-        completion="$(read_run_view_completion "$marker" 2>/dev/null || printf '125\tresult')"
-        exit_code="${completion%%$'\t'*}"
-        run_kind="${completion#*$'\t'}"
-    else
-        exit_code=125
-        run_kind=result
-    fi
-    rm -f "$marker"
-    complete_run_window "$target" "$marker" "$exit_code" "$run_kind" "$pane"
-}
-
-start_run_in_pane() {
-    local pane="${1:?missing pane}" target="${2:?missing window}" root="${3:?missing root}" marker start_channel pane_command run_state cancel_error run_label
-    run_state="$(tmux show-options -wqv -t "$target" @myran_run_state || true)"
-    if [[ "$run_state" == active ]]; then
-        tmux set-option -wq -t "$target" @myran_run_watch_token "replacing-$$-$RANDOM"
-        for _ in {1..80}; do
-            if cancel_error="$(cd "$root" && myr cancel 2>&1)"; then
-                cancel_error=
-                break
-            fi
-            if [[ "$cancel_error" == *"has no active instance"* ]]; then
-                cancel_error=
-                break
-            fi
-            sleep 0.025
-        done
-        if [[ -n "$cancel_error" ]]; then
-            tmux display-message "Myran replacement failed: $cancel_error"
-            return 1
-        fi
-        (cd "$root" && myr wait)
-        sleep 0.05
-    fi
-
-    run_label="$(cd "$root" && myr __run-label)"
-    marker="$(mktemp "${TMPDIR:-/tmp}/myran-run.XXXXXX")"
-    rm -f "$marker"
-    start_channel="myran-run-start-$$-${RANDOM}"
-    pane_command="$(quote_argv tmux wait-for "$start_channel") && exec $(quote_argv myr __run-view "$marker")"
-
-    tmux set-option -wq -t "$target" pane-border-status top
-    tmux set-option -wq -t "$target" pane-border-format "#[fg=#{@flume_accent},bold] run · #{@myran_run_label} · #{@myran_run_status} #[fg=#{@flume_text},nobold]#{R:─,#{pane_width}}#[default]"
-    tmux set-option -wq -t "$target" @myran_run_label "$run_label"
-    tmux set-option -wq -t "$target" @myran_run_status "…"
-    tmux set-option -wq -t "$target" @myran_run_watch_token "$marker"
-    tmux set-option -wq -t "$target" @myran_run_state active
-    tmux set-option -pq -t "$pane" @myran_run_state active
-    tmux set-option -pu -t "$pane" @myran_run_marker >/dev/null 2>&1 || true
-    tmux set-option -pq -t "$pane" remain-on-exit on
-    tmux set-option -pq -t "$pane" remain-on-exit-format ""
-    tmux send-keys -R -t "$pane"
-    tmux clear-history -t "$pane"
-    tmux respawn-pane -k -t "$pane" -c "$root" "$pane_command"
-    tmux set-option -pq -t "$pane" @myran_run_marker "$marker"
-    tmux wait-for -S "$start_channel"
-    tmux set-option -wq -t "$target" pane-border-status top
-}
-
-pick_run_modal() {
-    local cwd="${1:-$PWD}" root session target popup_command client_width client_height popup_width popup_height
-    root="$(workspace_root "$cwd")"
-    session="$(tmux display-message -p '#S')"
-    target="$(find_role_window "$session" run)"
-    if [[ -n "$target" ]]; then
-        close_run_window "$root" "$target" || return 1
-    fi
-
-    client_width="$(tmux display-message -p '#{client_width}')"
-    client_height="$(tmux display-message -p '#{client_height}')"
-    popup_width=80%
-    popup_height=70%
-    [[ "$client_width" =~ ^[0-9]+$ ]] && ((client_width >= 112)) && popup_width=96
-    [[ "$client_height" =~ ^[0-9]+$ ]] && ((client_height >= 28)) && popup_height=20
-
-    popup_command="$(quote_argv "$DOTFILES_DIR/scripts/tmux-project.sh" __pick-default-modal "$root")"
-    tmux display-popup -E -b rounded -T " Run " -w "$popup_width" -h "$popup_height" -d "$root" "$popup_command"
-}
-
-pick_default_modal() {
-    local root="${1:?missing root}" status
-    if (cd "$root" && MYRAN_PICKER_INLINE=1 myr __pick-default); then
-        role_window run "$root" run
-        return
-    else
-        status=$?
-    fi
-    [[ "$status" -eq 130 ]] && return 0
-    return "$status"
-}
-
-run_or_pick() {
-    local cwd="${1:-$PWD}" root
-    root="$(workspace_root "$cwd")"
-    if (cd "$root" && myr run-kind >/dev/null 2>&1); then
-        role_window run "$root" run
-    else
-        pick_run_modal "$root"
-    fi
-}
-
-dismiss_run_window() {
-    local target="${1:-$(tmux display-message -p '#{window_id}')}" state
-    state="$(tmux show-options -wqv -t "$target" @myran_run_state || true)"
-    if [[ "$state" == completed ]]; then
-        tmux kill-window -t "$target" >/dev/null 2>&1 || true
-    fi
-}
-
-close_run_window() {
-    local cwd="${1:-$PWD}" target="${2:-$(tmux display-message -p '#{window_id}')}" root cancel_error
-    root="$(workspace_root "$cwd")"
-    tmux set-option -wq -t "$target" @myran_run_watch_token "closing-$$-$RANDOM"
-
-    for _ in {1..80}; do
-        if cancel_error="$(cd "$root" && myr cancel 2>&1)"; then
-            tmux kill-window -t "$target" >/dev/null 2>&1 || true
-            return
-        fi
-        if [[ "$cancel_error" == *"has no active instance"* ]]; then
-            tmux kill-window -t "$target" >/dev/null 2>&1 || true
-            return
-        fi
-        sleep 0.025
-    done
-
-    tmux display-message "Myran cancel failed: $cancel_error"
-    return 1
-}
-
 role_window() {
-    local role="${1:?missing role}" cwd="${2:-$PWD}" run_action="${3:-run}" root name command session target window_id pane_id
+    local role="${1:?missing role}" cwd="${2:-$PWD}" root name command session target window_id pane_id
     require_dir "$cwd"
 
     root="$(workspace_root "$cwd")"
@@ -506,11 +335,6 @@ role_window() {
         name=agent
         command=pi
         ;;
-    run)
-        role=run
-        name=run
-        command="myr $run_action --foreground"
-        ;;
     *)
         echo "unknown role: $role" >&2
         exit 2
@@ -522,7 +346,6 @@ role_window() {
         case "$role" in
         shell | shell2) exec "${SHELL:-fish}" ;;
         pi) exec pi ;;
-        run) exec myr "$run_action" ;;
         esac
     fi
 
@@ -534,9 +357,6 @@ role_window() {
         pane_id="$(active_pane_in_window "$target")"
         [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" "$role" "$root"
         tmux select-window -t "$target"
-        if [[ "$role" == "run" && -n "$pane_id" ]]; then
-            start_run_in_pane "$pane_id" "$target" "$root"
-        fi
         return
     fi
 
@@ -546,9 +366,7 @@ role_window() {
     [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" "$role" "$root"
     tmux select-window -t "$window_id"
 
-    if [[ "$role" == "run" && -n "$command" ]]; then
-        start_run_in_pane "$pane_id" "$window_id" "$root"
-    elif [[ -n "$command" ]]; then
+    if [[ -n "$command" ]]; then
         tmux send-keys -t "$window_id" "$command" Enter
     fi
     return 0
@@ -1156,8 +974,6 @@ session | new-session) new_session "${1:-$PWD}" ;;
 shell | sh) role_window shell "${1:-$PWD}" ;;
 shell2 | sh2) role_window shell2 "${1:-$PWD}" ;;
 agent | pi | ai) role_window pi "${1:-$PWD}" ;;
-run) run_or_pick "${1:-$PWD}" ;;
-pick-run) pick_run_modal "${1:-$PWD}" ;;
 agent-new | ai-new) agent_new "${1:-$PWD}" "${2:-}" ;;
 pi-split | agent-split) pi_split "${1:-$PWD}" ;;
 pane-to) pane_to_role "${1:?missing role}" "${2:-$PWD}" ;;
@@ -1181,19 +997,7 @@ git | lazygit) git_window "${1:-$PWD}" ;;
 git-split | lazygit-split) git_split "${1:-$PWD}" ;;
 tuxedo | tasks | task | todo) tuxedo_window "${1:-$PWD}" ;;
 open-todo-ref) open_todo_ref "${1:-$PWD}" ;;
-close-run) close_run_window "${1:-$PWD}" "${2:-}" ;;
-dismiss-run) dismiss_run_window "${1:-}" ;;
-run-focused)
-    cwd="${1:-$PWD}"
-    tmux split-window -h -c "$cwd" "drun; exec fish"
-    ;;
-run-tests)
-    cwd="${1:-$PWD}"
-    tmux split-window -h -c "$cwd" "dtest run; exec fish"
-    ;;
 __refresh-status) refresh_status_metadata ;;
-__run-pane-exited) run_pane_exited "${1:?missing pane}" "${2:?missing window}" "${3:-}" ;;
-__pick-default-modal) pick_default_modal "${1:?missing root}" ;;
 __nvim) nvim_runner "$@" ;;
 help | -h | --help) usage ;;
 *)
