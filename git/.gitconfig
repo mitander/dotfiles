@@ -64,3 +64,11 @@
 	hunk-header-style = "#e0def4"
 	hunk-header-decoration-style = "#44415a" box
 
+[coderabbit]
+	machineId = cli/1cb8ea8a75fb415690b82f20894d94d3
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
