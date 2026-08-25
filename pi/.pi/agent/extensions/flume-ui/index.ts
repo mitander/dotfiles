@@ -1,8 +1,8 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import { basename } from "node:path";
 
 const ANSI_PATTERN = /\x1B(?:\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1B\\)|[@-Z\\-_])/g;
-const ANSI_PREFIX_PATTERN = /^\x1B(?:\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1B\\)|[@-Z\\-_])/;
 
 type Phase = "idle" | "thinking" | "tools";
 type IndicatorStyle = "state" | "dot" | "wave" | "spinner";
@@ -15,39 +15,6 @@ let turnCount = 0;
 let frame = 0;
 let requestRender: (() => void) | undefined;
 let animationTimer: ReturnType<typeof setInterval> | undefined;
-
-function visibleWidth(text: string): number {
-	return text.replace(ANSI_PATTERN, "").length;
-}
-
-function truncateToWidth(text: string, width: number, ellipsis = "…"): string {
-	if (width <= 0) return "";
-	if (visibleWidth(text) <= width) return text;
-
-	const targetWidth = Math.max(0, width - visibleWidth(ellipsis));
-	let out = "";
-	let used = 0;
-	let index = 0;
-
-	while (index < text.length && used < targetWidth) {
-		const rest = text.slice(index);
-		const ansi = rest.match(ANSI_PREFIX_PATTERN)?.[0];
-		if (ansi) {
-			out += ansi;
-			index += ansi.length;
-			continue;
-		}
-
-		const char = Array.from(rest)[0] ?? "";
-		if (!char) break;
-		if (used + 1 > targetWidth) break;
-		out += char;
-		used += 1;
-		index += char.length;
-	}
-
-	return out + ellipsis;
-}
 
 function fmtNumber(n: number): string {
 	if (!Number.isFinite(n) || n <= 0) return "0";
