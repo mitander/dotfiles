@@ -45,7 +45,28 @@ in {
       echo "Clone this repository there or activate a profile with the correct path." >&2
       exit 1
     fi
-    unset dotfiles_expected_checkout
+    flume_expected_checkout="$dotfiles_expected_checkout/themes/flume"
+    for schema in dusk opal mira mesa; do
+      if [[ ! -f "$flume_expected_checkout/extras/tuxedo/flume-$schema.toml" ]]; then
+        echo "Expected Flume checkout or generated Tuxedo palette is missing: $flume_expected_checkout" >&2
+        echo "Clone mitander/flume.nvim at ~/c/p/flume.nvim and generate its theme extras." >&2
+        exit 1
+      fi
+    done
+    unset flume_expected_checkout dotfiles_expected_checkout
+  '';
+
+  home.activation.removeLegacyTuxedoTheme = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+    legacy_tuxedo_theme="$HOME/.config/tuxedo/themes/flume.toml"
+    if [[ -L "$legacy_tuxedo_theme" ]]; then
+      legacy_tuxedo_target="$(readlink -f "$legacy_tuxedo_theme")"
+      if [[ "$legacy_tuxedo_target" == ${lib.escapeShellArg "${dotfilesDirectory}/themes/flume/extras/current/tuxedo.toml"} ||
+            "$legacy_tuxedo_target" == ${lib.escapeShellArg "${dotfilesDirectory}/tuxedo/.config/tuxedo/themes/flume.toml"} ]]; then
+        rm -f "$legacy_tuxedo_theme"
+      fi
+      unset legacy_tuxedo_target
+    fi
+    unset legacy_tuxedo_theme
   '';
 
   xdg.configFile = {
@@ -57,6 +78,10 @@ in {
     "nvim".source = live "nvim/.config/nvim";
     "stylua/.luarc.json".source = live "stylua/.config/stylua/.luarc.json";
     "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
+    "tuxedo/themes/flume-dusk.toml".source = live "tuxedo/.config/tuxedo/themes/flume-dusk.toml";
+    "tuxedo/themes/flume-mesa.toml".source = live "tuxedo/.config/tuxedo/themes/flume-mesa.toml";
+    "tuxedo/themes/flume-mira.toml".source = live "tuxedo/.config/tuxedo/themes/flume-mira.toml";
+    "tuxedo/themes/flume-opal.toml".source = live "tuxedo/.config/tuxedo/themes/flume-opal.toml";
   };
 
   home.file = {
@@ -69,8 +94,10 @@ in {
 
   # LazyGit's tmux.yml is loaded directly from the repository by
   # scripts/tmux-project.sh; it is not a user configuration destination.
-  # Pi and Tuxedo theme links remain Flume-managed; Pi credentials, sessions,
-  # extensions from other sources, and other mutable agent state stay unmanaged.
+  # Pi's active theme link remains Flume-managed. Home Manager installs every
+  # immutable Tuxedo palette so Flume can switch Tuxedo through its mutable,
+  # unmanaged config without replacing theme contents at runtime. Pi credentials,
+  # sessions, extensions from other sources, and other mutable agent state stay unmanaged.
   # LSD's colors.yaml remains Flume-managed so changing the active theme keeps
   # updating it without requiring a Home Manager activation.
 

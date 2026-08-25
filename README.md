@@ -59,10 +59,13 @@ generation rollback.
 
 ## Safe bootstrap
 
-Clone the repository at the path required by the selected profile, then run the
-non-destructive bootstrap:
+Clone this repository and the Flume theme source at the paths used by the
+selected profiles, then run the non-destructive bootstrap. Home Manager checks
+that Flume's four generated Tuxedo palettes exist before activation.
 
 ```sh
+mkdir -p ~/c/p
+git clone https://github.com/mitander/flume.nvim.git ~/c/p/flume.nvim
 git clone https://github.com/mitander/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./install.sh           # doctor + build; does not activate
