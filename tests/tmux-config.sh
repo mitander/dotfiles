@@ -40,7 +40,14 @@ exit_hook="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" show-hooks -g pane-died)"
 [[ "$exit_hook" != *'tmux-project.sh'* ]] || fail 'legacy run completion hook remains'
 binding="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" list-keys -T prefix)"
 [[ "$binding" == *workspace_residency_script*sleep* ]] || fail 'Workspace sleep binding missing'
+reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix +' || true)"
+[[ "$reload_binding" == *'source-file'*'.tmux.conf'* ]] || fail 'reload is not bound to prefix +'
+run_focus_binding="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
+[[ "$run_focus_binding" == *'select-window -t :run'* ]] || fail 'prefix r does not focus the Myran run window'
+[[ "$run_focus_binding" != *'source-file'* ]] || fail 'prefix r still reloads tmux'
 [[ "$binding" == *'myr run'* && "$binding" == *'myr pick-run'* ]] || fail 'direct Myran run bindings missing'
+[[ "$binding" == *'myr run >/dev/null 2>&1'* && "$binding" == *'myr pick-run >/dev/null 2>&1'* ]] || \
+  fail 'Myran run output can force the selected pane into view mode'
 agent_binding="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +a ' || true)"
 [[ "$agent_binding" == *'myr role open agent'* ]] || fail 'direct Myran Agent RoleView binding missing'
 [[ "$agent_binding" == *'#{q:pane_current_path}'* ]] || fail 'Agent RoleView binding does not quote project paths'
@@ -53,6 +60,15 @@ root_bindings="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" list-keys -T root)"
 [[ "$root_bindings" == *'myr close-run'* ]] || fail 'Myran RunView close binding missing'
 [[ "$root_bindings" == *'#{q:pane_current_path}'* ]] || fail 'RunView close binding does not quote project paths'
 [[ "$root_bindings" == *'@myran.run.state'* ]] || fail 'Myran RunView dismissal state missing'
+run_enter_binding="$(printf '%s\n' "$root_bindings" | grep -E 'bind-key +(-r )?-T root +Enter ' || true)"
+[[ "$run_enter_binding" == *'myr close-run'* && "$run_enter_binding" != *'kill-window'* ]] || \
+  fail 'completed RunView Enter does not close only its pane'
+run_ctrl_q_binding="$(printf '%s\n' "$root_bindings" | grep -E 'bind-key +(-r )?-T root +C-q ' || true)"
+[[ "$run_ctrl_q_binding" == *'TMUX_PANE=#{pane_id}'*'myr close-run'* ]] || \
+  fail 'RunView Ctrl-q does not target the invoking pane'
+prefix_q_binding="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +q ' || true)"
+[[ "$prefix_q_binding" == *'TMUX_PANE=#{pane_id}'*'myr close-run'* ]] || \
+  fail 'RunView prefix-q does not target the invoking pane'
 [[ "$root_bindings" != *'ps -o state='* ]] || fail 'navigation still probes processes on keypress'
 script="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" show-option -gqv @workspace_residency_script)"
 [[ "$script" == "$TEST_ROOT/home/dotfiles/scripts/tmux-residency.sh" ]] || fail 'legacy residency fallback was not selected'
