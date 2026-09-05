@@ -55,7 +55,8 @@ agent_binding="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +
 tasks_binding="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +t ' || true)"
 [[ "$tasks_binding" == *'@workspace_project_script'*tasks* ]] || fail 'tracker task window binding missing'
 actions_binding="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +p ' || true)"
-[[ "$actions_binding" == *'new-window'*'actions'*'gh observer --repo'* ]] || fail 'GitHub Actions watcher binding missing'
+[[ "$actions_binding" == *'@workspace_project_script'*actions* ]] || fail 'GitHub Actions watcher binding missing'
+[[ "$actions_binding" != *'new-window'* ]] || fail 'GitHub Actions binding bypasses role window reuse'
 [[ "$binding" != *tuxedo* ]] || fail 'legacy Tuxedo prefix binding remains'
 [[ "$agent_binding" == *'#{q:pane_current_path}'* ]] || fail 'Agent RoleView binding does not quote project paths'
 [[ "$binding" == *'#{q:pane_current_path}'* ]] || fail 'Myran bindings do not quote project paths'

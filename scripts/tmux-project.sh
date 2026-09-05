@@ -26,6 +26,7 @@ commands:
   normalize-layout [target-window]
   git [cwd]
   git-split [cwd]
+  actions [cwd]
   tasks [cwd] [linear|jira]
   linear-tasks [cwd]
   jira-tasks [cwd]
@@ -70,6 +71,7 @@ workspace_mode_label() {
     pi) printf 'agent' ;;
     git) printf 'git' ;;
     tasks) printf 'tasks' ;;
+    actions) printf 'actions' ;;
     shell) printf 'term' ;;
     shell2) printf 'term2' ;;
     run) printf 'run' ;;
@@ -80,7 +82,7 @@ workspace_mode_label() {
 workspace_mode_color() {
     local role
     case "$1" in
-    vim | pi | git | run | tasks | shell | shell2) role=accent ;;
+    vim | pi | git | run | tasks | actions | shell | shell2) role=accent ;;
     *) role=text ;;
     esac
     tmux show-option -gv "@flume_$role"
@@ -875,6 +877,26 @@ git_window() {
     tmux select-window -t "$ROLE_WINDOW_ID"
 }
 
+actions_window() {
+    local cwd="${1:-$PWD}" root session command
+    require_dir "$cwd"
+    command -v gh >/dev/null 2>&1 || {
+        echo "gh not found" >&2
+        exit 127
+    }
+    root="$(workspace_root "$cwd")"
+    command="$(quote_argv gh observer --repo)"
+
+    if ! in_tmux; then
+        cd "$root"
+        exec gh observer --repo
+    fi
+
+    session="$(tmux display-message -p '#{session_id}')"
+    ensure_role_window "$session" actions "$root" actions "$command"
+    tmux select-window -t "$ROLE_WINDOW_ID"
+}
+
 tracker_window() {
     local cwd="${1:-$PWD}" tracker="${2:-}" root command_name task_cmd session current_tracker current_scope
     local tracker_scope tracker_repository branch
@@ -1010,6 +1032,7 @@ vim-open)
     ;;
 git | lazygit) git_window "${1:-$PWD}" ;;
 git-split | lazygit-split) git_split "${1:-$PWD}" ;;
+actions) actions_window "${1:-$PWD}" ;;
 tasks | task | todo) tracker_window "${1:-$PWD}" "${2:-}" ;;
 linear-tasks) tracker_window "${1:-$PWD}" linear ;;
 jira-tasks) tracker_window "${1:-$PWD}" jira ;;

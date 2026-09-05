@@ -19,7 +19,8 @@ fail() {
 
 mkdir -p "$TEST_ROOT/home" "$TEST_ROOT/project" "$TEST_ROOT/runtime" "$TEST_ROOT/bin"
 printf '#!/bin/sh\nexec sleep 300\n' >"$TEST_ROOT/bin/lazygit"
-chmod +x "$TEST_ROOT/bin/lazygit"
+printf '#!/bin/sh\nexec sleep 300\n' >"$TEST_ROOT/bin/gh"
+chmod +x "$TEST_ROOT/bin/lazygit" "$TEST_ROOT/bin/gh"
 project_root="$(cd "$TEST_ROOT/project" && pwd -P)"
 tmux -L "$SOCKET" -f /dev/null new-session -d -s smoke -c "$project_root"
 session="$(tmux -L "$SOCKET" display-message -p -t smoke '#{session_id}')"
@@ -83,6 +84,16 @@ done
 [[ "$opened" == 1 ]] || fail 'remote open did not preserve the spaced file path'
 vim_windows="$(tmux -L "$SOCKET" list-windows -t "$session" -F '#{@workspace_mode}' | grep -cx vim)"
 [[ "$vim_windows" == 1 ]] || fail 'remote open created a duplicate Neovim window'
+
+# Repeated Actions selection reuses its role window.
+run_project actions "$project_root"
+actions_window="$(tmux -L "$SOCKET" list-windows -t "$session" -F '#{window_id}|#{@workspace_mode}' | awk -F '|' '$2 == "actions" { print $1; exit }')"
+[[ -n "$actions_window" ]] || fail 'Actions role window was not created'
+run_project actions "$project_root"
+actions_windows="$(tmux -L "$SOCKET" list-windows -t "$session" -F '#{@workspace_mode}' | grep -cx actions)"
+[[ "$actions_windows" == 1 ]] || fail "repeated Actions selection created $actions_windows windows"
+selected_window="$(tmux -L "$SOCKET" display-message -p -t "$session" '#{window_id}')"
+[[ "$selected_window" == "$actions_window" ]] || fail 'repeated Actions selection did not focus its existing window'
 
 # Selecting a cooled restartable role wakes it immediately.
 run_project git "$project_root"
