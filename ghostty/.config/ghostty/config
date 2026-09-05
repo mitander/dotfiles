@@ -20,7 +20,7 @@ copy-on-select = clipboard
 
 # Typography
 font-size = 15
-font-family = "JetBrainsMono Nerd Font Mono"
+font-family = "Maple Mono NF"
 font-style = "Medium"
 font-style-bold = "Bold"
 font-style-italic = "Medium Italic"
