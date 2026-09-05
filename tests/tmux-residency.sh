@@ -107,10 +107,85 @@ run_residency sleep "$beta"
 assert_eq observe:would-cool "$(option "$beta" @workspace_residency_result)" 'manual sleep observation'
 tmux -L "$SOCKET" has-session -t "$beta" || fail 'manual sleep removed workspace'
 
-# Picker metadata is only Workspace name and root. Legacy root metadata remains
-# a valid fallback without exposing residency state.
-tmux -L "$SOCKET" set-option -qu -t "$beta" @workspace_root
-tmux -L "$SOCKET" set-option -q -t "$beta" @project_root "$TEST_ROOT/project-b"
+# Cooling is role-aware. Restartable Git and task views are replaced by tiny
+# placeholders. Stateful editor, agent, run, shell, and unclassified panes stay live.
+mkdir -p "$TEST_ROOT/project-c"
+tmux -L "$SOCKET" new-session -d -s gamma -c "$TEST_ROOT/project-c"
+gamma="$(session_id gamma)"
+tmux -L "$SOCKET" set-option -q -t "$gamma" @workspace_root "$TEST_ROOT/project-c"
+git_log="$TEST_ROOT/git-starts"
+task_log="$TEST_ROOT/task-starts"
+git_command="printf 'git\\n' >>'$git_log'; exec sleep 300"
+task_command="printf 'tasks\\n' >>'$task_log'; exec sleep 300"
+git_pane="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t "$gamma:" -n git -c "$TEST_ROOT/project-c" "$git_command")"
+task_pane="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t "$gamma:" -n tasks -c "$TEST_ROOT/project-c" "$task_command")"
+vim_pane="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t "$gamma:" -n edit -c "$TEST_ROOT/project-c" 'exec sleep 300')"
+agent_pane="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t "$gamma:" -n agent -c "$TEST_ROOT/project-c" 'exec sleep 300')"
+tmux -L "$SOCKET" set-option -pq -t "$git_pane" @workspace_pane_role git \; set-option -pq -t "$git_pane" @workspace_root "$TEST_ROOT/project-c" \; set-option -pq -t "$git_pane" @workspace_resume_command "$git_command"
+tmux -L "$SOCKET" set-option -pq -t "$task_pane" @workspace_pane_role tasks \; set-option -pq -t "$task_pane" @workspace_root "$TEST_ROOT/project-c" \; set-option -pq -t "$task_pane" @workspace_resume_command "$task_command"
+tmux -L "$SOCKET" set-option -pq -t "$vim_pane" @workspace_pane_role vim
+tmux -L "$SOCKET" set-option -pq -t "$agent_pane" @workspace_pane_role pi
+git_pid="$(tmux -L "$SOCKET" display-message -p -t "$git_pane" '#{pane_pid}')"
+task_pid="$(tmux -L "$SOCKET" display-message -p -t "$task_pane" '#{pane_pid}')"
+vim_pid="$(tmux -L "$SOCKET" display-message -p -t "$vim_pane" '#{pane_pid}')"
+agent_pid="$(tmux -L "$SOCKET" display-message -p -t "$agent_pane" '#{pane_pid}')"
+tmux -L "$SOCKET" set-option -gq @workspace_residency_mode cool
+run_residency sleep "$gamma"
+assert_eq cool:2 "$(option "$gamma" @workspace_residency_result)" 'eligible pane count'
+[[ "$(tmux -L "$SOCKET" display-message -p -t "$git_pane" '#{pane_pid}')" != "$git_pid" ]] || fail 'Git pane was not replaced while cooling'
+[[ "$(tmux -L "$SOCKET" display-message -p -t "$task_pane" '#{pane_pid}')" != "$task_pid" ]] || fail 'task pane was not replaced while cooling'
+assert_eq "$vim_pid" "$(tmux -L "$SOCKET" display-message -p -t "$vim_pane" '#{pane_pid}')" 'Neovim pane was cooled'
+assert_eq "$agent_pid" "$(tmux -L "$SOCKET" display-message -p -t "$agent_pane" '#{pane_pid}')" 'agent pane was cooled'
+
+# Selecting a cooled role can wake only that pane without attaching the session.
+run_residency wake-pane "$git_pane"
+for _ in $(seq 1 50); do
+  [[ "$(wc -l <"$git_log" | tr -d ' ')" == 2 ]] && break
+  sleep 0.02
+done
+assert_eq 2 "$(wc -l <"$git_log" | tr -d ' ')" 'explicit pane wake did not restart Git'
+assert_eq '' "$(tmux -L "$SOCKET" show-options -pqv -t "$git_pane" @workspace_residency_cooled 2>/dev/null || true)" 'explicit pane wake left cooled metadata'
+assert_eq 1 "$(tmux -L "$SOCKET" show-options -pqv -t "$task_pane" @workspace_residency_cooled)" 'explicit pane wake resumed another role'
+
+# Attaching restarts cooled projections from their recorded commands. Stale
+# cooled metadata without a restart command is simply discarded.
+tmux -L "$SOCKET" set-option -pq -t "$agent_pane" @workspace_residency_cooled 1
+gamma_fifo="$TEST_ROOT/gamma-control.fifo"
+mkfifo "$gamma_fifo"
+exec 8<>"$gamma_fifo"
+tmux -L "$SOCKET" -C attach-session -t "$gamma" <&8 >"$TEST_ROOT/gamma-control.out" 2>&1 &
+gamma_control_pid=$!
+CONTROL_PIDS+=("$gamma_control_pid")
+for _ in $(seq 1 50); do
+  [[ "$(tmux -L "$SOCKET" display-message -p -t "$gamma" '#{session_attached}')" == 1 ]] && break
+  sleep 0.02
+done
+run_residency reconcile
+for _ in $(seq 1 50); do
+  [[ "$(wc -l <"$git_log" | tr -d ' ')" == 2 && "$(wc -l <"$task_log" | tr -d ' ')" == 2 ]] && break
+  sleep 0.02
+done
+assert_eq 2 "$(wc -l <"$git_log" | tr -d ' ')" 'Git pane did not restart'
+assert_eq 2 "$(wc -l <"$task_log" | tr -d ' ')" 'task pane did not restart'
+assert_eq '' "$(tmux -L "$SOCKET" show-options -pqv -t "$agent_pane" @workspace_residency_cooled 2>/dev/null || true)" 'stale cooled state was not cleared'
+kill "$gamma_control_pid" >/dev/null 2>&1 || true
+wait "$gamma_control_pid" 2>/dev/null || true
+exec 8>&-
+CONTROL_PIDS=()
+
+# Observation mode cannot leave panes stopped by an earlier cooling mode.
+run_residency sleep "$gamma"
+assert_eq 1 "$(tmux -L "$SOCKET" show-options -pqv -t "$task_pane" @workspace_residency_cooled)" 'task pane was not cooled before mode transition'
+tmux -L "$SOCKET" set-option -gq @workspace_residency_mode observe
+run_residency reconcile
+for _ in $(seq 1 50); do
+  [[ "$(wc -l <"$task_log" | tr -d ' ')" == 3 ]] && break
+  sleep 0.02
+done
+assert_eq 3 "$(wc -l <"$task_log" | tr -d ' ')" 'observe mode did not restart a cooled task pane'
+assert_eq '' "$(tmux -L "$SOCKET" show-options -pqv -t "$task_pane" @workspace_residency_cooled 2>/dev/null || true)" 'observe mode left cooled metadata'
+
+# Picker metadata exposes Workspace name and root without residency internals.
 listing="$(TMUX_SESSION_SOCKET="$SOCKET" "$ROOT/scripts/tmux-session.sh" list)"
 printf '%s\n' "$listing" | grep -q "^${alpha}"$'\talpha' || fail 'picker metadata missing alpha'
 printf '%s\n' "$listing" | grep -q "$TEST_ROOT/project-b" || fail 'picker metadata missing workspace root'

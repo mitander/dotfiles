@@ -10,7 +10,9 @@ usage: tmux-residency <command> [args]
 commands:
   reconcile                         reconcile every workspace session
   timer-fired <session-id> <due>    handle one delayed residency timer
-  sleep [session-id]                observe an immediate cooling decision
+  sleep [session-id]                cool restartable tools immediately
+  wake-pane <pane-id>               resume one cooled tool pane
+  wake-window <window-id>           resume every cooled tool pane in a window
   status [session-id]               print internal residency metadata
   benchmark [iterations]            measure read-only tmux query latency
 EOF
@@ -51,8 +53,8 @@ script_path() {
     path="$(command -v "$path")"
   fi
   case "$path" in
-    /*) printf '%s\n' "$path" ;;
-    *) printf '%s/%s\n' "$PWD" "$path" ;;
+  /*) printf '%s\n' "$path" ;;
+  *) printf '%s/%s\n' "$PWD" "$path" ;;
   esac
 }
 
@@ -95,9 +97,77 @@ residency_mode() {
   local mode
   mode="$(tmux_cmd show-option -gqv @workspace_residency_mode 2>/dev/null || true)"
   case "$mode" in
-    off | observe) printf '%s\n' "$mode" ;;
-    *) printf 'off\n' ;;
+  off | observe | cool) printf '%s\n' "$mode" ;;
+  *) printf 'off\n' ;;
   esac
+}
+
+pane_option() {
+  tmux_cmd show-options -pqv -t "$1" "$2" 2>/dev/null || true
+}
+
+unset_pane_option() {
+  tmux_cmd set-option -pqu -t "$1" "$2" >/dev/null 2>&1 || true
+}
+
+role_can_cool() {
+  case "$1" in
+  git | tasks) return 0 ;;
+  *) return 1 ;;
+  esac
+}
+
+resume_pane() {
+  local pane="$1" command root
+  command="$(pane_option "$pane" @workspace_resume_command)"
+  root="$(pane_option "$pane" @workspace_root)"
+  if [[ -n "$command" && -n "$root" && -d "$root" ]]; then
+    tmux_cmd respawn-pane -k -t "$pane" -c "$root" "$command"
+  fi
+  unset_pane_option "$pane" @workspace_residency_cooled
+  unset_pane_option "$pane" @workspace_residency_cooled_role
+}
+
+resume_session() {
+  local session="$1" pane_session pane cooled format
+  format='#{session_id}|#{pane_id}|#{@workspace_residency_cooled}'
+  while IFS='|' read -r pane_session pane cooled; do
+    [[ "$pane_session" == "$session" && -n "$pane" && "$cooled" == 1 ]] || continue
+    resume_pane "$pane"
+  done < <(tmux_cmd list-panes -a -F "$format" 2>/dev/null || true)
+}
+
+cool_pane() {
+  local pane="$1" role="$2" command root placeholder
+  role_can_cool "$role" || return 1
+  [[ -z "$(pane_option "$pane" @workspace_residency_cooled)" ]] || return 1
+  command="$(pane_option "$pane" @workspace_resume_command)"
+  root="$(pane_option "$pane" @workspace_root)"
+  [[ -n "$command" && -n "$root" && -d "$root" ]] || return 1
+
+  # Git and task views are restartable projections of repository state. Kill
+  # them and leave a tiny placeholder instead of trying to SIGSTOP a tmux
+  # foreground process group, which tmux deliberately resumes.
+  placeholder="printf '\\n[workspace cooled: $role]\\n'; exec sleep 2147483647"
+  tmux_cmd set-option -pq -t "$pane" @workspace_residency_cooled 1
+  tmux_cmd set-option -pq -t "$pane" @workspace_residency_cooled_role "$role"
+  if ! tmux_cmd respawn-pane -k -t "$pane" -c "$root" "$placeholder"; then
+    unset_pane_option "$pane" @workspace_residency_cooled
+    unset_pane_option "$pane" @workspace_residency_cooled_role
+    return 1
+  fi
+}
+
+cool_session() {
+  local session="$1" pane_session pane role count=0 format
+  format='#{session_id}|#{pane_id}|#{@workspace_pane_role}'
+  while IFS='|' read -r pane_session pane role; do
+    [[ "$pane_session" == "$session" && -n "$pane" ]] || continue
+    if cool_pane "$pane" "$role"; then
+      count=$((count + 1))
+    fi
+  done < <(tmux_cmd list-panes -a -F "$format" 2>/dev/null || true)
+  printf '%s\n' "$count"
 }
 
 disable_runtime_locked() {
@@ -105,6 +175,7 @@ disable_runtime_locked() {
   tmux_cmd set-option -gqu @workspace_residency_reconcile_pending >/dev/null 2>&1 || true
   while IFS= read -r session; do
     [[ -n "$session" ]] || continue
+    resume_session "$session"
     unset_session_option "$session" @workspace_residency_deadline
     unset_session_option "$session" @workspace_residency_timer_due
     unset_session_option "$session" @workspace_residency_result
@@ -159,18 +230,26 @@ ensure_timer() {
 }
 
 reconcile_session() {
-  local session="$1" attached="$2" now deadline grace
+  local session="$1" attached="$2" now deadline grace result
   session_exists "$session" || return 0
   now="$(now_epoch)"
 
+  result="$(session_option "$session" @workspace_residency_result)"
+  if [[ "$(residency_mode)" == observe && "$result" == cool:* ]]; then
+    resume_session "$session"
+    unset_session_option "$session" @workspace_residency_result
+    result=
+  fi
+
   if is_uint "$attached" && ((attached > 0)); then
+    resume_session "$session"
     unset_session_option "$session" @workspace_residency_deadline
     unset_session_option "$session" @workspace_residency_result
     return
   fi
 
   deadline="$(session_option "$session" @workspace_residency_deadline)"
-  if [[ -z "$deadline" && "$(session_option "$session" @workspace_residency_result)" == observe:would-cool ]]; then
+  if [[ -z "$deadline" && -n "$result" ]]; then
     return
   fi
   if ! is_uint "$deadline"; then
@@ -193,7 +272,7 @@ reconcile_all_locked() {
 reconcile_all() {
   acquire_lock
   tmux_cmd set-option -gqu @workspace_residency_reconcile_pending >/dev/null 2>&1 || true
-  if [[ "$(residency_mode)" != observe ]]; then
+  if [[ "$(residency_mode)" == off ]]; then
     disable_runtime_locked
     return 0
   fi
@@ -203,7 +282,7 @@ reconcile_all() {
 request_reconcile() {
   local pending path command
   acquire_lock
-  if [[ "$(residency_mode)" != observe ]]; then
+  if [[ "$(residency_mode)" == off ]]; then
     disable_runtime_locked
     return 0
   fi
@@ -224,7 +303,7 @@ reconcile_requested() {
   pending="$(tmux_cmd show-option -gqv @workspace_residency_reconcile_pending 2>/dev/null || true)"
   [[ "$pending" == 1 ]] || return 0
   tmux_cmd set-option -gqu @workspace_residency_reconcile_pending >/dev/null 2>&1 || true
-  if [[ "$(residency_mode)" != observe ]]; then
+  if [[ "$(residency_mode)" == off ]]; then
     disable_runtime_locked
     return 0
   fi
@@ -240,7 +319,7 @@ observe_cooling() {
 }
 
 timer_fired() {
-  local session="$1" scheduled_due="$2" timer_due attached deadline now
+  local session="$1" scheduled_due="$2" timer_due attached deadline now mode cooled
   is_uint "$scheduled_due" || return 2
   acquire_lock
   session_exists "$session" || return 0
@@ -248,7 +327,9 @@ timer_fired() {
   timer_due="$(session_option "$session" @workspace_residency_timer_due)"
   [[ "$timer_due" == "$scheduled_due" ]] || return 0
   unset_session_option "$session" @workspace_residency_timer_due
-  if [[ "$(residency_mode)" != observe ]]; then
+  mode="$(residency_mode)"
+  if [[ "$mode" == off ]]; then
+    resume_session "$session"
     unset_session_option "$session" @workspace_residency_deadline
     unset_session_option "$session" @workspace_residency_result
     return 0
@@ -268,7 +349,14 @@ timer_fired() {
     return 0
   fi
 
-  observe_cooling "$session"
+  if [[ "$mode" == cool ]]; then
+    cooled="$(cool_session "$session")"
+    set_session_option "$session" @workspace_residency_result "cool:$cooled"
+    set_session_option "$session" @workspace_residency_last_observed_at "$now"
+    unset_session_option "$session" @workspace_residency_deadline
+  else
+    observe_cooling "$session"
+  fi
 }
 
 resolve_session() {
@@ -279,26 +367,54 @@ resolve_session() {
   fi
 }
 
-sleep_workspace() {
-  local session="$1"
+wake_pane() {
+  local pane="$1"
   acquire_lock
-  session_exists "$session" || { printf 'workspace session not found: %s\n' "$session" >&2; return 1; }
-  if [[ "$(residency_mode)" != observe ]]; then
+  tmux_cmd display-message -p -t "$pane" '#{pane_id}' >/dev/null 2>&1 || return 0
+  resume_pane "$pane"
+}
+
+wake_window() {
+  local window="$1" pane
+  acquire_lock
+  while IFS= read -r pane; do
+    [[ -n "$pane" ]] && resume_pane "$pane"
+  done < <(tmux_cmd list-panes -t "$window" -F '#{pane_id}' 2>/dev/null || true)
+}
+
+sleep_workspace() {
+  local session="$1" mode cooled
+  acquire_lock
+  session_exists "$session" || {
+    printf 'workspace session not found: %s\n' "$session" >&2
+    return 1
+  }
+  mode="$(residency_mode)"
+  if [[ "$mode" == off ]]; then
     tmux_cmd display-message -t "$session" 'Workspace Residency is off' 2>/dev/null || true
     return 0
   fi
-  observe_cooling "$session"
-  tmux_cmd display-message -t "$session" 'Workspace cooling observed (no tools stopped)' 2>/dev/null || true
+  if [[ "$mode" == cool ]]; then
+    cooled="$(cool_session "$session")"
+    set_session_option "$session" @workspace_residency_result "cool:$cooled"
+    unset_session_option "$session" @workspace_residency_deadline
+    tmux_cmd display-message -t "$session" "Cooled $cooled idle workspace tool pane(s)" 2>/dev/null || true
+  else
+    observe_cooling "$session"
+    tmux_cmd display-message -t "$session" 'Workspace cooling observed (no tools stopped)' 2>/dev/null || true
+  fi
 }
 
 print_status() {
-  local session="$1" name attached deadline result root project_root now state remaining=0 format
-  session_exists "$session" || { printf 'workspace session not found: %s\n' "$session" >&2; return 1; }
-  format='#{session_name}|#{session_attached}|#{@workspace_residency_deadline}|#{@workspace_residency_result}|#{@workspace_root}|#{@project_root}'
-  IFS='|' read -r name attached deadline result root project_root < <(
+  local session="$1" name attached deadline result root now state remaining=0 format
+  session_exists "$session" || {
+    printf 'workspace session not found: %s\n' "$session" >&2
+    return 1
+  }
+  format='#{session_name}|#{session_attached}|#{@workspace_residency_deadline}|#{@workspace_residency_result}|#{@workspace_root}'
+  IFS='|' read -r name attached deadline result root < <(
     tmux_cmd display-message -p -t "$session" "$format"
   )
-  [[ -n "$root" ]] || root="$project_root"
   now="$(now_epoch)"
   if [[ "$(residency_mode)" == off ]]; then
     state=off
@@ -307,6 +423,8 @@ print_status() {
   elif is_uint "$deadline" && ((deadline > now)); then
     state=grace
     remaining=$((deadline - now))
+  elif [[ "$result" == cool:* ]]; then
+    state=cooled
   elif [[ "$result" == observe:would-cool ]]; then
     state=observed
   else
@@ -335,13 +453,19 @@ benchmark() {
 command_name="${1:-}"
 shift || true
 case "$command_name" in
-  reconcile) reconcile_all ;;
-  request-reconcile) request_reconcile ;;
-  reconcile-requested) reconcile_requested ;;
-  timer-fired) timer_fired "${1:?missing session id}" "${2:?missing scheduled due}" ;;
-  sleep) sleep_workspace "$(resolve_session "${1:-}")" ;;
-  status) print_status "$(resolve_session "${1:-}")" ;;
-  benchmark) benchmark "${1:-100}" ;;
-  help | -h | --help | '') usage ;;
-  *) printf 'unknown command: %s\n' "$command_name" >&2; usage; exit 2 ;;
+reconcile) reconcile_all ;;
+request-reconcile) request_reconcile ;;
+reconcile-requested) reconcile_requested ;;
+timer-fired) timer_fired "${1:?missing session id}" "${2:?missing scheduled due}" ;;
+sleep) sleep_workspace "$(resolve_session "${1:-}")" ;;
+wake-pane) wake_pane "${1:?missing pane id}" ;;
+wake-window) wake_window "${1:?missing window id}" ;;
+status) print_status "$(resolve_session "${1:-}")" ;;
+benchmark) benchmark "${1:-100}" ;;
+help | -h | --help | '') usage ;;
+*)
+  printf 'unknown command: %s\n' "$command_name" >&2
+  usage
+  exit 2
+  ;;
 esac
