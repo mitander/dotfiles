@@ -96,24 +96,39 @@
               bash
               coreutils
               fish
+              git
               gawk
               gnugrep
+              neovim
+              (python3.withPackages (pythonPackages: with pythonPackages; [
+                textual
+                watchfiles
+              ]))
               tmux
             ];
           } ''
             export HOME="$TMPDIR/home"
             export DOTFILES_TEST_ROOT="$TMPDIR/dotfiles"
-            mkdir -p "$HOME" "$DOTFILES_TEST_ROOT/scripts" "$DOTFILES_TEST_ROOT/tmux"
+            mkdir -p "$HOME" "$DOTFILES_TEST_ROOT/scripts" "$DOTFILES_TEST_ROOT/tmux/.tmux" \
+              "$DOTFILES_TEST_ROOT/extras/tmux"
             cp ${./scripts/tmux-residency.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-residency.sh"
             cp ${./scripts/tmux-session.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-session.sh"
             cp ${./scripts/tmux-project.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-project.sh"
+            cp ${./scripts/tmux-nvim.sh} "$DOTFILES_TEST_ROOT/scripts/tmux-nvim.sh"
             cp ${./tmux/.tmux.conf} "$DOTFILES_TEST_ROOT/tmux/.tmux.conf"
+            cp ${./tmux/.tmux/workspace-status.conf} "$DOTFILES_TEST_ROOT/tmux/.tmux/workspace-status.conf"
+            cp ${./extras/tmux/colors.conf} "$DOTFILES_TEST_ROOT/extras/tmux/colors.conf"
             chmod +x "$DOTFILES_TEST_ROOT/scripts/"*.sh
             bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-residency.sh"
             bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-session.sh"
             bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-project.sh"
+            bash -n "$DOTFILES_TEST_ROOT/scripts/tmux-nvim.sh"
             bash ${./tests/tmux-residency.sh}
             bash ${./tests/tmux-config.sh}
+            bash ${./tests/tmux-nvim.sh}
+            bash ${./tests/tmux-project.sh}
+            PYTHONPATH=${./tracker-tui} python3 -m unittest discover \
+              -s ${./tracker-tui} -p 'test_*.py'
             touch "$out"
           '';
         }
