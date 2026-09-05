@@ -32,13 +32,38 @@ declarations. Each profile explicitly defines its expected checkout path.
 
 ## Workspace Residency
 
-Workspace Residency currently runs in observation mode: tmux records when a
-Workspace has been detached for 15 minutes, but does not stop any tools. The
-implementation is event-driven; it adds no keypress, mouse, status-line, or
-periodic polling work.
+Workspace Residency cools restartable Git and task views after their Workspace
+has been detached for 15 minutes. It replaces those processes with tiny sleeping
+placeholders, then restarts them from repository state when the Workspace is
+attached again. Stateful Neovim sessions and agent, run, shell, or unclassified
+panes keep running. The implementation is event-driven; it adds no keypress,
+mouse, status-line, or periodic polling work.
+
+The task window uses the shared Pantheon tracker TUI suite. It defaults to
+Linear (`ltui`) and can use Jira (`jtui`) per repository:
+
+```sh
+git config workspace.tracker jira      # run once in a work repository
+git config workspace.tracker-team OPS  # optional explicit Jira project / Linear team
+# git config workspace.tracker linear  # optional; Linear is the default
+```
+
+`prefix + t` opens the selected tracker. `TRACKER_TUI=linear|jira` overrides the
+repository setting. The script also exposes `linear-tasks` and `jira-tasks`
+commands for explicit selection. A task window chooses its team or project from
+`workspace.tracker-team`, then an issue key in the current branch, then the
+repository name. It falls back to the app's last selection.
+
+Press `b` inside either TUI to hide or restore the left team/settings sidebar.
+The issue list keeps the reclaimed width and tickets still open in the detail
+split.
+
+Both apps load Flume's dusk, opal, mira, and mesa themes from the linked
+checkout. Running task windows follow `:FlumeSync` through the same event-driven
+integration switch as Neovim.
 
 ```text
-prefix + I   observe an immediate cooling decision
+prefix + I   cool restartable tools in this Workspace now
 prefix + w   open the Workspace picker
 ```
 
@@ -60,8 +85,7 @@ generation rollback.
 ## Safe bootstrap
 
 Clone this repository and the Flume theme source at the paths used by the
-selected profiles, then run the non-destructive bootstrap. Home Manager checks
-that Flume's four generated Tuxedo palettes exist before activation.
+selected profiles, then run the non-destructive bootstrap.
 
 ```sh
 mkdir -p ~/c/p
