@@ -7,6 +7,66 @@
   ...
 }: let
   live = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/${path}";
+
+  trackerTuiSource = pkgs.fetchFromGitHub {
+    owner = "runpantheon";
+    repo = "ltui";
+    rev = "598c4039999e07b3dc03f4f199ccab8d63648dc5";
+    hash = "sha256-tbf2rxNsHmtrUPJTXoGvzTjPhONBTxCK0xnkR9tWhWI=";
+  };
+
+  flumeTrackerTheme = pkgs.python3Packages.buildPythonPackage {
+    pname = "flume-tracker-theme";
+    version = "0.1.0";
+    src = ../tracker-tui;
+    format = "other";
+
+    dependencies = with pkgs.python3Packages; [
+      textual
+      watchfiles
+    ];
+
+    installPhase = ''
+      runHook preInstall
+      install -Dm644 flume_tracker_theme.py \
+        "$out/${pkgs.python3.sitePackages}/flume_tracker_theme.py"
+      runHook postInstall
+    '';
+  };
+
+  mkTrackerTui = {
+    pname,
+    subdirectory,
+  }:
+    pkgs.python3Packages.buildPythonApplication {
+      inherit pname;
+      version = "unstable-2026-09-03";
+      src = trackerTuiSource;
+      sourceRoot = "${trackerTuiSource.name}/${subdirectory}";
+      pyproject = true;
+
+      postPatch = ''
+        ${pkgs.python3}/bin/python ${../tracker-tui/patch_upstream.py} ${subdirectory} ${subdirectory}.py
+      '';
+
+      build-system = with pkgs.python3Packages; [setuptools];
+      dependencies = with pkgs.python3Packages; [
+        flumeTrackerTheme
+        httpx
+        textual
+      ];
+
+      makeWrapperArgs = [
+        "--set-default"
+        "FLUME_TRACKER_THEME_DIR"
+        "${dotfilesDirectory}/themes/flume/extras/tracker-tui"
+        "--set-default"
+        "FLUME_SCHEMA_FILE"
+        "${dotfilesDirectory}/themes/flume/extras/current/schema"
+      ];
+
+      doCheck = false;
+    };
 in {
   home = {
     # This value defines the first Home Manager release used by this
@@ -24,6 +84,14 @@ in {
       git
       jq
       lazygit
+      (mkTrackerTui {
+        pname = "ltui-linear";
+        subdirectory = "ltui";
+      })
+      (mkTrackerTui {
+        pname = "jtui";
+        subdirectory = "jtui";
+      })
       lsd
       neovim
       ripgrep
@@ -45,28 +113,7 @@ in {
       echo "Clone this repository there or activate a profile with the correct path." >&2
       exit 1
     fi
-    flume_expected_checkout="$dotfiles_expected_checkout/themes/flume"
-    for schema in dusk opal mira mesa; do
-      if [[ ! -f "$flume_expected_checkout/extras/tuxedo/flume-$schema.toml" ]]; then
-        echo "Expected Flume checkout or generated Tuxedo palette is missing: $flume_expected_checkout" >&2
-        echo "Clone mitander/flume.nvim at ~/c/p/flume.nvim and generate its theme extras." >&2
-        exit 1
-      fi
-    done
-    unset flume_expected_checkout dotfiles_expected_checkout
-  '';
-
-  home.activation.removeLegacyTuxedoTheme = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-    legacy_tuxedo_theme="$HOME/.config/tuxedo/themes/flume.toml"
-    if [[ -L "$legacy_tuxedo_theme" ]]; then
-      legacy_tuxedo_target="$(readlink -f "$legacy_tuxedo_theme")"
-      if [[ "$legacy_tuxedo_target" == ${lib.escapeShellArg "${dotfilesDirectory}/themes/flume/extras/current/tuxedo.toml"} ||
-            "$legacy_tuxedo_target" == ${lib.escapeShellArg "${dotfilesDirectory}/tuxedo/.config/tuxedo/themes/flume.toml"} ]]; then
-        rm -f "$legacy_tuxedo_theme"
-      fi
-      unset legacy_tuxedo_target
-    fi
-    unset legacy_tuxedo_theme
+    unset dotfiles_expected_checkout
   '';
 
   xdg.configFile = {
@@ -78,10 +125,6 @@ in {
     "nvim".source = live "nvim/.config/nvim";
     "stylua/.luarc.json".source = live "stylua/.config/stylua/.luarc.json";
     "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
-    "tuxedo/themes/flume-dusk.toml".source = live "tuxedo/.config/tuxedo/themes/flume-dusk.toml";
-    "tuxedo/themes/flume-mesa.toml".source = live "tuxedo/.config/tuxedo/themes/flume-mesa.toml";
-    "tuxedo/themes/flume-mira.toml".source = live "tuxedo/.config/tuxedo/themes/flume-mira.toml";
-    "tuxedo/themes/flume-opal.toml".source = live "tuxedo/.config/tuxedo/themes/flume-opal.toml";
   };
 
   home.file = {
@@ -89,17 +132,17 @@ in {
     ".pi/agent/extensions/flume-ui/index.ts".source = live "pi/.pi/agent/extensions/flume-ui/index.ts";
     ".tmux.conf".source = live "tmux/.tmux.conf";
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
+    ".local/bin/tmux-nvim".source = live "scripts/tmux-nvim.sh";
+    ".local/bin/tmux-project".source = live "scripts/tmux-project.sh";
     ".local/bin/tmux-residency".source = live "scripts/tmux-residency.sh";
+    ".local/bin/tmux-session".source = live "scripts/tmux-session.sh";
   };
 
   # LazyGit's tmux.yml is loaded directly from the repository by
   # scripts/tmux-project.sh; it is not a user configuration destination.
-  # Pi's active theme link remains Flume-managed. Home Manager installs every
-  # immutable Tuxedo palette so Flume can switch Tuxedo through its mutable,
-  # unmanaged config without replacing theme contents at runtime. Pi credentials,
-  # sessions, extensions from other sources, and other mutable agent state stay unmanaged.
-  # LSD's colors.yaml remains Flume-managed so changing the active theme keeps
-  # updating it without requiring a Home Manager activation.
+  # Pi credentials, sessions, extensions from other sources, and other mutable
+  # agent state stay unmanaged. LSD's colors.yaml remains Flume-managed so
+  # changing the active theme keeps updating it without a Home Manager activation.
 
   # Keep activation builds focused on the environment. The online Home Manager
   # manual remains available, while disabling local manpage generation avoids a

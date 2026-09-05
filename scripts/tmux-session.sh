@@ -17,7 +17,7 @@ tmux_cmd() {
 
 list_sessions() {
   local exclude_id="${1:-}" format
-  format='#{session_id}|#{session_name}|#{@workspace_root}|#{@project_root}'
+  format='#{session_id}|#{session_name}|#{@workspace_root}'
   tmux_cmd list-sessions -F "$format" 2>/dev/null |
     awk -F '|' -v exclude="$exclude_id" '
       $1 == exclude { next }
@@ -25,8 +25,7 @@ list_sessions() {
         count += 1
         ids[count] = $1
         names[count] = $2
-        roots[count] = $3 == "" ? $4 : $3
-        roots[count] = roots[count] == "" ? "—" : roots[count]
+        roots[count] = $3 == "" ? "—" : $3
         if (length(names[count]) > name_width) {
           name_width = length(names[count])
         }

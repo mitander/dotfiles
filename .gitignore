@@ -1,5 +1,7 @@
 .token*
 .env
 .ccls-cache
+__pycache__/
+*.pyc
 **/lazy-lock.json
 .pi-subagents/

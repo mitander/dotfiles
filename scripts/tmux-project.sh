@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+TMUX_NVIM_HELPER="${TMUX_NVIM_HELPER:-$DOTFILES_DIR/scripts/tmux-nvim.sh}"
+TMUX_RESIDENCY_HELPER="${TMUX_RESIDENCY_HELPER:-$DOTFILES_DIR/scripts/tmux-residency.sh}"
 
 usage() {
     cat >&2 <<'EOF'
@@ -19,10 +22,13 @@ commands:
   pi-split [cwd]
   pane-to pi|shell|vim|git [cwd]
   promote-pane
+  close-run [pane-id]
   normalize-layout [target-window]
   git [cwd]
   git-split [cwd]
-  tuxedo|tasks [cwd]
+  tasks [cwd] [linear|jira]
+  linear-tasks [cwd]
+  jira-tasks [cwd]
 EOF
 }
 
@@ -55,9 +61,7 @@ set_session_workspace() {
     name="$(workspace_name_for_root "$root")"
 
     tmux set-option -q -t "$session" @workspace_root "$root" \; \
-        set-option -q -t "$session" @workspace_name "$name" \; \
-        set-option -q -t "$session" @project_root "$root" \; \
-        set-option -q -t "$session" @project_name "$name"
+        set-option -q -t "$session" @workspace_name "$name"
 }
 
 workspace_mode_label() {
@@ -65,7 +69,7 @@ workspace_mode_label() {
     vim) printf 'edit' ;;
     pi) printf 'agent' ;;
     git) printf 'git' ;;
-    tuxedo) printf 'todo' ;;
+    tasks) printf 'tasks' ;;
     shell) printf 'term' ;;
     shell2) printf 'term2' ;;
     run) printf 'run' ;;
@@ -76,7 +80,7 @@ workspace_mode_label() {
 workspace_mode_color() {
     local role
     case "$1" in
-    vim | pi | git | run | tuxedo | shell | shell2) role=accent ;;
+    vim | pi | git | run | tasks | shell | shell2) role=accent ;;
     *) role=text ;;
     esac
     tmux show-option -gv "@flume_$role"
@@ -91,9 +95,7 @@ set_window_workspace_mode() {
         set-option -wq -t "$target" @workspace_mode "$mode" \; \
         set-option -wq -t "$target" @workspace_mode_label "$label" \; \
         set-option -wq -t "$target" @workspace_mode_color "$color" \; \
-        set-option -wq -t "$target" @workspace_root "$root" \; \
-        set-option -wq -t "$target" @project_role "$mode" \; \
-        set-option -wq -t "$target" @project_root "$root"
+        set-option -wq -t "$target" @workspace_root "$root"
 }
 
 set_pane_workspace_role() {
@@ -104,8 +106,7 @@ set_pane_workspace_role() {
     tmux set-option -pq -t "$target" @workspace_pane_role "$role" \; \
         set-option -pq -t "$target" @workspace_pane_role_label "$label" \; \
         set-option -pq -t "$target" @workspace_pane_role_color "$color" \; \
-        set-option -pq -t "$target" @workspace_root "$root" \; \
-        set-option -pq -t "$target" @project_pane_role "$role"
+        set-option -pq -t "$target" @workspace_root "$root"
 }
 
 active_pane_in_window() {
@@ -173,17 +174,14 @@ split_role_pane() {
 }
 
 workspace_root() {
-    local cwd="${1:?missing cwd}" root session root_opt legacy_root_opt
+    local cwd="${1:?missing cwd}" root session configured_root
     root="$(root_for_dir "$cwd")"
 
     if in_tmux; then
-        session="$(tmux display-message -p '#S')"
-        root_opt="$(tmux show-options -qv -t "$session" @workspace_root || true)"
-        legacy_root_opt="$(tmux show-options -qv -t "$session" @project_root || true)"
-        if [[ -n "$root_opt" && -d "$root_opt" ]]; then
-            root="$root_opt"
-        elif [[ -n "$legacy_root_opt" && -d "$legacy_root_opt" ]]; then
-            root="$legacy_root_opt"
+        session="$(tmux display-message -p '#{session_id}')"
+        configured_root="$(tmux show-options -qv -t "$session" @workspace_root || true)"
+        if [[ -n "$configured_root" && -d "$configured_root" ]]; then
+            root="$configured_root"
         fi
         set_session_workspace "$session" "$root"
     fi
@@ -241,32 +239,82 @@ hash_key() {
     fi
 }
 
+nvim_server_dir() {
+    local base uid="${UID:-$(id -u)}"
+    base="${TMUX_PROJECT_RUNTIME_DIR:-${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/tmux-project-$uid}"
+    # sockaddr_un paths are only 104 bytes on macOS. Leave room for the hashed
+    # socket name instead of letting Neovim silently choose a different address.
+    if ((${#base} > 70)); then
+        base="/tmp/tmux-project-$uid"
+    fi
+    if [[ -e "$base" && ! -O "$base" ]]; then
+        echo "unsafe Neovim runtime directory owner: $base" >&2
+        return 1
+    fi
+    mkdir -p "$base"
+    chmod 700 "$base"
+    printf '%s\n' "$base"
+}
+
 find_role_window() {
-    local session="$1" role="$2" format=$'#{window_id}\t#{@workspace_mode}\t#{@project_role}'
+    local session="$1" role="$2" format=$'#{window_id}\t#{@workspace_mode}'
     tmux list-windows -t "$session" -F "$format" |
-        awk -F '\t' -v role="$role" '$2 == role || $3 == role { print $1; exit }'
+        awk -F '\t' -v role="$role" '$2 == role { print $1; exit }'
+}
+
+# Ensure exactly one window owns a workspace role. Results are returned through
+# globals so callers can add role-specific state without repeating lifecycle code.
+ensure_role_window() {
+    local session="${1:?missing session}" role="${2:?missing role}" root="${3:?missing root}"
+    local name="${4:?missing name}" create_command="${5:-}"
+
+    local owns_lock=0
+    if [[ -z "${ROLE_WINDOW_LOCK:-}" ]]; then
+        lock_role_window "$session" "$role"
+        owns_lock=1
+    fi
+    ROLE_WINDOW_ID="$(find_role_window "$session" "$role")"
+    ROLE_WINDOW_CREATED=0
+    if [[ -z "$ROLE_WINDOW_ID" ]]; then
+        if [[ -n "$create_command" ]] && declare -F "$create_command" >/dev/null; then
+            create_command="$($create_command)"
+        fi
+        if [[ -n "$create_command" ]]; then
+            ROLE_WINDOW_ID="$(tmux new-window -d -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root" "$create_command")"
+        else
+            ROLE_WINDOW_ID="$(tmux new-window -d -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root")"
+        fi
+        ROLE_WINDOW_CREATED=1
+    else
+        tmux rename-window -t "$ROLE_WINDOW_ID" "$name" >/dev/null
+    fi
+
+    set_window_workspace_mode "$ROLE_WINDOW_ID" "$role" "$root"
+    ROLE_PANE_ID="$(active_pane_in_window "$ROLE_WINDOW_ID")"
+    [[ -n "$ROLE_PANE_ID" ]] && set_pane_workspace_role "$ROLE_PANE_ID" "$role" "$root"
+    if ((owns_lock)); then
+        unlock_role_window
+    fi
+}
+
+lock_role_window() {
+    ROLE_WINDOW_LOCK="tmux-project:$(tmux display-message -p -t "$1" '#{session_id}'):$2"
+    tmux wait-for -L "$ROLE_WINDOW_LOCK"
+    trap 'tmux wait-for -U "$ROLE_WINDOW_LOCK" >/dev/null 2>&1 || true' EXIT
+}
+
+unlock_role_window() {
+    tmux wait-for -U "$ROLE_WINDOW_LOCK"
+    trap - EXIT
+    ROLE_WINDOW_LOCK=
 }
 
 ensure_shell_window() {
-    local session="${1:?missing session}" root="${2:?missing root}" target format pane_id
+    local session="${1:?missing session}" root="${2:?missing root}"
 
     set_session_workspace "$session" "$root"
-
-    target="$(find_role_window "$session" shell)"
-    if [[ -z "$target" ]]; then
-        format=$'#{window_id}\t#{@workspace_mode}\t#{@project_role}\t#{pane_current_command}'
-        target="$(tmux list-windows -t "$session" -F "$format" |
-            awk -F '\t' '$2 == "" && $3 == "" && $4 ~ /^(fish|zsh|bash|sh)$/ { print $1; exit }')"
-    fi
-    if [[ -z "$target" ]]; then
-        target="$(tmux new-window -d -P -F '#{window_id}' -t "$session:" -n sh -c "$root")"
-    fi
-
-    tmux rename-window -t "$target" term >/dev/null
-    set_window_workspace_mode "$target" shell "$root"
-    pane_id="$(active_pane_in_window "$target")"
-    [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" shell "$root"
-    tmux select-window -t "$target" >/dev/null
+    ensure_role_window "$session" shell "$root" term
+    tmux select-window -t "$ROLE_WINDOW_ID" >/dev/null
 }
 
 attach_or_switch() {
@@ -287,9 +335,9 @@ new_session() {
     [[ -n "$base" ]] || base=project
 
     if tmux list-sessions >/dev/null 2>&1; then
-        local format=$'#{session_id}\t#{@workspace_root}\t#{@project_root}'
+        local format=$'#{session_id}\t#{@workspace_root}'
         existing="$(tmux list-sessions -F "$format" |
-            awk -F '\t' -v root="$root" '$2 == root || $3 == root { print $1; exit }')"
+            awk -F '\t' -v root="$root" '$2 == root { print $1; exit }')"
         if [[ -n "$existing" ]]; then
             ensure_shell_window "$existing" "$root"
             attach_or_switch "$existing"
@@ -314,7 +362,7 @@ new_session() {
 }
 
 role_window() {
-    local role="${1:?missing role}" cwd="${2:-$PWD}" root name command session target window_id pane_id
+    local role="${1:?missing role}" cwd="${2:-$PWD}" root name command session
     require_dir "$cwd"
 
     root="$(workspace_root "$cwd")"
@@ -349,26 +397,12 @@ role_window() {
         esac
     fi
 
-    session="$(tmux display-message -p '#S')"
-    target="$(find_role_window "$session" "$role")"
-    if [[ -n "$target" ]]; then
-        tmux rename-window -t "$target" "$name"
-        set_window_workspace_mode "$target" "$role" "$root"
-        pane_id="$(active_pane_in_window "$target")"
-        [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" "$role" "$root"
-        tmux select-window -t "$target"
-        return
+    session="$(tmux display-message -p '#{session_id}')"
+    ensure_role_window "$session" "$role" "$root" "$name"
+    if [[ "$ROLE_WINDOW_CREATED" == 1 && -n "$command" ]]; then
+        tmux send-keys -t "$ROLE_WINDOW_ID" "$command" Enter
     fi
-
-    window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root")"
-    set_window_workspace_mode "$window_id" "$role" "$root"
-    pane_id="$(active_pane_in_window "$window_id")"
-    [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" "$role" "$root"
-    tmux select-window -t "$window_id"
-
-    if [[ -n "$command" ]]; then
-        tmux send-keys -t "$window_id" "$command" Enter
-    fi
+    tmux select-window -t "$ROLE_WINDOW_ID"
     return 0
 }
 
@@ -382,7 +416,7 @@ pi_split() {
     fi
 
     root="$(workspace_root "$cwd")"
-    session="$(tmux display-message -p '#S')"
+    session="$(tmux display-message -p '#{session_id}')"
     target="$(find_role_window "$session" pi)"
 
     if [[ -z "$target" ]]; then
@@ -413,7 +447,7 @@ agent_new() {
         exec pi --name "$task"
     fi
     
-    session="$(tmux display-message -p '#S')"
+    session="$(tmux display-message -p '#{session_id}')"
     name="ai:${task}"
     
     window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root")"
@@ -427,46 +461,27 @@ agent_new() {
     tmux send-keys -t "$window_id" "pi --name $(shell_quote "$task")" Enter
 }
 
-nvim_runner() {
-    local server="${1:?missing nvim server socket}" argfile="${2:-}" arg args=()
-    if [[ -n "$argfile" ]]; then
-        while IFS= read -r -d '' arg; do
-            args+=("$arg")
-        done <"$argfile"
-        rm -f "$argfile"
-    fi
-
-    export TMUX_EDIT_BYPASS=1
-    if [[ -n "${TMUX_PANE:-}" ]] && command -v tmux >/dev/null 2>&1; then
-        tmux set-option -w -t "$TMUX_PANE" @workspace_vim_pane "$TMUX_PANE" >/dev/null 2>&1 || true
-        tmux set-option -w -t "$TMUX_PANE" @project_vim_pane "$TMUX_PANE" >/dev/null 2>&1 || true
-        tmux set-option -p -t "$TMUX_PANE" @workspace_pane_role vim >/dev/null 2>&1 || true
-        tmux set-option -p -t "$TMUX_PANE" @project_pane_role vim >/dev/null 2>&1 || true
-    fi
-    exec nvim --listen "$server" "${args[@]}"
-}
-
 vim_window() {
     local cwd="$1"
     shift
-    local args=("$@")
-    local root name start_cwd session session_id server target saved_server window_id vim_pane new_pane
+    local arg_count=$# args=("$@")
+    local root name start_cwd session session_id server target saved_server vim_pane new_pane
     require_dir "$cwd"
 
     root="$(workspace_root "$cwd")"
     name=edit
     start_cwd="$root"
-    ((${#args[@]})) && start_cwd="$(abspath "$cwd")"
+    ((arg_count)) && start_cwd="$(abspath "$cwd")"
 
     if ! in_tmux; then
         cd "$start_cwd"
-        exec nvim "${args[@]}"
+        ((arg_count)) && exec nvim "${args[@]}"
+        exec nvim
     fi
 
-    session="$(tmux display-message -p '#S')"
-    session_id="$(tmux display-message -p '#{session_id}')"
-    server="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/tmux-project-${UID:-$(id -u)}/nvim-$(hash_key "${TMUX%%,*}:$session_id:$root").sock"
-    mkdir -p "$(dirname "$server")"
+    session="$(tmux display-message -p '#{session_id}')"
+    session_id="$session"
+    server="$(nvim_server_dir)/nvim-$(hash_key "${TMUX%%,*}:$session_id:$root").sock"
 
     make_argfile() {
         local argfile
@@ -477,75 +492,54 @@ vim_window() {
 
     start_command() {
         local cmd
-        cmd="$(shell_quote "$DOTFILES_DIR/scripts/tmux-project.sh") __nvim $(shell_quote "$server")"
-        ((${#args[@]})) && cmd="$cmd $(shell_quote "$(make_argfile)")"
+        cmd="$(shell_quote "$TMUX_NVIM_HELPER") run $(shell_quote "$server")"
+        ((arg_count)) && cmd="$cmd $(shell_quote "$(make_argfile)")"
         printf '%s' "$cmd"
     }
 
     server_alive() {
-        [[ -S "$server" ]] && env TMUX_EDIT_BYPASS=1 nvim --server "$server" --remote-expr '1' >/dev/null 2>&1
+        "$TMUX_NVIM_HELPER" alive "$server"
     }
 
-    clean_server() {
-        if [[ -e "$server" ]] && ! server_alive; then
-            rm -f "$server"
-        fi
+    fresh_server() {
+        printf '%s/nvim-%s.sock\n' "$(nvim_server_dir)" \
+            "$(hash_key "${TMUX%%,*}:$session_id:$root:recovery:$RANDOM:$$")"
     }
 
     remote_open() {
-        (cd "$start_cwd" && env TMUX_EDIT_BYPASS=1 nvim --server "$server" --remote-tab-silent "${args[@]}") >/dev/null 2>&1
+        "$TMUX_NVIM_HELPER" open "$server" "$start_cwd" -- "${args[@]}"
     }
 
     remote_focus() {
-        env TMUX_EDIT_BYPASS=1 nvim --server "$server" --remote-expr \
-            'system("tmux select-pane -t " . shellescape($TMUX_PANE))' >/dev/null 2>&1
+        "$TMUX_NVIM_HELPER" focus "$server"
     }
 
     find_vim_pane() {
-        local target_window="$1" saved pane tty
-
-        saved="$(tmux show-options -wqv -t "$target_window" @workspace_vim_pane || true)"
-        [[ -n "$saved" ]] || saved="$(tmux show-options -wqv -t "$target_window" @project_vim_pane || true)"
-        if [[ -n "$saved" ]] && tmux display-message -p -t "$saved" '#{pane_id}' >/dev/null 2>&1; then
-            printf '%s\n' "$saved"
-            return 0
-        fi
-
-        while IFS=$'\t' read -r pane tty; do
-            if ps -o state= -o comm= -t "$tty" 2>/dev/null |
-                grep -iqE '^[^TXZ ]+ +(\S+/)?g?(view|n?vim?x?)(diff)?$'; then
-                printf '%s\n' "$pane"
-                return 0
-            fi
-        done < <(tmux list-panes -t "$target_window" -F '#{pane_id}\t#{pane_tty}')
+        "$TMUX_NVIM_HELPER" find-pane "$1"
     }
 
-    target="$(find_role_window "$session" vim)"
-    if [[ -n "$target" ]]; then
-        tmux rename-window -t "$target" "$name"
-        set_window_workspace_mode "$target" vim "$root"
-        saved_server="$(tmux show-options -wqv -t "$target" @workspace_vim_server || true)"
-        [[ -n "$saved_server" ]] || saved_server="$(tmux show-options -wqv -t "$target" @project_vim_server || true)"
-        [[ -n "$saved_server" ]] && server="$saved_server"
-    fi
-
-    if [[ -z "$target" ]]; then
-        clean_server
-        window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$start_cwd" "$(start_command)")"
-        set_window_workspace_mode "$window_id" vim "$root"
-        tmux set-option -w -t "$window_id" @workspace_vim_server "$server" >/dev/null
-        tmux set-option -w -t "$window_id" @project_vim_server "$server" >/dev/null
-        vim_pane="$(active_pane_in_window "$window_id")"
-        [[ -n "$vim_pane" ]] && set_pane_workspace_role "$vim_pane" vim "$root"
-        tmux select-window -t "$window_id"
+    lock_role_window "$session" vim
+    # Never unlink a socket after a failed health probe. An address collision is
+    # cheap; orphaning an editor with unsaved state is not.
+    [[ -e "$server" ]] && server="$(fresh_server)"
+    ensure_role_window "$session" vim "$start_cwd" "$name" start_command
+    target="$ROLE_WINDOW_ID"
+    if [[ "$ROLE_WINDOW_CREATED" == 1 ]]; then
+        tmux set-option -w -t "$target" @workspace_root "$root" \; \
+            set-option -w -t "$target" @workspace_vim_server "$server" >/dev/null
+        [[ -n "$ROLE_PANE_ID" ]] && set_pane_workspace_role "$ROLE_PANE_ID" vim "$root"
+        unlock_role_window
+        tmux select-window -t "$target"
         return
     fi
 
+    saved_server="$(tmux show-options -wqv -t "$target" @workspace_vim_server || true)"
+    [[ -n "$saved_server" ]] && server="$saved_server"
     tmux set-option -w -t "$target" @workspace_vim_server "$server" >/dev/null
-    tmux set-option -w -t "$target" @project_vim_server "$server" >/dev/null
+    unlock_role_window
     tmux select-window -t "$target"
 
-    if ((${#args[@]})); then
+    if ((arg_count)); then
         if [[ -S "$server" ]]; then
             vim_pane="$(find_vim_pane "$target")"
             [[ -n "$vim_pane" ]] && tmux select-pane -t "$vim_pane"
@@ -554,19 +548,34 @@ vim_window() {
                 if remote_open; then
                     remote_focus || true
                 else
-                    rm -f "$server"
-                    new_pane="$(tmux split-window -h -P -F '#{pane_id}' -t "$target" -c "$start_cwd" "$(start_command)")"
-                    set_pane_workspace_role "$new_pane" vim "$root"
-                    normalize_role_layout "$target"
-                    tmux select-pane -t "$new_pane"
+                    lock_role_window "$session" vim
+                    # Another caller may have repaired the role while we waited.
+                    saved_server="$(tmux show-options -wqv -t "$target" @workspace_vim_server || true)"
+                    [[ -n "$saved_server" ]] && server="$saved_server"
+                    if ! server_alive || ! remote_open; then
+                        server="$(fresh_server)"
+                        new_pane="$(tmux split-window -h -P -F '#{pane_id}' -t "$target" -c "$start_cwd" "$(start_command)")"
+                        set_pane_workspace_role "$new_pane" vim "$root"
+                        tmux set-option -wq -t "$target" @workspace_vim_server "$server"
+                        normalize_role_layout "$target"
+                        tmux select-pane -t "$new_pane"
+                    fi
+                    unlock_role_window
                 fi
             ) >/dev/null 2>&1 &
         else
-            rm -f "$server"
-            new_pane="$(tmux split-window -h -P -F '#{pane_id}' -t "$target" -c "$start_cwd" "$(start_command)")"
-            set_pane_workspace_role "$new_pane" vim "$root"
-            normalize_role_layout "$target"
-            tmux select-pane -t "$new_pane"
+            lock_role_window "$session" vim
+            saved_server="$(tmux show-options -wqv -t "$target" @workspace_vim_server || true)"
+            [[ -n "$saved_server" ]] && server="$saved_server"
+            if ! server_alive; then
+                server="$(fresh_server)"
+                new_pane="$(tmux split-window -h -P -F '#{pane_id}' -t "$target" -c "$start_cwd" "$(start_command)")"
+                set_pane_workspace_role "$new_pane" vim "$root"
+                tmux set-option -wq -t "$target" @workspace_vim_server "$server"
+                normalize_role_layout "$target"
+                tmux select-pane -t "$new_pane"
+            fi
+            unlock_role_window
         fi
     else
         vim_pane="$(find_vim_pane "$target")"
@@ -584,8 +593,8 @@ vim_split() {
     fi
 
     root="$(workspace_root "$cwd")"
-    session="$(tmux display-message -p '#S')"
-    session_id="$(tmux display-message -p '#{session_id}')"
+    session="$(tmux display-message -p '#{session_id}')"
+    session_id="$session"
     target="$(find_role_window "$session" vim)"
 
     if [[ -z "$target" ]]; then
@@ -593,10 +602,9 @@ vim_split() {
         return
     fi
 
-    server_dir="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/tmux-project-${UID:-$(id -u)}"
-    mkdir -p "$server_dir"
+    server_dir="$(nvim_server_dir)"
     server="$server_dir/nvim-$(hash_key "${TMUX%%,*}:$session_id:$root:split:$RANDOM:$$").sock"
-    cmd="$(shell_quote "$DOTFILES_DIR/scripts/tmux-project.sh") __nvim $(shell_quote "$server")"
+    cmd="$(shell_quote "$TMUX_NVIM_HELPER") run $(shell_quote "$server")"
 
     tmux rename-window -t "$target" edit >/dev/null
     set_window_workspace_mode "$target" vim "$root"
@@ -609,13 +617,12 @@ vim_split() {
 }
 
 edit_window() {
-    local cwd="${1:-$PWD}" mode legacy_mode
+    local cwd="${1:-$PWD}" mode
     require_dir "$cwd"
 
     if in_tmux; then
         mode="$(tmux show-options -wqv @workspace_mode || true)"
-        legacy_mode="$(tmux show-options -wqv @project_role || true)"
-        if [[ "$mode" == vim || "$legacy_mode" == vim ]]; then
+        if [[ "$mode" == vim ]]; then
             vim_split "$cwd"
             return
         fi
@@ -625,7 +632,7 @@ edit_window() {
 }
 
 pane_to_role() {
-    local role="${1:?missing role}" cwd="${2:-$PWD}" root session current_pane current_window current_role legacy_current_role current_mode legacy_current_mode target name pane_count join_target
+    local role="${1:?missing role}" cwd="${2:-$PWD}" root session current_pane current_window current_role current_mode target name pane_count join_target
     require_dir "$cwd"
     in_tmux || { echo "pane-to requires tmux" >&2; exit 2; }
 
@@ -638,15 +645,11 @@ pane_to_role() {
     esac
 
     root="$(workspace_root "$cwd")"
-    session="$(tmux display-message -p '#S')"
-    current_pane="$(tmux display-message -p '#{pane_id}')"
-    current_window="$(tmux display-message -p '#{window_id}')"
+    session="$(tmux display-message -p '#{session_id}')"
+    current_pane="${TMUX_PANE:-$(tmux display-message -p '#{pane_id}')}"
+    current_window="$(tmux display-message -p -t "$current_pane" '#{window_id}')"
     current_role="$(tmux show-options -pqv -t "$current_pane" @workspace_pane_role || true)"
-    legacy_current_role="$(tmux show-options -pqv -t "$current_pane" @project_pane_role || true)"
-    [[ -n "$current_role" ]] || current_role="$legacy_current_role"
     current_mode="$(tmux show-options -wqv -t "$current_window" @workspace_mode || true)"
-    legacy_current_mode="$(tmux show-options -wqv -t "$current_window" @project_role || true)"
-    [[ -n "$current_mode" ]] || current_mode="$legacy_current_mode"
 
     # Mode keys are idempotent: if this pane is already in the requested mode,
     # do nothing. For old windows without pane tags, tag the pane and stop.
@@ -694,11 +697,30 @@ pane_to_role() {
     tmux select-pane -t "$current_pane"
 }
 
+resume_cooled_window() {
+    local target="${1:-}"
+    [[ -n "$target" ]] || return 0
+    if tmux list-panes -t "$target" -F '#{@workspace_residency_cooled}' 2>/dev/null | grep -qx 1; then
+        "$TMUX_RESIDENCY_HELPER" wake-window "$target"
+    fi
+}
+
+close_run_pane() {
+    local pane="${1:-${TMUX_PANE:-}}" cwd
+    in_tmux || { echo "close-run requires tmux" >&2; return 2; }
+    [[ -n "$pane" ]] || { echo "close-run requires a pane" >&2; return 2; }
+    cwd="$(tmux display-message -p -t "$pane" '#{pane_current_path}')"
+    if ! (cd "$cwd" && env TMUX_PANE="$pane" myr close-run >/dev/null 2>&1); then
+        tmux display-message -t "$pane" "Myran close failed"
+        return 1
+    fi
+}
+
 promote_pane() {
     local target current_pane main_pane
     in_tmux || { echo "promote-pane requires tmux" >&2; exit 2; }
-    target="${1:-$(tmux display-message -p '#{window_id}')}"
-    current_pane="$(tmux display-message -p '#{pane_id}')"
+    current_pane="${TMUX_PANE:-$(tmux display-message -p '#{pane_id}')}"
+    target="${1:-$(tmux display-message -p -t "$current_pane" '#{window_id}')}"
     main_pane="$(main_pane_in_window "$target")"
     if [[ -n "$main_pane" && "$main_pane" != "$current_pane" ]]; then
         tmux swap-pane -s "$current_pane" -t "$main_pane"
@@ -707,56 +729,118 @@ promote_pane() {
     tmux select-pane -t "$current_pane"
 }
 
+migrate_legacy_metadata() {
+    local session root name legacy_root legacy_name win mode legacy_mode legacy_window_root
+    local pane role legacy_role pane_cwd pane_window
+
+    # IDs are newline-safe, so query values separately instead of packing user
+    # paths into a delimiter-based format. Remove an old option only after its
+    # value has a valid home in the @workspace_* namespace.
+    while IFS= read -r session; do
+        [[ -n "$session" ]] || continue
+        root="$(tmux show-option -qv -t "$session" @workspace_root || true)"
+        name="$(tmux show-option -qv -t "$session" @workspace_name || true)"
+        legacy_root="$(tmux show-option -qv -t "$session" @project_root || true)"
+        legacy_name="$(tmux show-option -qv -t "$session" @project_name || true)"
+        if [[ ( -z "$root" || ! -d "$root" ) && -n "$legacy_root" && -d "$legacy_root" ]]; then
+            set_session_workspace "$session" "$legacy_root"
+            root="$legacy_root"
+        fi
+        if [[ -z "$name" && -n "$legacy_name" ]]; then
+            tmux set-option -q -t "$session" @workspace_name "$legacy_name"
+        fi
+        name="$(tmux show-option -qv -t "$session" @workspace_name || true)"
+        [[ -n "$root" && -d "$root" ]] && tmux set-option -qu -t "$session" @project_root >/dev/null 2>&1 || true
+        [[ -n "$name" ]] && tmux set-option -qu -t "$session" @project_name >/dev/null 2>&1 || true
+    done < <(tmux list-sessions -F '#{session_id}' 2>/dev/null || true)
+
+    while IFS= read -r win; do
+        [[ -n "$win" ]] || continue
+        mode="$(tmux show-option -wqv -t "$win" @workspace_mode || true)"
+        root="$(tmux show-option -wqv -t "$win" @workspace_root || true)"
+        legacy_mode="$(tmux show-option -wqv -t "$win" @project_role || true)"
+        legacy_window_root="$(tmux show-option -wqv -t "$win" @project_root || true)"
+        [[ -n "$mode" ]] || mode="$legacy_mode"
+        [[ -n "$root" ]] || root="$legacy_window_root"
+        if [[ -z "$root" ]]; then
+            session="$(tmux display-message -p -t "$win" '#{session_id}')"
+            root="$(tmux show-option -qv -t "$session" @workspace_root || true)"
+        fi
+        if [[ -n "$mode" && -n "$root" && -d "$root" ]]; then
+            set_window_workspace_mode "$win" "$mode" "$root"
+            tmux set-option -wqu -t "$win" @project_role >/dev/null 2>&1 || true
+            tmux set-option -wqu -t "$win" @project_root >/dev/null 2>&1 || true
+        fi
+    done < <(tmux list-windows -a -F '#{window_id}' 2>/dev/null || true)
+
+    while IFS= read -r pane; do
+        [[ -n "$pane" ]] || continue
+        role="$(tmux show-option -pqv -t "$pane" @workspace_pane_role || true)"
+        legacy_role="$(tmux show-option -pqv -t "$pane" @project_pane_role || true)"
+        [[ -n "$role" ]] || role="$legacy_role"
+        if [[ -n "$role" ]]; then
+            root="$(tmux show-option -pqv -t "$pane" @workspace_root || true)"
+            if [[ -z "$root" || ! -d "$root" ]]; then
+                pane_window="$(tmux display-message -p -t "$pane" '#{window_id}')"
+                root="$(tmux show-option -wqv -t "$pane_window" @workspace_root || true)"
+            fi
+            if [[ -z "$root" || ! -d "$root" ]]; then
+                pane_cwd="$(tmux display-message -p -t "$pane" '#{pane_current_path}')"
+                root="$(root_for_dir "${pane_cwd:-$PWD}")"
+            fi
+            set_pane_workspace_role "$pane" "$role" "$root"
+            tmux set-option -pqu -t "$pane" @project_pane_role >/dev/null 2>&1 || true
+        fi
+    done < <(tmux list-panes -a -F '#{pane_id}' 2>/dev/null || true)
+}
+
 refresh_status_metadata() {
-    local format session root legacy_root win mode legacy_mode lazygit_root pane pane_role legacy_pane_role pane_root pane_cwd
+    local session root first_win_cwd win mode lazygit_root pane pane_role pane_root pane_cwd pane_window
 
     in_tmux || return 0
+    migrate_legacy_metadata
 
-    # 1. Sessions: only set if root is empty/invalid
-    format='#{session_id}|#{@workspace_root}|#{@project_root}'
-    while IFS='|' read -r session root legacy_root; do
-        [[ -n "$root" ]] || root="$legacy_root"
+    while IFS= read -r session; do
+        [[ -n "$session" ]] || continue
+        root="$(tmux show-option -qv -t "$session" @workspace_root || true)"
         if [[ -z "$root" || ! -d "$root" ]]; then
-            # Find the root of the first window's active pane path
-            local first_win_cwd
             first_win_cwd="$(tmux list-windows -t "$session" -F '#{pane_current_path}' 2>/dev/null | head -n 1 || true)"
             if [[ -n "$first_win_cwd" && -d "$first_win_cwd" ]]; then
-                root="$(root_for_dir "$first_win_cwd")"
-                set_session_workspace "$session" "$root"
+                set_session_workspace "$session" "$(root_for_dir "$first_win_cwd")"
             fi
         fi
-    done < <(tmux list-sessions -F "$format" 2>/dev/null || true)
+    done < <(tmux list-sessions -F '#{session_id}' 2>/dev/null || true)
 
-    # 2. Windows: restore missing metadata and refresh variant-derived colors.
-    format='#{window_id}|#{@workspace_mode}|#{@project_role}|#{@workspace_root}|#{@project_root}|#{@lazygit_root}'
-    while IFS='|' read -r win mode legacy_mode root legacy_root lazygit_root; do
-        [[ -n "$mode" ]] || mode="$legacy_mode"
-        [[ -n "$root" ]] || root="$legacy_root"
-        
+    while IFS= read -r win; do
+        [[ -n "$win" ]] || continue
+        mode="$(tmux show-option -wqv -t "$win" @workspace_mode || true)"
+        root="$(tmux show-option -wqv -t "$win" @workspace_root || true)"
+        lazygit_root="$(tmux show-option -wqv -t "$win" @lazygit_root || true)"
         if [[ -z "$mode" && -n "$lazygit_root" ]]; then
             mode=git
             root="$lazygit_root"
         fi
-        
         if [[ -n "$mode" && -n "$root" ]]; then
             set_window_workspace_mode "$win" "$mode" "$root"
         fi
-    done < <(tmux list-windows -a -F "$format" 2>/dev/null || true)
+    done < <(tmux list-windows -a -F '#{window_id}' 2>/dev/null || true)
 
-    # 3. Panes: restore missing roots and refresh variant-derived colors.
-    format='#{pane_id}|#{@workspace_pane_role}|#{@project_pane_role}|#{@workspace_root}|#{pane_current_path}'
-    while IFS='|' read -r pane pane_role legacy_pane_role pane_root pane_cwd; do
-        [[ -n "$pane_role" ]] || pane_role="$legacy_pane_role"
-        
+    while IFS= read -r pane; do
+        [[ -n "$pane" ]] || continue
+        pane_role="$(tmux show-option -pqv -t "$pane" @workspace_pane_role || true)"
+        pane_root="$(tmux show-option -pqv -t "$pane" @workspace_root || true)"
+        pane_cwd="$(tmux display-message -p -t "$pane" '#{pane_current_path}')"
         if [[ -n "$pane_role" ]]; then
+            if [[ -z "$pane_root" || ! -d "$pane_root" ]]; then
+                pane_window="$(tmux display-message -p -t "$pane" '#{window_id}')"
+                pane_root="$(tmux show-option -wqv -t "$pane_window" @workspace_root || true)"
+            fi
             if [[ -z "$pane_root" || ! -d "$pane_root" ]]; then
                 pane_root="$(root_for_dir "${pane_cwd:-$PWD}")"
             fi
             set_pane_workspace_role "$pane" "$pane_role" "$pane_root"
         fi
-    done < <(tmux list-panes -a -F "$format" 2>/dev/null || true)
-
-    return 0
+    done < <(tmux list-panes -a -F '#{pane_id}' 2>/dev/null || true)
 }
 
 git_window() {
@@ -777,148 +861,81 @@ git_window() {
         exec "${lazygit_cmd[@]}"
     fi
 
-    session="$(tmux display-message -p '#S')"
-    local format=$'#{window_id}\t#{@workspace_mode}\t#{@lazygit_root}'
-    target="$(tmux list-windows -t "$session" -F "$format" |
-        awk -F '\t' -v root="$root" '$2 == "git" || $3 == root { print $1; exit }')"
-
-    if [[ -n "$target" ]]; then
-        name="${LAZYGIT_TMUX_WINDOW_PREFIX:-git}"
-        tmux rename-window -t "$target" "$name"
-        set_window_workspace_mode "$target" git "$root"
-        tmux set-option -w -t "$target" @lazygit_root "$root" >/dev/null
-        pane_id="$(active_pane_in_window "$target")"
-        [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" git "$root"
-        tmux select-window -t "$target"
-        return
-    fi
-
+    session="$(tmux display-message -p '#{session_id}')"
     name="${LAZYGIT_TMUX_WINDOW_PREFIX:-git}"
     cmd="$(quote_argv "${lazygit_cmd[@]}")"
-    window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root" "$cmd")"
-    set_window_workspace_mode "$window_id" git "$root"
-    pane_id="$(active_pane_in_window "$window_id")"
-    [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" git "$root"
-    tmux set-option -w -t "$window_id" @lazygit_root "$root" >/dev/null
-    tmux select-window -t "$window_id"
+    lock_role_window "$session" git
+    ensure_role_window "$session" git "$root" "$name" "$cmd"
+    tmux set-option -w -t "$ROLE_WINDOW_ID" @lazygit_root "$root" >/dev/null
+    if [[ -n "$ROLE_PANE_ID" ]]; then
+        tmux set-option -pq -t "$ROLE_PANE_ID" @workspace_resume_command "$cmd"
+    fi
+    resume_cooled_window "$ROLE_WINDOW_ID"
+    unlock_role_window
+    tmux select-window -t "$ROLE_WINDOW_ID"
 }
 
-tuxedo_window() {
-    local cwd="${1:-$PWD}" root todo_file cmd tuxedo_args=() session target name window_id pane_id
+tracker_window() {
+    local cwd="${1:-$PWD}" tracker="${2:-}" root command_name task_cmd session current_tracker current_scope
+    local tracker_scope tracker_repository branch
     require_dir "$cwd"
-    command -v tuxedo >/dev/null 2>&1 || {
-        echo "tuxedo not found" >&2
-        exit 127
-    }
     root="$(workspace_root "$cwd")"
 
-    if [[ -n "${TODO_FILE:-}" || -n "${TODO_DIR:-}" ]]; then
-        tuxedo_args=()
-    elif [[ -f "$root/todo.txt" ]]; then
-        tuxedo_args=("$root/todo.txt")
-    else
-        todo_file="${TUXEDO_TODO_FILE:-$HOME/todo.txt}"
-        mkdir -p "$(dirname "$todo_file")"
-        tuxedo_args=("$todo_file")
+    if [[ -z "$tracker" ]]; then
+        tracker="${TRACKER_TUI:-$(git -C "$root" config --get workspace.tracker 2>/dev/null || true)}"
     fi
-    cmd="$(quote_argv tuxedo "${tuxedo_args[@]}")"
+    case "${tracker:-linear}" in
+    linear | ltui)
+        tracker=linear
+        command_name=ltui
+        ;;
+    jira | jtui)
+        tracker=jira
+        command_name=jtui
+        ;;
+    *)
+        echo "unsupported tracker: $tracker (expected linear or jira)" >&2
+        exit 2
+        ;;
+    esac
+
+    command -v "$command_name" >/dev/null 2>&1 || {
+        echo "$command_name not found" >&2
+        exit 127
+    }
+
+    tracker_repository="$(basename "$root")"
+    tracker_scope="${TRACKER_SCOPE:-$(git -C "$root" config --get workspace.tracker-team 2>/dev/null || true)}"
+    if [[ -z "$tracker_scope" ]]; then
+        branch="$(git -C "$root" branch --show-current 2>/dev/null || true)"
+        if [[ "$branch" =~ (^|/)([[:alpha:]][[:alnum:]]*)-[[:digit:]]+ ]]; then
+            tracker_scope="${BASH_REMATCH[2]}"
+        fi
+    fi
+    task_cmd="$(quote_argv env "TRACKER_REPOSITORY=$tracker_repository" "TRACKER_SCOPE=$tracker_scope" "$command_name")"
 
     if ! in_tmux; then
         cd "$root"
-        exec tuxedo "${tuxedo_args[@]}"
+        exec env TRACKER_REPOSITORY="$tracker_repository" TRACKER_SCOPE="$tracker_scope" "$command_name"
     fi
 
-    session="$(tmux display-message -p '#S')"
-    local format='#{window_id}|#{@workspace_mode}|#{@tuxedo_root}'
-    target="$(tmux list-windows -t "$session" -F "$format" |
-        awk -F '|' -v root="$root" '$2 == "tuxedo" || $3 == root { print $1; exit }')"
-
-    name="todo"
-
-    if [[ -n "$target" ]]; then
-        tmux rename-window -t "$target" "$name"
-        set_window_workspace_mode "$target" tuxedo "$root"
-        tmux set-option -w -t "$target" @tuxedo_root "$root" >/dev/null
-        pane_id="$(active_pane_in_window "$target")"
-        [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" tuxedo "$root"
-        tmux select-window -t "$target"
-        return
+    session="$(tmux display-message -p '#{session_id}')"
+    lock_role_window "$session" tasks
+    ensure_role_window "$session" tasks "$root" "$tracker" "$task_cmd"
+    current_tracker="$(tmux show-option -wv -t "$ROLE_WINDOW_ID" @tracker_tui 2>/dev/null || true)"
+    current_scope="$(tmux show-option -wv -t "$ROLE_WINDOW_ID" @tracker_scope 2>/dev/null || true)"
+    if [[ "$ROLE_WINDOW_CREATED" == 0 && ("$current_tracker" != "$tracker" || "$current_scope" != "$tracker_scope") ]]; then
+        tmux respawn-pane -k -t "$ROLE_PANE_ID" -c "$root" "$task_cmd"
     fi
-
-    window_id="$(tmux new-window -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root" "$cmd")"
-    set_window_workspace_mode "$window_id" tuxedo "$root"
-    pane_id="$(active_pane_in_window "$window_id")"
-    [[ -n "$pane_id" ]] && set_pane_workspace_role "$pane_id" tuxedo "$root"
-    tmux set-option -w -t "$window_id" @tuxedo_root "$root" >/dev/null
-    tmux select-window -t "$window_id"
-}
-
-open_todo_ref() {
-    local cwd="${1:-$PWD}" session session_id tux_pane cursor_y lines=() line ref_file root full_path server
-    require_dir "$cwd"
-    if ! in_tmux; then
-        echo "open-todo-ref requires tmux" >&2
-        exit 2
+    tmux set-option -w -t "$ROLE_WINDOW_ID" @tasks_root "$root" \; \
+        set-option -w -t "$ROLE_WINDOW_ID" @tracker_tui "$tracker" \; \
+        set-option -w -t "$ROLE_WINDOW_ID" @tracker_scope "$tracker_scope"
+    if [[ -n "$ROLE_PANE_ID" ]]; then
+        tmux set-option -pq -t "$ROLE_PANE_ID" @workspace_resume_command "$task_cmd"
     fi
-
-    session="$(tmux display-message -p '#S')"
-    session_id="$(tmux display-message -p '#{session_id}')"
-    tux_pane="$(tmux list-panes -s -t "$session" -F '#{pane_id} #{@workspace_pane_role}' | awk '$2 == "tuxedo" {print $1; exit}')"
-    if [[ -z "$tux_pane" ]]; then
-        tmux display-message "No active todo (tuxedo) pane found"
-        exit 0
-    fi
-
-    cursor_y="$(tmux display-message -t "$tux_pane" -p '#{cursor_y}')"
-    while IFS= read -r line; do
-        lines+=("$line")
-    done < <(tmux capture-pane -t "$tux_pane" -p)
-
-    ref_file=""
-    for l in "${lines[@]}"; do
-        if [[ "$l" =~ [▸›] ]] && [[ "$l" =~ ref:([a-zA-Z0-9_/.-]+) ]]; then
-            ref_file="${BASH_REMATCH[1]}"
-            break
-        fi
-    done
-
-    if [[ -z "$ref_file" ]]; then
-        line="${lines[$cursor_y]}"
-        if [[ "$line" =~ ref:([a-zA-Z0-9_/.-]+) ]]; then
-            ref_file="${BASH_REMATCH[1]}"
-        fi
-    fi
-
-    if [[ -z "$ref_file" ]]; then
-        for l in "${lines[@]}"; do
-            if [[ "$l" =~ ref:([a-zA-Z0-9_/.-]+) ]]; then
-                ref_file="${BASH_REMATCH[1]}"
-                break
-            fi
-        done
-    fi
-
-    if [[ -z "$ref_file" ]]; then
-        tmux display-message "No ref: path found on screen"
-        exit 0
-    fi
-
-    root="$(tmux display-message -t "$tux_pane" -p '#{@workspace_root}')"
-    [[ -n "$root" ]] || root="$(workspace_root "$cwd")"
-
-    full_path="$root/$ref_file"
-    if [[ ! -f "$full_path" ]]; then
-        tmux display-message "File not found: $ref_file"
-        exit 0
-    fi
-
-    server="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/tmux-project-${UID:-$(id -u)}/nvim-$(hash_key "${TMUX%%,*}:$session_id:$root").sock"
-    if [[ -S "$server" ]]; then
-        env TMUX_EDIT_BYPASS=1 nvim --server "$server" --remote "$full_path" >/dev/null 2>&1
-        vim_window "$cwd"
-    else
-        vim_window "$cwd" "$full_path"
-    fi
+    resume_cooled_window "$ROLE_WINDOW_ID"
+    unlock_role_window
+    tmux select-window -t "$ROLE_WINDOW_ID"
 }
 
 git_split() {
@@ -935,7 +952,7 @@ git_split() {
     fi
 
     root="$(workspace_root "$cwd")"
-    session="$(tmux display-message -p '#S')"
+    session="$(tmux display-message -p '#{session_id}')"
     lazygit_cmd=(lazygit)
     config_files="$(lazygit_config_files)"
     [[ -n "$config_files" ]] && lazygit_cmd+=(--use-config-file "$config_files")
@@ -957,6 +974,7 @@ git_split() {
     tmux select-window -t "$target"
     pane_id="$(split_role_pane "$target" "$root" "$cmd")"
     set_pane_workspace_role "$pane_id" git "$root"
+    tmux set-option -pq -t "$pane_id" @workspace_resume_command "$cmd"
     normalize_role_layout "$target"
     tmux select-window -t "$target"
     tmux select-pane -t "$pane_id"
@@ -978,6 +996,7 @@ agent-new | ai-new) agent_new "${1:-$PWD}" "${2:-}" ;;
 pi-split | agent-split) pi_split "${1:-$PWD}" ;;
 pane-to) pane_to_role "${1:?missing role}" "${2:-$PWD}" ;;
 promote-pane) promote_pane ;;
+close-run) close_run_pane "${1:-}" ;;
 normalize-layout) normalize_role_layout "${1:-}" ;;
 edit) edit_window "${1:-$PWD}" ;;
 vim) vim_window "${1:-$PWD}" ;;
@@ -986,19 +1005,15 @@ vim-open)
     # Some callers, notably lazygit, invoke editors as `nvim -- file`.
     # That separator is useful for regular nvim startup, but Neovim remote
     # treats it as another file when using --remote-tab-silent.
-    args=()
-    for arg in "$@"; do
-        [[ "$arg" == -- ]] && continue
-        args+=("$arg")
-    done
-    vim_window "$PWD" "${args[@]}"
+    [[ "${1:-}" == -- ]] && shift
+    vim_window "$PWD" "$@"
     ;;
 git | lazygit) git_window "${1:-$PWD}" ;;
 git-split | lazygit-split) git_split "${1:-$PWD}" ;;
-tuxedo | tasks | task | todo) tuxedo_window "${1:-$PWD}" ;;
-open-todo-ref) open_todo_ref "${1:-$PWD}" ;;
+tasks | task | todo) tracker_window "${1:-$PWD}" "${2:-}" ;;
+linear-tasks) tracker_window "${1:-$PWD}" linear ;;
+jira-tasks) tracker_window "${1:-$PWD}" jira ;;
 __refresh-status) refresh_status_metadata ;;
-__nvim) nvim_runner "$@" ;;
 help | -h | --help) usage ;;
 *)
     echo "unknown command: $cmd" >&2
