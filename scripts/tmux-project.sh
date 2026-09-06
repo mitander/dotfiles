@@ -945,11 +945,11 @@ actions_window() {
         exit 127
     }
     root="$(workspace_root "$cwd")"
-    command="$(quote_argv gh observer --repo)"
+    command="$(quote_argv actions-tui)"
 
     if ! in_tmux; then
         cd "$root"
-        exec gh observer --repo
+        exec actions-tui
     fi
 
     session="$(tmux display-message -p '#{session_id}')"

@@ -39,6 +39,17 @@
     '';
   };
 
+  actionsTui = pkgs.runCommand "actions-tui-0.2.0" {
+    nativeBuildInputs = [pkgs.makeWrapper];
+  } ''
+    install -Dm755 ${../scripts/actions-tui.py} $out/bin/actions-tui
+    wrapProgram $out/bin/actions-tui \
+      --prefix PATH : ${pkgs.python3.withPackages (ps: [ps.textual ps.watchfiles])}/bin \
+      --prefix PYTHONPATH : ${flumeTrackerTheme}/${pkgs.python3.sitePackages} \
+      --set-default FLUME_TRACKER_THEME_DIR "${dotfilesDirectory}/themes/flume/extras/tracker-tui" \
+      --set-default FLUME_SCHEMA_FILE "${dotfilesDirectory}/themes/flume/extras/current/schema"
+  '';
+
   mkTrackerTui = {
     pname,
     subdirectory,
@@ -79,6 +90,7 @@ in {
     stateVersion = "26.05";
 
     packages = with pkgs; [
+      actionsTui
       atuin
       bat
       curl
