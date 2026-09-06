@@ -3,6 +3,16 @@ local function dotfiles_script(script_name)
     return root .. "/scripts/" .. script_name
 end
 
+local function run_command(command)
+    vim.system(command, { text = true }, function(result)
+        if result.code ~= 0 then
+            vim.schedule(function()
+                vim.notify(result.stderr or "tmux command failed", vim.log.levels.ERROR, { title = "tmux" })
+            end)
+        end
+    end)
+end
+
 local function run_tmux_project(args)
     if not vim.env.TMUX then
         vim.notify("Not inside tmux", vim.log.levels.WARN, { title = "tmux" })
@@ -18,10 +28,7 @@ local function run_tmux_project(args)
     local command = { script }
     vim.list_extend(command, args)
 
-    local output = vim.fn.system(command)
-    if vim.v.shell_error ~= 0 then
-        vim.notify(output, vim.log.levels.ERROR, { title = "tmux" })
-    end
+    run_command(command)
 end
 
 local function open_project_role(role)
@@ -36,10 +43,7 @@ local function open_shell_popup()
         return
     end
 
-    local output = vim.fn.system({ "tmux", "display-popup", "-E", "-d", vim.fn.getcwd(), "-w", "90%", "-h", "80%" })
-    if vim.v.shell_error ~= 0 then
-        vim.notify(output, vim.log.levels.ERROR, { title = "tmux" })
-    end
+    run_command({ "tmux", "display-popup", "-E", "-d", vim.fn.getcwd(), "-w", "90%", "-h", "80%" })
 end
 
 local directions = {
@@ -57,7 +61,7 @@ local function tmux_navigate(direction)
         return
     end
 
-    if not vim.env.TMUX or vim.fn.executable("tmux") ~= 1 then
+    if not vim.env.TMUX or not vim.env.TMUX_PANE or vim.fn.executable("tmux") ~= 1 then
         return
     end
 
@@ -66,12 +70,19 @@ local function tmux_navigate(direction)
         return
     end
 
-    local at_edge = vim.fn.system({ "tmux", "display-message", "-p", "#{" .. spec.edge .. "}" }):gsub("%s+", "")
-    if vim.v.shell_error ~= 0 or at_edge == "1" then
-        return
-    end
-
-    vim.fn.system({ "tmux", "select-pane", "-" .. spec.tmux })
+    -- Check the edge and select relative to the originating pane in one request.
+    -- No synchronous queries on the editor's keypress path.
+    local pane = vim.env.TMUX_PANE
+    run_command({
+        "tmux",
+        "if-shell",
+        "-F",
+        "-t",
+        pane,
+        "#{" .. spec.edge .. "}",
+        "",
+        "select-pane -t " .. pane .. " -" .. spec.tmux,
+    })
 end
 
 local function navigate(direction)
@@ -94,7 +105,7 @@ return {
             end,
             desc = "Tmux new pi split",
         },
-        { "<leader>Tt", open_project_role("tuxedo"), desc = "Tmux project todo window" },
+        { "<leader>Tt", open_project_role("tasks"), desc = "Tmux project tasks window" },
         { "<leader>Tp", open_shell_popup, desc = "Tmux shell popup" },
         { "<C-h>", navigate("h"), desc = "Tmux navigate left" },
         { "<C-j>", navigate("j"), desc = "Tmux navigate down" },
@@ -108,12 +119,10 @@ return {
     opts = {
         copy_sync = {
             enable = true,
-            ignore_buffers = { empty = false },
-            register_offset = 0,
-            redirect_to_clipboard = true,
+            -- Keep normal registers local. Only explicit "+ / "* operations
+            -- access tmux's clipboard, never ordinary paste, delete, or ':' keys.
+            sync_registers = false,
             sync_clipboard = true,
-            sync_deletes = true,
-            sync_unnamed = true,
         },
         navigation = {
             cycle_navigation = false,

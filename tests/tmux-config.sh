@@ -30,7 +30,9 @@ cp "$SOURCE_ROOT/tmux/.tmux/workspace-status.conf" "$TEST_ROOT/home/dotfiles/tmu
 cp "$SOURCE_ROOT/extras/tmux/colors.conf" "$TEST_ROOT/home/dotfiles/extras/tmux/colors.conf"
 chmod +x "$TEST_ROOT/home/dotfiles/scripts/tmux-residency.sh" "$TEST_ROOT/home/dotfiles/scripts/tmux-project.sh" \
   "$TEST_ROOT/home/dotfiles/scripts/tmux-nvim.sh"
-printf '#!/bin/sh\nexit 0\n' >"$TEST_ROOT/home/.tmux/plugins/tpm/tpm"
+# Model Continuum's status-right append without loading plugins or restoring
+# real sessions. The hook must survive both initial load and config reload.
+printf '#!/bin/sh\ntmux set-option -ag status-right "#(true)"\n' >"$TEST_ROOT/home/.tmux/plugins/tpm/tpm"
 chmod +x "$TEST_ROOT/home/.tmux/plugins/tpm/tpm"
 
 HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" \
@@ -84,6 +86,24 @@ script="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" show-option -gqv @workspace_r
 [[ "$script" == "$TEST_ROOT/home/dotfiles/scripts/tmux-residency.sh" ]] || fail 'legacy residency fallback was not selected'
 status_style="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" show-option -gv status-style)"
 [[ "$status_style" == *'bg=#232136'* && "$status_style" == *'fg=#c9c5d9'* ]] || fail 'tracked fallback theme was not applied'
+status_right="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" show-option -gqv status-right)"
+[[ "$status_right" == *'#(true)'* && "$status_right" == *zoom* ]] || fail 'status styling removed the autosave hook'
+HOME="$TEST_ROOT/home" tmux -L "$SOCKET" source-file "$TEST_ROOT/home/dotfiles/tmux/.tmux.conf"
+status_right="$(HOME="$TEST_ROOT/home" tmux -L "$SOCKET" show-option -gqv status-right)"
+[[ "$status_right" == *'#(true)'* && "$status_right" != *'#(true)'*'#(true)'* ]] || fail 'reload removed or duplicated the autosave hook'
+
+# Neovim sends one format-only request, explicitly targeting its originating
+# pane. Crossing a boundary must not wrap around the window.
+nav_left="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t smoke: -n navigation 'sleep 300')"
+nav_window="$(tmux -L "$SOCKET" display-message -p -t "$nav_left" '#{window_id}')"
+nav_right="$(tmux -L "$SOCKET" split-window -h -P -F '#{pane_id}' -t "$nav_left" 'sleep 300')"
+tmux -L "$SOCKET" if-shell -F -t "$nav_right" '#{pane_at_left}' '' "select-pane -t $nav_right -L"
+[[ "$(tmux -L "$SOCKET" display-message -p -t "$nav_window" '#{pane_id}')" == "$nav_left" ]] || fail 'navigation did not move left'
+tmux -L "$SOCKET" if-shell -F -t "$nav_left" '#{pane_at_left}' '' "select-pane -t $nav_left -L"
+[[ "$(tmux -L "$SOCKET" display-message -p -t "$nav_window" '#{pane_id}')" == "$nav_left" ]] || fail 'navigation wrapped at the left edge'
+tmux -L "$SOCKET" if-shell -F -t "$nav_left" '#{pane_at_right}' '' "select-pane -t $nav_left -R"
+[[ "$(tmux -L "$SOCKET" display-message -p -t "$nav_window" '#{pane_id}')" == "$nav_right" ]] || fail 'navigation did not move right'
+tmux -L "$SOCKET" kill-window -t "$nav_window"
 
 # Concurrent background mode switches still create only one role window.
 mkdir -p "$TEST_ROOT/bin"
