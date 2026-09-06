@@ -230,13 +230,19 @@ ensure_timer() {
 }
 
 reconcile_session() {
-  local session="$1" attached="$2" now deadline grace result
+  local session="$1" attached="$2" now deadline grace result mode
   session_exists "$session" || return 0
   now="$(now_epoch)"
+  mode="$(residency_mode)"
 
   result="$(session_option "$session" @workspace_residency_result)"
-  if [[ "$(residency_mode)" == observe && "$result" == cool:* ]]; then
+  if [[ "$mode" == observe && "$result" == cool:* ]]; then
     resume_session "$session"
+    unset_session_option "$session" @workspace_residency_result
+    result=
+  elif [[ "$mode" == cool && "$result" == observe:would-cool ]]; then
+    # An observation is not a completed cooling operation. Start a fresh grace
+    # period when enabling cooling, rather than skipping this detached session.
     unset_session_option "$session" @workspace_residency_result
     result=
   fi

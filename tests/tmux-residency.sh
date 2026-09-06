@@ -173,6 +173,19 @@ wait "$gamma_control_pid" 2>/dev/null || true
 exec 8>&-
 CONTROL_PIDS=()
 
+# Switching from a completed observation to cooling starts a fresh grace period.
+# Alpha and beta remain detached throughout the transition.
+assert_eq '' "$(option "$beta" @workspace_residency_result)" 'cool mode retained a completed observation'
+assert_eq 2800 "$(option "$beta" @workspace_residency_deadline)" 'observe-to-cool transition did not grant fresh grace'
+run_residency reconcile
+assert_eq 2800 "$(option "$beta" @workspace_residency_deadline)" 'reconcile extended transition grace'
+# Beta's original observation timer is still pending. It must rearm, not cool early.
+run_residency timer-fired "$beta" 1900
+assert_eq 2800 "$(option "$beta" @workspace_residency_timer_due)" 'old observation timer did not rearm'
+TMUX_RESIDENCY_NOW=2800
+run_residency timer-fired "$beta" 2800
+assert_eq cool:0 "$(option "$beta" @workspace_residency_result)" 'transition never completed cooling'
+
 # Observation mode cannot leave panes stopped by an earlier cooling mode.
 run_residency sleep "$gamma"
 assert_eq 1 "$(tmux -L "$SOCKET" show-options -pqv -t "$task_pane" @workspace_residency_cooled)" 'task pane was not cooled before mode transition'
