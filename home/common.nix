@@ -8,6 +8,11 @@
 }: let
   live = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/${path}";
 
+  # The private agent-config checkout at ~/.agents owns the agent voice, pi
+  # configuration, and personal skills. This public repository only stores
+  # pointers into it, so no agent persona or credentials become public.
+  agentLive = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/${path}";
+
   trackerTuiSource = pkgs.fetchFromGitHub {
     owner = "runpantheon";
     repo = "ltui";
@@ -106,6 +111,15 @@ in {
 
   programs.home-manager.enable = true;
 
+  home.activation.checkAgentConfigCheckout = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+    agents_expected_checkout="$HOME/.agents"
+    if [[ ! -d "$agents_expected_checkout/skills" || ! -d "$agents_expected_checkout/.git" ]]; then
+      echo "Expected live-linked agent-config checkout is missing: $agents_expected_checkout" >&2
+      echo "Run: mkdir -p ~/.agents && gh repo clone mitander/agent-config ~/.agents" >&2
+      exit 1
+    fi
+  '';
+
   home.activation.checkDotfilesCheckout = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     dotfiles_expected_checkout=${lib.escapeShellArg dotfilesDirectory}
     if [[ ! -d "$dotfiles_expected_checkout" || ! -f "$dotfiles_expected_checkout/flake.nix" ]]; then
@@ -129,7 +143,16 @@ in {
 
   home.file = {
     ".gitconfig".source = live "git/.gitconfig";
+    ".pi/agent/AGENTS.md".source = agentLive "pi/AGENTS.md";
+    ".pi/agent/settings.json".source = agentLive "pi/settings.json";
+    ".pi/agent/extensions/context-watch".source = agentLive "pi/extensions/context-watch";
+    ".pi/agent/extensions/myran".source = agentLive "pi/extensions/myran";
+    ".pi/agent/extensions/herdr-agent-state.ts".source = agentLive "pi/extensions/herdr-agent-state.ts";
     ".pi/agent/extensions/flume-ui/index.ts".source = live "pi/.pi/agent/extensions/flume-ui/index.ts";
+    ".claude/CLAUDE.md".source = agentLive "pi/AGENTS.md";
+    ".codex/AGENTS.md".source = agentLive "pi/AGENTS.md";
+    ".copilot/AGENTS.md".source = agentLive "pi/AGENTS.md";
+    ".local/bin/agents-skills-link".source = live "scripts/agents-skills-link.sh";
     ".tmux.conf".source = live "tmux/.tmux.conf";
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
     ".local/bin/tmux-nvim".source = live "scripts/tmux-nvim.sh";
@@ -140,7 +163,7 @@ in {
 
   # LazyGit's tmux.yml is loaded directly from the repository by
   # scripts/tmux-project.sh; it is not a user configuration destination.
-  # Pi credentials, sessions, extensions from other sources, and other mutable
+  # Pi credentials, sessions, the linear extension credentials, and other mutable
   # agent state stay unmanaged. LSD's colors.yaml remains Flume-managed so
   # changing the active theme keeps updating it without a Home Manager activation.
 

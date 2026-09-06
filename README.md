@@ -91,6 +91,8 @@ selected profiles, then run the non-destructive bootstrap.
 mkdir -p ~/c/p
 git clone https://github.com/mitander/flume.nvim.git ~/c/p/flume.nvim
 git clone https://github.com/mitander/dotfiles.git ~/dotfiles
+mkdir -p ~/.agents
+gh repo clone mitander/agent-config ~/.agents
 cd ~/dotfiles
 ./install.sh           # doctor + build; does not activate
 ./install.sh --check   # also evaluate every supported system
