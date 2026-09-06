@@ -386,6 +386,9 @@ return {
             formatter = "path.filename_first",
             previewer = false,
             cmd = file_cmd,
+            -- multiprocess children fail to bootstrap config on this machine
+            -- (nix nvim, spawn.lua dies with 'config is nil'), producing an
+            -- empty picker. Revisit after an fzf-lua upgrade.
             multiprocess = false,
             winopts = vim.deepcopy(file_picker_winopts),
         },
@@ -468,6 +471,5 @@ return {
                 },
             })
         end
-
     end,
 }
