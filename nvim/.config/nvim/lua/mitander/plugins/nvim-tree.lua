@@ -58,16 +58,25 @@ local function on_attach(bufnr)
 
     vim.keymap.set("n", "h", api.node.navigate.parent_close, opts("Close directory"))
     vim.keymap.set("n", "l", enter_directory, opts("Enter directory"))
+    vim.keymap.set("n", "<C-n>", api.tree.close, opts("Close tree"))
     vim.keymap.set("n", "<C-m>", api.tree.close, opts("Close tree"))
     vim.keymap.set("n", "<esc>", api.tree.close, opts("Close tree"))
 end
 
 return {
     "nvim-tree/nvim-tree.lua",
-    lazy = false,
+    cmd = { "NvimTreeToggle", "NvimTreeOpen", "NvimTreeFindFile" },
     dependencies = { "nvim-tree/nvim-web-devicons" },
     keys = {
+        { "<C-n>", toggle_tree, desc = "Toggle file tree" },
         { "<C-m>", toggle_tree, desc = "Toggle file tree" },
+        {
+            "<leader>e",
+            function()
+                require("nvim-tree.api").tree.find_file({ open = true, focus = true })
+            end,
+            desc = "Reveal current file in tree",
+        },
     },
     opts = {
         on_attach = on_attach,

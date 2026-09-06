@@ -9,7 +9,7 @@ local function make_opts()
                 inactive = { c = { fg = colors.placeholder, bg = colors.surface, gui = "bold" } },
             },
             disabled_filetypes = {
-                statusline = { "oil", "NvimTree" },
+                statusline = { "NvimTree" },
             },
         },
         sections = {

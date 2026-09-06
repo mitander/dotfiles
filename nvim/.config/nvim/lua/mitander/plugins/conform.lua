@@ -13,7 +13,7 @@ return {
         },
     },
     opts = {
-        notify_on_error = false,
+        notify_on_error = true,
         notify_no_formatters = false,
         formatters_by_ft = {
             lua = { "stylua" },
@@ -43,7 +43,8 @@ return {
         default_format_opts = {
             lsp_format = "fallback",
         },
-        format_on_save = { timeout_ms = 2000 },
+        -- Keep saves bounded. Slow formatting remains available via <leader>f.
+        format_on_save = { timeout_ms = 500 },
         formatters = {
             shfmt = {
                 prepend_args = { "-i", "2" },
