@@ -16,7 +16,8 @@ set -gx PATH $PATH
 
 function nvim
     if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"; and test -x "$DOTFILES_DIR/scripts/tmux-project.sh"
-        "$DOTFILES_DIR/scripts/tmux-project.sh" vim-open -- $argv
+        # vim-open handles the editor's own optional -- separator.
+        "$DOTFILES_DIR/scripts/tmux-project.sh" vim-open $argv
     else
         command nvim $argv
     end
