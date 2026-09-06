@@ -185,7 +185,8 @@ workspace_root() {
         if [[ -n "$configured_root" && -d "$configured_root" ]]; then
             root="$configured_root"
         fi
-        set_session_workspace "$session" "$root"
+        # Skip the write when nothing changed; this runs on every role open.
+        [[ "$configured_root" == "$root" ]] || set_session_workspace "$session" "$root"
     fi
 
     printf '%s\n' "$root"
@@ -275,25 +276,58 @@ ensure_role_window() {
         lock_role_window "$session" "$role"
         owns_lock=1
     fi
-    ROLE_WINDOW_ID="$(find_role_window "$session" "$role")"
+
+    # Fetch window state with the role lookup instead of blind renames and
+    # option writes: switching to an existing role window is the hot path and
+    # usually needs no writes at all.
+    local win_id win_name win_mode win_label win_root
+    win_id=""
+    while IFS=$'\t' read -r win_id win_name win_mode win_label win_root; do
+        break
+    done < <(tmux list-windows -t "$session" -F \
+        $'#{window_id}\t#{window_name}\t#{@workspace_mode}\t#{@workspace_mode_label}\t#{@workspace_root}' 2>/dev/null |
+        awk -F '\t' -v role="$role" '$3 == role')
+
+    ROLE_WINDOW_ID="$win_id"
     ROLE_WINDOW_CREATED=0
     if [[ -z "$ROLE_WINDOW_ID" ]]; then
         if [[ -n "$create_command" ]] && declare -F "$create_command" >/dev/null; then
             create_command="$($create_command)"
         fi
+        ROLE_WINDOW_CREATE_CMD="$create_command"
         if [[ -n "$create_command" ]]; then
             ROLE_WINDOW_ID="$(tmux new-window -d -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root" "$create_command")"
         else
             ROLE_WINDOW_ID="$(tmux new-window -d -P -F '#{window_id}' -t "$session:" -n "$name" -c "$root")"
         fi
         ROLE_WINDOW_CREATED=1
+        set_window_workspace_mode "$ROLE_WINDOW_ID" "$role" "$root"
     else
-        tmux rename-window -t "$ROLE_WINDOW_ID" "$name" >/dev/null
+        if [[ "$win_name" != "$name" || "$win_mode" != "$role" ||
+            "$win_label" != "$(workspace_mode_label "$role")" || "$win_root" != "$root" ]]; then
+            tmux rename-window -t "$ROLE_WINDOW_ID" "$name" >/dev/null
+            set_window_workspace_mode "$ROLE_WINDOW_ID" "$role" "$root"
+        fi
     fi
 
-    set_window_workspace_mode "$ROLE_WINDOW_ID" "$role" "$root"
-    ROLE_PANE_ID="$(active_pane_in_window "$ROLE_WINDOW_ID")"
-    [[ -n "$ROLE_PANE_ID" ]] && set_pane_workspace_role "$ROLE_PANE_ID" "$role" "$root"
+    ROLE_PANE_ID=""
+    if ((ROLE_WINDOW_CREATED == 0)); then
+        local pactive pane_role pane_label pane_root
+        while IFS=$'\t' read -r pactive pane_id pane_role pane_label pane_root; do
+            [[ "$pactive" == "1" ]] || continue
+            ROLE_PANE_ID="$pane_id"
+            if [[ "$pane_role" != "$role" || "$pane_label" != "$(workspace_mode_label "$role")" ||
+                "$pane_root" != "$root" ]]; then
+                set_pane_workspace_role "$pane_id" "$role" "$root"
+            fi
+            break
+        done < <(tmux list-panes -t "$ROLE_WINDOW_ID" -F \
+            $'#{pane_active}\t#{pane_id}\t#{@workspace_pane_role}\t#{@workspace_pane_role_label}\t#{@workspace_root}' 2>/dev/null || true)
+    fi
+    if [[ -z "$ROLE_PANE_ID" ]]; then
+        ROLE_PANE_ID="$(active_pane_in_window "$ROLE_WINDOW_ID")"
+        [[ -n "$ROLE_PANE_ID" ]] && set_pane_workspace_role "$ROLE_PANE_ID" "$role" "$root"
+    fi
     if ((owns_lock)); then
         unlock_role_window
     fi
@@ -547,6 +581,13 @@ vim_window() {
             [[ -n "$vim_pane" ]] && tmux select-pane -t "$vim_pane"
             (
                 remote_focus || true
+                # The new pane's nvim may still be booting; wait for its
+                # socket instead of treating a booting window as dead.
+                local waited=0
+                while [[ ! -S "$server" && $waited -lt 50 ]]; do
+                    sleep 0.1
+                    waited=$((waited + 1))
+                done
                 if remote_open; then
                     remote_focus || true
                 else
@@ -845,32 +886,51 @@ refresh_status_metadata() {
     done < <(tmux list-panes -a -F '#{pane_id}' 2>/dev/null || true)
 }
 
-git_window() {
-    local cwd="${1:-$PWD}" root config_files session target name cmd window_id pane_id lazygit_cmd
-    require_dir "$cwd"
+lazygit_create_command() {
     command -v lazygit >/dev/null 2>&1 || {
         echo "lazygit not found" >&2
-        exit 127
+        return 127
     }
+    local files
+    files="$(lazygit_config_files)"
+    if [[ -n "$files" ]]; then
+        LAZYGIT_RESUME_CMD="$(quote_argv lazygit --use-config-file "$files")"
+    else
+        LAZYGIT_RESUME_CMD="$(quote_argv lazygit)"
+    fi
+    printf '%s\n' "$LAZYGIT_RESUME_CMD"
+}
+
+git_window() {
+    local cwd="${1:-$PWD}" root session name files
+    require_dir "$cwd"
 
     root="$(workspace_root "$cwd")"
-    lazygit_cmd=(lazygit)
-    config_files="$(lazygit_config_files)"
-    [[ -n "$config_files" ]] && lazygit_cmd+=(--use-config-file "$config_files")
 
     if ! in_tmux; then
         cd "$root"
-        exec "${lazygit_cmd[@]}"
+        command -v lazygit >/dev/null 2>&1 || {
+            echo "lazygit not found" >&2
+            exit 127
+        }
+        files="$(lazygit_config_files)"
+        if [[ -n "$files" ]]; then
+            exec lazygit --use-config-file "$files"
+        fi
+        exec lazygit
     fi
 
     session="$(tmux display-message -p '#{session_id}')"
     name="${LAZYGIT_TMUX_WINDOW_PREFIX:-git}"
-    cmd="$(quote_argv "${lazygit_cmd[@]}")"
     lock_role_window "$session" git
-    ensure_role_window "$session" git "$root" "$name" "$cmd"
-    tmux set-option -w -t "$ROLE_WINDOW_ID" @lazygit_root "$root" >/dev/null
-    if [[ -n "$ROLE_PANE_ID" ]]; then
-        tmux set-option -pq -t "$ROLE_PANE_ID" @workspace_resume_command "$cmd"
+    # Binary check and config resolution only run when the window is created;
+    # switching to an existing git window is the hot path.
+    ensure_role_window "$session" git "$root" "$name" lazygit_create_command
+    if ((ROLE_WINDOW_CREATED == 1)); then
+        tmux set-option -w -t "$ROLE_WINDOW_ID" @lazygit_root "$root" >/dev/null
+        if [[ -n "$ROLE_PANE_ID" ]]; then
+            tmux set-option -pq -t "$ROLE_PANE_ID" @workspace_resume_command "${ROLE_WINDOW_CREATE_CMD:-lazygit}"
+        fi
     fi
     resume_cooled_window "$ROLE_WINDOW_ID"
     unlock_role_window
