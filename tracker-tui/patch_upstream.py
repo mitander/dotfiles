@@ -58,7 +58,7 @@ def main() -> None:
         "        \"duplicate\": \"status_canceled\",\n"
         "    }.get(state.get(\"type\"))\n"
         "    return tracker_role_color(role, C_SUB) if role else C_SUB\n\n\n"
-        "def preferred_tracker_scope(scopes: list[dict], last_id: str | None = None) -> dict | None:\n"
+        "def preferred_tracker_scope(scopes: list[dict]) -> dict | None:\n"
         "    \"\"\"Choose the scope matching repo config, issue branch, or repository name.\"\"\"\n"
         "    def token(value: object) -> str:\n"
         "        return re.sub(r\"[^a-z0-9]\", \"\", str(value or \"\").casefold())\n\n"
@@ -71,7 +71,7 @@ def main() -> None:
         "            candidates = (token(scope.get(\"key\")), token(scope.get(\"name\")))\n"
         "            if hint in candidates or (fuzzy and len(hint) >= 4 and any(hint in value or value in hint for value in candidates)):\n"
         "                return scope\n"
-        "    return next((scope for scope in scopes if scope.get(\"id\") == last_id), None)\n",
+        "    return None\n",
     )
     source = replace_once(
         source,
@@ -235,8 +235,7 @@ def main() -> None:
             "            scope = next(\n"
             '                (t for t in self._sidebar_scopes() if t["id"] == last_id), None\n'
             "            )\n",
-            '            last_id = load_state().get("team_id")\n'
-            "            scope = preferred_tracker_scope(self._sidebar_scopes(), last_id)\n",
+            "            scope = preferred_tracker_scope(self._sidebar_scopes())\n",
         )
         source = replace_once(
             source,
@@ -244,27 +243,86 @@ def main() -> None:
             "        scopes = self._sidebar_scopes()\n"
             '        scope = next((t for t in scopes if t["id"] == last), None) or (\n'
             "            self._teams[0] if self._teams else None\n"
-            "        )\n",
-            '        last = load_state().get("team_id")\n'
+            "        )\n"
+            '        if scope is None:\n'
+            "            issues_list.loading = False\n"
+            '            self.notify("no teams found", severity="warning")\n'
+            "            return\n",
             "        scopes = self._sidebar_scopes()\n"
-            "        scope = preferred_tracker_scope(scopes, last) or (self._teams[0] if self._teams else None)\n",
+            "        scope = preferred_tracker_scope(scopes)\n"
+            "        if scope is None:\n"
+            "            if not self._teams:\n"
+            "                issues_list.loading = False\n"
+            '                self.notify("no teams found", severity="warning")\n'
+            "                return\n"
+            "            self._sidebar_hidden = False\n"
+            "            self._apply_sidebar_visibility()\n"
+            '            self.query_one("#teams", NavList).focus()\n'
+            "            return\n",
+        )
+        source = replace_once(
+            source,
+            "    async def load_team(self, team: dict) -> None:\n"
+            "        self._team = team\n",
+            "    async def load_team(self, team: dict) -> None:\n"
+            "        self._team = team\n"
+            "        self._update_header()\n",
+        )
+        source = replace_once(
+            source,
+            "        self._team = ALL_TEAMS\n",
+            "        self._team = ALL_TEAMS\n"
+            "        self._update_header()\n",
+        )
+        source = replace_once(
+            source,
+            '        markup = (\n'
+            '            f"[bold {C_BLUE}] \\uf03a [/]"\n'
+            '            + wave_markup("ltui", self._wave_pos, f"bold {C_BLUE}", C_LAV)\n'
+            '            + f"[{C_VFAINT}]  \\u00b7  [/][{C_SUB}]{escape(self._org)}[/]"\n'
+            '            + f"[{C_VFAINT}] / [/][{C_DIM}]{escape(self._viewer_name)}[/]"\n'
+            "        )\n",
+            "        team = self._team\n"
+            "        if team is None:\n"
+            "            identity = self._org\n"
+            '        elif team["id"] == ALL_TEAMS_ID:\n'
+            '            identity = f"{self._org} \\u00b7 all teams"\n'
+            "        else:\n"
+            "            identity = f\"{team['name']} ({team['key']})\"\n"
+            '        markup = (\n'
+            '            f"[bold {C_BLUE}] \\uf03a [/]"\n'
+            '            + wave_markup("ltui", self._wave_pos, f"bold {C_BLUE}", C_LAV)\n'
+            '            + f"[{C_VFAINT}]  \\u00b7  [/][{C_SUB}]{escape(identity)}[/]"\n'
+            '            + f"[{C_VFAINT}] / [/][{C_DIM}]{escape(self._viewer_name)}[/]"\n'
+            "        )\n",
         )
     else:
         source = replace_once(
             source,
             '            last_id = load_state().get("team_id")\n'
             '            team = next((t for t in self._teams if t["id"] == last_id), None)\n',
-            '            last_id = load_state().get("team_id")\n'
-            "            team = preferred_tracker_scope(self._teams, last_id)\n",
+            "            team = preferred_tracker_scope(self._teams)\n",
         )
         source = replace_once(
             source,
             '        last = load_state().get("team_id")\n'
             '        team = next((t for t in self._teams if t["id"] == last), None) or (\n'
             "            self._teams[0] if self._teams else None\n"
-            "        )\n",
-            '        last = load_state().get("team_id")\n'
-            "        team = preferred_tracker_scope(self._teams, last) or (self._teams[0] if self._teams else None)\n",
+            "        )\n"
+            '        if team is None:\n'
+            "            issues_list.loading = False\n"
+            '            self.notify("no projects found", severity="warning")\n'
+            "            return\n",
+            "        team = preferred_tracker_scope(self._teams)\n"
+            "        if team is None:\n"
+            "            if not self._teams:\n"
+            "                issues_list.loading = False\n"
+            '                self.notify("no projects found", severity="warning")\n'
+            "                return\n"
+            "            self._sidebar_hidden = False\n"
+            "            self._apply_sidebar_visibility()\n"
+            '            self.query_one("#teams", NavList).focus()\n'
+            "            return\n",
         )
 
     for escaped in (
