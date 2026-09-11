@@ -15,9 +15,22 @@ end
 set -gx PATH $PATH
 
 function nvim
-    if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"; and test -x "$DOTFILES_DIR/scripts/tmux-project.sh"
-        # vim-open handles the editor's own optional -- separator.
-        "$DOTFILES_DIR/scripts/tmux-project.sh" vim-open $argv
+    if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"
+        # Myran accepts literal paths, not Neovim startup commands/options.
+        set -l paths
+        set -l literal 0
+        for arg in $argv
+            if test $literal = 0; and test "$arg" = --
+                set literal 1
+                continue
+            end
+            if test $literal = 0; and string match -qr '^[+-]' -- "$arg"
+                echo 'Use command nvim for startup flags or +commands (myr open accepts paths only).' >&2
+                return 2
+            end
+            set -a paths "$arg"
+        end
+        myr open -- $paths
     else
         command nvim $argv
     end
@@ -49,11 +62,11 @@ end
 
 # tmux
 function tn
-    "$DOTFILES_DIR/scripts/tmux-project.sh" session $argv
+    myr workspace open $argv
 end
 alias ta "tmux attach-session -t "
 function tm
-    "$DOTFILES_DIR/scripts/tmux-session.sh" attach $argv
+    myr workspace switch $argv
 end
 alias tls "tmux ls"
 
@@ -64,7 +77,11 @@ function lazygit
 end
 
 function gg
-    "$DOTFILES_DIR/scripts/tmux-project.sh" git $argv
+    if test -n "$TMUX"
+        myr role open git $argv
+    else
+        lazygit $argv
+    end
 end
 alias gs "git status"
 alias gl "git log --oneline --graph --color=always --abbrev-commit --date=short | less -REX"

@@ -39,12 +39,21 @@
     '';
   };
 
-  actionsTui = pkgs.runCommand "actions-tui-0.2.0" {
+  # bronson lives in a private repo with a live checkout; the wrapper
+  # below execs the script from it at runtime, so edits apply without a
+  # rebuild. If the checkout is missing the wrapper explains how to clone:
+  #   gh repo clone mitander/bronson ~/c/p/bronson
+  bronsonPython = pkgs.python3.withPackages (ps: [
+    ps.textual
+    ps.watchfiles
+  ]);
+
+  bronson = pkgs.runCommand "bronson-0.3.0" {
     nativeBuildInputs = [pkgs.makeWrapper];
   } ''
-    install -Dm755 ${../scripts/actions-tui.py} $out/bin/actions-tui
-    wrapProgram $out/bin/actions-tui \
-      --prefix PATH : ${pkgs.python3.withPackages (ps: [ps.textual ps.watchfiles])}/bin \
+    install -Dm755 ${../scripts/bronson-wrapper.sh} $out/bin/bronson
+    wrapProgram $out/bin/bronson \
+      --set-default BRONSON_PYTHON "${bronsonPython}/bin/python3" \
       --prefix PYTHONPATH : ${flumeTrackerTheme}/${pkgs.python3.sitePackages} \
       --set-default FLUME_TRACKER_THEME_DIR "${dotfilesDirectory}/themes/flume/extras/tracker-tui" \
       --set-default FLUME_SCHEMA_FILE "${dotfilesDirectory}/themes/flume/extras/current/schema"
@@ -90,7 +99,7 @@ in {
     stateVersion = "26.05";
 
     packages = with pkgs; [
-      actionsTui
+      bronson
       atuin
       bat
       curl
@@ -167,14 +176,10 @@ in {
     ".local/bin/agents-skills-link".source = live "scripts/agents-skills-link.sh";
     ".tmux.conf".source = live "tmux/.tmux.conf";
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
-    ".local/bin/tmux-nvim".source = live "scripts/tmux-nvim.sh";
-    ".local/bin/tmux-project".source = live "scripts/tmux-project.sh";
-    ".local/bin/tmux-residency".source = live "scripts/tmux-residency.sh";
-    ".local/bin/tmux-session".source = live "scripts/tmux-session.sh";
   };
 
-  # LazyGit's tmux.yml is loaded directly from the repository by
-  # scripts/tmux-project.sh; it is not a user configuration destination.
+  # LazyGit's tmux.yml is loaded directly by Myran;
+  # it is not a user configuration destination.
   # Pi credentials, sessions, the linear extension credentials, and other mutable
   # agent state stay unmanaged. LSD's colors.yaml remains Flume-managed so
   # changing the active theme keeps updating it without a Home Manager activation.

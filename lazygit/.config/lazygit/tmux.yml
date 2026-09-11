@@ -1,4 +1,10 @@
-# Loaded by tmux-project when lazygit runs inside tmux.
+# Loaded by Myran inside tmux.
+# LazyGit shell-quotes {{filename}}. Do not add another quoting layer.
+os:
+  edit: myr open -- {{filename}}
+  editAtLine: myr open -- {{filename}}
+  editAtLineAndWait: myr open -- {{filename}}
+  editInTerminal: false
 keybinding:
   universal:
     quit: Q

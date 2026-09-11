@@ -62,6 +62,34 @@ vim.env.TMUX = nil
 key(tmux, "<C-l>")()
 assert(#requests == 1, "standalone Neovim should not call tmux")
 
+-- Role callbacks use literal argv, with no legacy policy wrapper.
+vim.env.TMUX = "/tmp/not-a-real-tmux-server,1,0"
+for lhs, role in pairs({ ["<leader>Te"] = "edit", ["<leader>Ts"] = "term", ["<leader>Ta"] = "agent", ["<leader>Tt"] = "tracker" }) do
+    key(tmux, lhs)()
+    assert(vim.deep_equal(requests[#requests], { "myr", "role", "open", role, vim.fn.getcwd() }))
+end
+key(tmux, "<leader>TA")()
+assert(vim.deep_equal(requests[#requests], { "myr", "role", "split", "agent", vim.fn.getcwd() }))
+local lazygit = spec("lazygit")
+local git_request
+vim.fn.system = function(command)
+    git_request = command
+    return ""
+end
+key(lazygit, "<leader>gg")()
+assert(vim.deep_equal(git_request, { "myr", "role", "open", "git", vim.fn.getcwd() }))
+vim.env.TMUX = nil
+local native_git = false
+vim.api.nvim_create_user_command("LazyGit", function() native_git = true end, {})
+key(lazygit, "<leader>gg")()
+assert(native_git, "standalone LazyGit must remain native")
+local before = #requests
+local saved_notify = vim.notify
+vim.notify = function() end
+key(tmux, "<leader>TA")()
+vim.notify = saved_notify
+assert(#requests == before, "standalone role split must not call Myran")
+
 local tree_calls = {}
 package.loaded["nvim-tree.api"] = {
     tree = {

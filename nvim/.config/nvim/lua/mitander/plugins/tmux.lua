@@ -1,8 +1,3 @@
-local function dotfiles_script(script_name)
-    local root = vim.env.DOTFILES_DIR or vim.fn.expand("~/dotfiles")
-    return root .. "/scripts/" .. script_name
-end
-
 local function run_command(command)
     vim.system(command, { text = true }, function(result)
         if result.code ~= 0 then
@@ -13,19 +8,18 @@ local function run_command(command)
     end)
 end
 
-local function run_tmux_project(args)
+local function run_myr(args)
     if not vim.env.TMUX then
         vim.notify("Not inside tmux", vim.log.levels.WARN, { title = "tmux" })
         return
     end
 
-    local script = dotfiles_script("tmux-project.sh")
-    if vim.fn.executable("tmux") ~= 1 or vim.fn.executable(script) ~= 1 then
-        vim.notify("tmux project script not executable: " .. script, vim.log.levels.ERROR, { title = "tmux" })
+    if vim.fn.executable("myr") ~= 1 then
+        vim.notify("myr is not executable", vim.log.levels.ERROR, { title = "tmux" })
         return
     end
 
-    local command = { script }
+    local command = { "myr" }
     vim.list_extend(command, args)
 
     run_command(command)
@@ -33,7 +27,7 @@ end
 
 local function open_project_role(role)
     return function()
-        run_tmux_project({ role, vim.fn.getcwd() })
+        run_myr({ "role", "open", role, vim.fn.getcwd() })
     end
 end
 
@@ -95,17 +89,17 @@ return {
     "aserowy/tmux.nvim",
     event = "VeryLazy",
     keys = {
-        { "<leader>Te", open_project_role("vim"), desc = "Tmux project nvim window" },
-        { "<leader>Ts", open_project_role("shell"), desc = "Tmux project shell window" },
-        { "<leader>Ta", open_project_role("pi"), desc = "Tmux project pi window" },
+        { "<leader>Te", open_project_role("edit"), desc = "Tmux project nvim window" },
+        { "<leader>Ts", open_project_role("term"), desc = "Tmux project shell window" },
+        { "<leader>Ta", open_project_role("agent"), desc = "Tmux project pi window" },
         {
             "<leader>TA",
             function()
-                run_tmux_project({ "agent-split", vim.fn.getcwd() })
+                run_myr({ "role", "split", "agent", vim.fn.getcwd() })
             end,
             desc = "Tmux new pi split",
         },
-        { "<leader>Tt", open_project_role("tasks"), desc = "Tmux project tasks window" },
+        { "<leader>Tt", open_project_role("tracker"), desc = "Tmux project tasks window" },
         { "<leader>Tp", open_shell_popup, desc = "Tmux shell popup" },
         { "<C-h>", navigate("h"), desc = "Tmux navigate left" },
         { "<C-j>", navigate("j"), desc = "Tmux navigate down" },
