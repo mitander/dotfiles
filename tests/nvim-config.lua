@@ -15,8 +15,11 @@ local function key(plugin, lhs)
 end
 
 local tmux = spec("tmux")
-assert(tmux.opts.copy_sync.sync_registers == false, "ordinary registers must remain local")
-assert(tmux.opts.copy_sync.sync_clipboard == true, "explicit clipboard access must remain available")
+assert(tmux.opts.copy_sync.sync_registers == true, "ordinary registers must sync to tmux")
+assert(tmux.opts.copy_sync.sync_clipboard == true, "Neovim clipboard integration must remain enabled")
+assert(tmux.opts.copy_sync.redirect_to_clipboard == true, "Neovim yanks must reach the system clipboard")
+assert(tmux.opts.copy_sync.sync_deletes == true, "Neovim deletes must remain clipboard-compatible")
+assert(tmux.opts.copy_sync.sync_unnamed == true, "the unnamed register must follow tmux clipboard state")
 
 -- Exercise local split navigation and inspect the single asynchronous tmux request.
 vim.env.TMUX = "/tmp/not-a-real-tmux-server,1,0"

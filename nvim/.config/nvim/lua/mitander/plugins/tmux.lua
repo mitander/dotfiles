@@ -113,10 +113,14 @@ return {
     opts = {
         copy_sync = {
             enable = true,
-            -- Keep normal registers local. Only explicit "+ / "* operations
-            -- access tmux's clipboard, never ordinary paste, delete, or ':' keys.
-            sync_registers = false,
+            -- Make ordinary yanks/deletes the shared tmux and system clipboard.
+            ignore_buffers = { empty = false },
+            redirect_to_clipboard = true,
+            register_offset = 0,
             sync_clipboard = true,
+            sync_deletes = true,
+            sync_registers = true,
+            sync_unnamed = true,
         },
         navigation = {
             cycle_navigation = false,
