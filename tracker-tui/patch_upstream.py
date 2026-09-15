@@ -13,6 +13,213 @@ def replace_once(source: str, old: str, new: str) -> str:
     return source.replace(old, new)
 
 
+def patch_linear_queue(source: str) -> str:
+    replacements = [
+        ('        updatedAt createdAt\n', '        updatedAt createdAt sortOrder\n'),
+        ('GROUP_MODES = ["status", "project", "initiative"]', 'GROUP_MODES = ["status", "project", "initiative", "milestone"]'),
+        ('        project { id name color }\n', '        project { id name color }\n        projectMilestone { id name targetDate }\n'),
+        (
+            '    # most recently updated first within each status group\n'
+            '    return (-parse_dt(i["updatedAt"]).timestamp(),)\n',
+            '    rank = i.get("sortOrder")\n'
+            '    return (rank is None, rank if rank is not None else 0, i["identifier"])\n',
+        ),
+        (
+            '    "toggle_mine": (["m"], "mine"),\n',
+            '    "toggle_mine": (["m"], "mine"),\n'
+            '    "toggle_focus": (["f"], "view"),\n',
+        ),
+        ('    "toggle_mine": "m",\n', '    "toggle_mine": "m",\n    "toggle_focus": "f",\n'),
+        (
+            '            ("m", "toggle mine only"),\n',
+            '            ("m", "toggle mine only"),\n'
+            '            ("f", "Now and next / All issues (manual order)"),\n',
+        ),
+        (
+            '        self._mine = load_state().get("mine", False)\n',
+            '        self._mine = load_state().get("mine", False)\n'
+            '        self._focus = load_state().get("focus", True)\n',
+        ),
+        (
+            '        data["group_by"] = self._group_by\n',
+            '        data["group_by"] = self._group_by\n'
+            '        data["focus"] = self._focus\n',
+        ),
+        (
+            '        issues = self._issues\n        if self._mine and self._viewer_id:\n',
+            '        issues = self._issues\n'
+            '        if self._focus:\n'
+            '            issues = [i for i in issues if i["state"]["type"] in {"started", "unstarted"}]\n'
+            '        if self._mine and self._viewer_id:\n',
+        ),
+        (
+            '        def mine_first(i: dict):\n'
+            '            is_mine = (i.get("assignee") or {}).get("id") == self._viewer_id\n'
+            '            return (0 if is_mine else 1, *issue_sort_key(i))\n',
+            '        def manual_order(i: dict):\n'
+            '            return issue_sort_key(i)\n',
+        ),
+        (
+            '            for i in group:\n'
+            '                self._opt_index[i["id"]] = len(opts)\n'
+            '                opts.append(Option(self._issue_row(i, width, id_w), id=i["id"]))\n',
+            '            ready_position = 0\n'
+            '            for i in group:\n'
+            '                self._opt_index[i["id"]] = len(opts)\n'
+            '                prefix = ""\n'
+            '                if self._focus:\n'
+            '                    if i["state"]["type"] == "unstarted":\n'
+            '                        ready_position += 1\n'
+            '                        position = str(ready_position) if i.get("sortOrder") is not None else "?"\n'
+            '                        prefix = f"{position:>2}  "\n'
+            '                    else:\n'
+            '                        prefix = "    "\n'
+            '                row = self._issue_row(i, width - len(prefix), id_w)\n'
+            '                if prefix:\n'
+            '                    row = Text(prefix, style=C_BLUE) + row\n'
+            '                opts.append(Option(row, id=i["id"]))\n',
+        ),
+        (
+            '            msg = "no matches" if flt else "no issues"\n',
+            '            msg = "no matches" if flt else ("no active or ready issues · f shows all" if self._focus else "no issues")\n',
+        ),
+        (
+            '            f"{mine_tag}{proj_tag}{group_tag} {len(issues)} issues "\n',
+            '            f" {\'Now and next\' if self._focus else \'All issues\'} · manual ·"\n'
+            '            f"{mine_tag}{proj_tag}{group_tag} {len(issues)} issues "\n',
+        ),
+        (
+            '    def action_toggle_mine(self) -> None:\n',
+            '    def action_toggle_focus(self) -> None:\n'
+            '        self._focus = not self._focus\n'
+            '        self._save_state()\n'
+            '        self.render_issues()\n\n'
+            '    def action_toggle_mine(self) -> None:\n',
+        ),
+        (
+            '      m mine only   v group status/project/initiative\n',
+            '      m mine only   f Now and next / All issues   v group status/project/initiative/milestone\n',
+        ),
+        ('query($teamId: String!) {{\n', 'query($teamId: String!, $after: String) {{\n'),
+        (
+            '    issues(first: 250, orderBy: updatedAt) {{\n'
+            '      nodes {{ {ISSUE_FIELDS} }}\n',
+            '    issues(first: 50, after: $after, orderBy: updatedAt) {{\n'
+            '      pageInfo {{ hasNextPage endCursor }}\n'
+            '      nodes {{ {ISSUE_FIELDS} }}\n',
+        ),
+        (
+            '    @work(exclusive=True, group="issues")\n'
+            '    async def load_team(self, team: dict) -> None:\n',
+            '    async def fetch_team_issues(self, team_id: str) -> dict:\n'
+            '        after = None\n'
+            '        nodes = []\n'
+            '        seen = set()\n'
+            '        while True:\n'
+            '            data = await self.gql(QL_ISSUES, {"teamId": team_id, "after": after})\n'
+            '            connection = data["team"]["issues"]\n'
+            '            nodes.extend(connection["nodes"])\n'
+            '            page = connection["pageInfo"]\n'
+            '            if not page["hasNextPage"]:\n'
+            '                connection["nodes"] = list({i["id"]: i for i in nodes}.values())\n'
+            '                return data\n'
+            '            after = page["endCursor"]\n'
+            '            if not after or after in seen:\n'
+            '                raise RuntimeError("Linear issue pagination did not advance")\n'
+            '            seen.add(after)\n\n'
+            '    @work(exclusive=True, group="issues")\n'
+            '    async def load_team(self, team: dict) -> None:\n',
+        ),
+        (
+            '            data = await self.gql(QL_ISSUES, {"teamId": team["id"]})\n',
+            '            data = await self.fetch_team_issues(team["id"])\n',
+        ),
+        (
+            '            *(self.gql(QL_ISSUES, {"teamId": t["id"]}) for t in teams),\n',
+            '            *(self.fetch_team_issues(t["id"]) for t in teams),\n',
+        ),
+        (
+            '        returns 250 issues *per team* instead of 250 in total, and keeps the\n',
+            '        paginates every team instead of truncating the queue, and keeps the\n',
+        ),
+    ]
+    for old, new in replacements:
+        source = replace_once(source, old, new)
+    source = source.replace('mine_first(i)', 'manual_order(i)').replace('key=mine_first', 'key=manual_order')
+    source = replace_once(
+        source,
+        '        self._render_boot(data)\n        write_cache("boot", data)\n        self.load_initiatives(rerender=True)\n',
+        '        self._render_boot(data)\n        write_cache("boot", data)\n',
+    )
+    source = replace_once(
+        source,
+        '    def action_first(self) -> None:\n',
+        '    def scroll_to_highlight(self, top: bool = False) -> None:\n'
+        '        super().scroll_to_highlight(top=top)\n'
+        '        index = self.highlighted\n'
+        '        if index is not None and index > 0 and all(\n'
+        '            self.get_option_at_index(n).disabled for n in range(index)\n'
+        '        ):\n'
+        '            self.scroll_home(animate=False)\n\n'
+        '    def action_first(self) -> None:\n',
+    )
+    source = replace_once(
+        source,
+        '        elif self._group_by == "initiative":\n',
+        '        elif self._group_by == "milestone":\n'
+        '            by_milestone: dict[str, list[dict]] = {}\n'
+        '            milestone_of: dict[str, dict] = {}\n'
+        '            for i in issues:\n'
+        '                milestone = i.get("projectMilestone") or {"id": "", "name": "no milestone", "targetDate": None}\n'
+        '                by_milestone.setdefault(milestone["id"], []).append(i)\n'
+        '                milestone_of[milestone["id"]] = milestone\n'
+        '            ordered_groups = sorted(\n'
+        '                milestone_of.values(),\n'
+        '                key=lambda m: (m["id"] == "", m.get("targetDate") or "9999-12-31", m.get("name") or ""),\n'
+        '            )\n'
+        '            groups = [\n'
+        '                (self._milestone_header_row(m, len(by_milestone[m["id"]]), width),\n'
+        '                 sorted(by_milestone[m["id"]], key=in_group_key))\n'
+        '                for m in ordered_groups\n'
+        '            ]\n'
+        '        elif self._group_by == "initiative":\n',
+    )
+    source = replace_once(
+        source,
+        '    def _initiative_header_row(self, init: dict, count: int, width: int) -> Text:\n',
+        '    def _milestone_header_row(self, milestone: dict, count: int, width: int) -> Text:\n'
+        '        t = Text(no_wrap=True, overflow="ellipsis")\n'
+        '        t.append("\\uf133 ", style=C_BLUE)\n'
+        '        t.append(milestone["name"], style=f"bold {C_BLUE}")\n'
+        '        if target := milestone.get("targetDate"):\n'
+        '            t.append(f" · due {target}", style=C_DIM)\n'
+        '        t.append(f" · {count} ", style=C_DIM)\n'
+        '        fill = width - t.cell_len - 1\n'
+        '        if fill > 0:\n'
+        '            t.append("─" * fill, style=C_FAINT)\n'
+        '        return t\n\n'
+        '    def _initiative_header_row(self, init: dict, count: int, width: int) -> Text:\n',
+    )
+    source = source.replace(
+        '        project = issue.get("project")\n'
+        '        if project:\n'
+        '            m.append("   ")\n'
+        '            m.append("\\uf07b ", style=project.get("color") or C_DIM)\n'
+        '            m.append(project["name"], style=C_SUB)\n',
+        '        project = issue.get("project")\n'
+        '        if project:\n'
+        '            m.append("   ")\n'
+        '            m.append("\\uf07b ", style=project.get("color") or C_DIM)\n'
+        '            m.append(project["name"], style=C_SUB)\n'
+        '        milestone = issue.get("projectMilestone")\n'
+        '        if milestone:\n'
+        '            m.append("   ")\n'
+        '            m.append("\\uf133 ", style=C_BLUE)\n'
+        '            m.append(milestone["name"], style=C_SUB)\n'
+    )
+    return source
+
+
 def main() -> None:
     app = sys.argv[1]
     path = Path(sys.argv[2])
@@ -229,6 +436,7 @@ def main() -> None:
     )
 
     if app == "ltui":
+        source = patch_linear_queue(source)
         source = replace_once(
             source,
             '            last_id = load_state().get("team_id")\n'

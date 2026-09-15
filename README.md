@@ -93,6 +93,19 @@ Press `b` inside either TUI to hide or restore the left team/settings sidebar.
 The issue list keeps the reclaimed width and tickets still open in the detail
 split.
 
+Linear starts in **Now and next**, showing started and unstarted issues only.
+Press `f` to toggle **All issues**. The selection is remembered across launches.
+Issues follow Linear's manual list order within each status, not assignment,
+priority, or update time. Reorder tickets in Linear with status grouping and
+Manual ordering. ltui only reads those ranks and never changes them.
+The focused view numbers visible unstarted tickets within each group. `?` means
+an old cached ticket has no rank yet and needs a successful refresh.
+Existing `m`, `/`, and `V` filters still apply. Press `v` after initiative to
+group by project milestone, ordered by target date. Milestones also appear in
+issue details. This is a local status filter, not an import of a saved Linear
+view or a dependency scheduler. Blocked tickets remain visible if they are in a
+started/unstarted status.
+
 Both apps load Flume's dusk, opal, mira, and mesa themes from the linked
 checkout. Running task windows follow `:FlumeSync` through the same event-driven
 integration switch as Neovim.
