@@ -18,6 +18,8 @@ clipboard-read = allow
 clipboard-write = allow
 copy-on-select = clipboard
 
+right-click-action = ignore
+
 # Typography
 font-size = 15
 font-family = "Maple Mono NF"
@@ -27,22 +29,23 @@ font-style-italic = "Medium Italic"
 font-style-bold-italic = "Bold Italic"
 adjust-cell-height = 12%
 adjust-cell-width = 2%
-alpha-blending = linear
-# Stable theme name; Flume synchronization updates the active artifact.
+alpha-blending = linear-corrected
 theme = flume
 window-theme = auto
-
-# Font quality and thickness adjustments for macOS
 font-thicken = true
-font-thicken-strength = 140
 
 # Cursor
 cursor-style = block
 cursor-opacity = 0.96
 
+notify-on-command-finish = unfocused
+notify-on-command-finish-action = no-bell,notify
+notify-on-command-finish-after = 30s
+
 # Tmux keybindings (\x01 = ctrl-a)
 # Search in pane
 keybind = cmd+/=text:\x01\x06
+
 # Windows navigation
 keybind = cmd+physical:one=text:\x01\x31
 keybind = cmd+physical:two=text:\x01\x32
