@@ -139,5 +139,9 @@ cd ~/dotfiles
 
 `install.sh` never invokes a host package manager and does not install Nix
 automatically. Ordinary dotfile edits are live-linked and require no activation.
-Use Git for configuration rollback and Home Manager generations for package or
-declaration rollback.
+From any Fish shell, run `dotfiles` after changing Nix declarations or when you
+want one refresh command. It applies Home Manager, reloads tmux, and refreshes
+the calling Fish shell. Ghostty watches its linked config. Neovim configuration
+changes still need `:restart`, because its plugin setup is not safely
+hot-reloadable. Use Git for configuration rollback and Home Manager generations
+for package or declaration rollback.

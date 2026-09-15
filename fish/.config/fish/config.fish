@@ -41,6 +41,18 @@ function vim
 end
 
 alias so "source ~/.config/fish/config.fish"
+
+function dotfiles
+    command dotfiles $argv
+    set -l dotfiles_status $status
+    if test $dotfiles_status = 0; and test (count $argv) -eq 0
+        source ~/.config/fish/config.fish
+    else if test $dotfiles_status = 0; and contains -- $argv[1] reload apply
+        source ~/.config/fish/config.fish
+    end
+    return $dotfiles_status
+end
+
 alias :q exit
 command -q tree; and alias tree "ls --tree"
 
@@ -278,3 +290,5 @@ end
 
 abbr -a dr drun
 abbr -a dt dtest
+
+eval (/opt/homebrew/bin/brew shellenv fish)

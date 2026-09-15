@@ -101,7 +101,7 @@ in {
 
     packages = with pkgs; [
       bronson
-      atuin
+      inputs.atuin-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.atuin
       bat
       curl
       delta
