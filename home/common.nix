@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   username,
@@ -121,6 +122,7 @@ in {
       lsd
       neovim
       ripgrep
+      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.ruff
       shfmt
       stylua
       tmux
@@ -174,6 +176,7 @@ in {
     ".codex/AGENTS.md".source = agentLive "pi/AGENTS.md";
     ".copilot/AGENTS.md".source = agentLive "pi/AGENTS.md";
     ".local/bin/agents-skills-link".source = live "scripts/agents-skills-link.sh";
+    ".local/bin/dotfiles".source = live "scripts/dotfiles";
     ".tmux.conf".source = live "tmux/.tmux.conf";
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
   };

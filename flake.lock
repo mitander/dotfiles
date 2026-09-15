@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "atuin-nixpkgs": {
+      "locked": {
+        "lastModified": 1789198717,
+        "narHash": "sha256-vyx8cKMNBrz6IGoZQtxmFQ+yUyrHIc2T6y1t0Ft/Ymo=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e7e2a382e62a3b8370c376c97d78770139eeaf6c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e7e2a382e62a3b8370c376c97d78770139eeaf6c",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -38,8 +54,26 @@
     },
     "root": {
       "inputs": {
+        "atuin-nixpkgs": "atuin-nixpkgs",
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "ruff-nixpkgs": "ruff-nixpkgs"
+      }
+    },
+    "ruff-nixpkgs": {
+      "locked": {
+        "lastModified": 1788865024,
+        "narHash": "sha256-3YkAzvtt4LoE11IcBDzPshIF3fJ0aIoILqE7dAg8CLI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "422d1ae605d7fcd9896412b37dc065c456c0eefb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "422d1ae605d7fcd9896412b37dc065c456c0eefb",
+        "type": "github"
       }
     }
   },

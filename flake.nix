@@ -4,6 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
+    atuin-nixpkgs.url = "github:NixOS/nixpkgs/e7e2a382e62a3b8370c376c97d78770139eeaf6c";
+
+    ruff-nixpkgs.url = "github:NixOS/nixpkgs/422d1ae605d7fcd9896412b37dc065c456c0eefb";
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
