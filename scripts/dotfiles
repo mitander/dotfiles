@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="${DOTFILES_DIR:-$HOME/dotfiles}"
+NIX_SCRIPT="$ROOT/scripts/dotfiles-nix.sh"
+
+usage() {
+  cat <<'EOF'
+Usage: dotfiles [command]
+
+With no command, apply the Home Manager profile and reload what can be
+reloaded in the current session.
+
+Commands:
+  reload, apply  Apply Nix and reload tmux
+  check         Evaluate every supported system
+  doctor        Evaluate the selected profile
+  generations   List Home Manager generations
+  help          Show this help
+EOF
+}
+
+if [[ ! -x "$NIX_SCRIPT" ]]; then
+  printf 'Dotfiles checkout not found: %s\n' "$ROOT" >&2
+  printf 'Set DOTFILES_DIR to the checkout path and try again.\n' >&2
+  exit 1
+fi
+
+command_name="${1:-reload}"
+case "$command_name" in
+  reload | apply)
+    DOTFILES_ALLOW_ACTIVATE=1 "$NIX_SCRIPT" switch
+
+    if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
+      tmux source-file "$HOME/.tmux.conf"
+      printf 'Reloaded tmux.\n'
+    fi
+
+    cat <<'EOF'
+Applied dotfiles.
+
+Fish reloads in the calling shell. Ghostty watches its linked config. Neovim
+configuration is intentionally restarted rather than hot-reloaded. Use :restart
+inside Neovim when changing its Lua configuration.
+EOF
+    ;;
+  check)
+    "$NIX_SCRIPT" check
+    ;;
+  doctor)
+    "$NIX_SCRIPT" doctor
+    ;;
+  generations)
+    "$NIX_SCRIPT" generations
+    ;;
+  help | -h | --help)
+    usage
+    ;;
+  *)
+    printf 'Unknown command: %s\n\n' "$command_name" >&2
+    usage >&2
+    exit 2
+    ;;
+esac
