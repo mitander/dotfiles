@@ -17,7 +17,7 @@ return {
         notify_no_formatters = false,
         formatters_by_ft = {
             lua = { "stylua" },
-            python = { "isort", "black" },
+            python = { "ruff_format" },
             zig = { "zigfmt" },
             rust = { "rustfmt", lsp_format = "fallback" },
             go = { "gofmt", "goimports" },

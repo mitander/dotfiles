@@ -57,6 +57,7 @@ return {
             clangd = {},
             rust_analyzer = {},
             pyright = {},
+            ruff = {},
             ts_ls = {},
             zls = {
                 cmd = { zls_bin },
@@ -142,6 +143,7 @@ return {
 
                 vim.keymap.set("i", "<c-s>", vim.lsp.buf.signature_help, map_opts)
                 vim.keymap.set("n", "ga", vim.lsp.buf.code_action, map_opts)
+                vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, map_opts)
                 vim.keymap.set("n", "gr", fzf_lsp("lsp_references", qf_references), map_opts)
                 vim.keymap.set("n", "gR", qf_references, map_opts)
                 vim.keymap.set("n", "gd", vim.lsp.buf.definition, map_opts)
