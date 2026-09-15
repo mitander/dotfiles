@@ -6,3 +6,4 @@ gui:
   showFileTree: true
   nerdFontsVersion: "3"
   sidePanelWidth: 0.22
+  showNumstatInFilesView: true
