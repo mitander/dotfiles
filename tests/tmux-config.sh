@@ -30,8 +30,8 @@ hooks="$(tmux -L "$SOCKET" show-hooks -g)"
 binding="$(tmux -L "$SOCKET" list-keys -T prefix)"
 [[ -z "$(printf '%s\n' "$binding" | awk '$4 == "I"')" ]] || fail 'retired cooling chord rebound by TPM'
 [[ "$binding" != *workspace_residency_script*sleep* ]] || fail 'Workspace sleep binding remains'
-reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix +' || true)"
-[[ "$reload_binding" == *source-file*'.tmux.conf'* ]] || fail 'reload is not prefix +'
+reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix ,' || true)"
+[[ "$reload_binding" == *source-file*'.tmux.conf'* ]] || fail 'reload is not prefix ,'
 run_focus="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
 [[ "$run_focus" == *'select-window -t :run'* && "$run_focus" != *source-file* ]] || fail 'prefix r changed'
 [[ "$binding" == *'myr run >/dev/null 2>&1'* && "$binding" == *'myr pick-run >/dev/null 2>&1'* ]] || \
