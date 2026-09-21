@@ -288,4 +288,4 @@ end
 abbr -a dr drun
 abbr -a dt dtest
 
-eval (/opt/homebrew/bin/brew shellenv fish)
+test -x /opt/homebrew/bin/brew; and eval (/opt/homebrew/bin/brew shellenv fish)
