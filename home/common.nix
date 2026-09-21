@@ -9,9 +9,7 @@
 }: let
   live = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/${path}";
 
-  # The private agent-config checkout at ~/.agents owns the agent voice, pi
-  # configuration, and personal skills. This public repository only stores
-  # pointers into it, so no agent persona or credentials become public.
+  # Private agent configuration lives in ~/.agents.
   agentLive = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/${path}";
 
   trackerTuiSource = pkgs.fetchFromGitHub {
@@ -40,10 +38,7 @@
     '';
   };
 
-  # bronson lives in a private repo with a live checkout; the wrapper
-  # below execs the script from it at runtime, so edits apply without a
-  # rebuild. If the checkout is missing the wrapper explains how to clone:
-  #   gh repo clone mitander/bronson ~/c/p/bronson
+  # Bronson runs from a private live checkout.
   bronsonPython = pkgs.python3.withPackages (ps: [
     ps.textual
     ps.watchfiles
@@ -95,8 +90,7 @@
     };
 in {
   home = {
-    # This value defines the first Home Manager release used by this
-    # configuration. Do not change it during routine upgrades.
+    # Do not change during routine upgrades.
     stateVersion = "26.05";
 
     packages = with pkgs; [
@@ -181,15 +175,10 @@ in {
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
   };
 
-  # LazyGit's tmux.yml is loaded directly by Myran;
-  # it is not a user configuration destination.
-  # Pi credentials, sessions, the linear extension credentials, and other mutable
-  # agent state stay unmanaged. LSD's colors.yaml remains Flume-managed so
-  # changing the active theme keeps updating it without a Home Manager activation.
+  # Mutable agent state stays unmanaged. The Flume-managed lsd colors file
+  # remains linked so theme changes apply without a Home Manager activation.
 
-  # Keep activation builds focused on the environment. The online Home Manager
-  # manual remains available, while disabling local manpage generation avoids a
-  # large documentation build on every supported architecture.
+  # Keep activation builds focused on the environment.
   manual.manpages.enable = false;
 
   assertions = [

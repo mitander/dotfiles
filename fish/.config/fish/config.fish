@@ -1,9 +1,7 @@
 # general
 set -q DOTFILES_DIR; or set -gx DOTFILES_DIR "$HOME/dotfiles"
 
-# Prefer the Home Manager package profile while keeping the host login shell
-# unchanged. Move existing Nix entries as well as adding missing ones: GUI apps
-# can inherit a PATH where Homebrew appears before the Nix profile.
+# Keep the Home Manager profile ahead of host packages.
 for nix_bin in /nix/var/nix/profiles/default/bin $HOME/.nix-profile/bin
     if test -d $nix_bin
         while set -l path_index (contains -i -- $nix_bin $PATH)
@@ -16,7 +14,7 @@ set -gx PATH $PATH
 
 function nvim
     if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"
-        # Myran accepts literal paths, not Neovim startup commands/options.
+        # Myran accepts paths, not Neovim startup commands.
         set -l paths
         set -l literal 0
         for arg in $argv
@@ -158,8 +156,7 @@ function fish_postexec --on-event fish_postexec
     history save
 end
 
-# Terminal applications claim Ctrl-h/j/k/l once at process start rather than
-# making tmux probe the tty process tree on every navigation keypress.
+# Let terminal applications claim pane navigation keys.
 function __workspace_navigation_set
     test -n "$TMUX_PANE"; or return
     command -q tmux; or return
@@ -172,12 +169,12 @@ function __workspace_navigation_clear
     command tmux set-option -pu -t "$TMUX_PANE" @workspace_navigation >/dev/null 2>&1
 end
 
-# Clear claims left by nested applications after the top-level shell command.
+# Clear claims after each command.
 function __workspace_navigation_postexec --on-event fish_postexec
     __workspace_navigation_clear
 end
 
-# Initial FZF value; the function below refreshes it for every invocation.
+# Load the theme's fzf options.
 set -l flume_fzf_opts "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
 test -r "$flume_fzf_opts"; and set -gx FZF_DEFAULT_OPTS (string trim <"$flume_fzf_opts")
 

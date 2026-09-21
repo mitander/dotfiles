@@ -26,7 +26,7 @@ HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" \
 hooks="$(tmux -L "$SOCKET" show-hooks -g)"
 [[ "$hooks" != *request-reconcile* ]] || fail 'cooling hook remains'
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_residency_mode)" ]] || fail 'cooling option remains'
-[[ "$(tmux -L "$SOCKET" show-option -gqv @continuum-restore)" == off ]] || fail 'old sessions may auto-restore'
+[[ "$(tmux -L "$SOCKET" show-option -gqv @continuum-restore)" == on ]] || fail 'continuum restore is disabled'
 binding="$(tmux -L "$SOCKET" list-keys -T prefix)"
 [[ -z "$(printf '%s\n' "$binding" | awk '$4 == "I"')" ]] || fail 'retired cooling chord rebound by TPM'
 [[ "$binding" != *workspace_residency_script*sleep* ]] || fail 'Workspace sleep binding remains'
@@ -94,4 +94,4 @@ HOME="$TEST_ROOT/home" tmux -L "$SOCKET" source-file "$TEST_ROOT/home/dotfiles/t
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_session_script)" ]] || fail 'obsolete session option'
 status_right="$(tmux -L "$SOCKET" show-option -gqv status-right)"
 [[ "$status_right" == *'#(true)'* && "$status_right" != *'#(true)'*'#(true)'* ]] || fail 'autosave hook changed'
-printf 'PASS: Myran callers, native navigation/splits, no cooling or automatic restore, safe reload\n'
+printf 'PASS: Myran callers, native navigation/splits, restore enabled, safe reload\n'

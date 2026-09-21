@@ -1,4 +1,3 @@
-# Base lazygit config.
 quitOnTopLevelReturn: false
 confirmOnQuit: false
 promptToReturnFromSubprocess: false
