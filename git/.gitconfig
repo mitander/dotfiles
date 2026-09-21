@@ -41,7 +41,7 @@
 
 [delta "flume"]
 	syntax-theme = ansi
-	
+
 	# Diff styles matching flume colors
 	minus-style = syntax "#402834"
 	minus-emph-style = syntax "#602f45"
@@ -67,8 +67,17 @@
 [coderabbit]
 	machineId = cli/1cb8ea8a75fb415690b82f20894d94d3
 [credential "https://github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+	helper =
+	helper = !gh auth git-credential
 [credential "https://gist.github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+	helper =
+	helper = !gh auth git-credential
+
+# Personal identity must follow work because ~/c/p is inside ~/c.
+[includeIf "gitdir:~/c/"]
+	path = ~/.config/git/work.gitconfig
+[includeIf "gitdir:~/c/p/"]
+	path = ~/.config/git/personal.gitconfig
+
+[include]
+	path = ~/.config/git/local.gitconfig

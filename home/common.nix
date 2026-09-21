@@ -140,6 +140,8 @@ in {
     "lazygit/config.yml".source = live "lazygit/.config/lazygit/config.yml";
     "lsd/config.yaml".source = live "lsd/.config/lsd/config.yaml";
     "nvim".source = live "nvim/.config/nvim";
+    "git/work.gitconfig".source = live "git/work.gitconfig";
+    "git/personal.gitconfig".source = live "git/personal.gitconfig";
     "stylua/.luarc.json".source = live "stylua/.config/stylua/.luarc.json";
     "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
   };
