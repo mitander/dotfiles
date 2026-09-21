@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Install one reviewed Myran binary, or roll back one exact installation receipt."""
 
+import grp
 import hashlib
 import json
 import os
+import pwd
 import stat
 import sys
 import tempfile
@@ -12,6 +14,22 @@ from pathlib import Path
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def private_group(gid):
+    if gid != os.getgid():
+        return False
+    members = set(grp.getgrgid(gid).gr_mem)
+    members |= {entry.pw_name for entry in pwd.getpwall() if entry.pw_gid == gid}
+    return members <= {pwd.getpwuid(os.getuid()).pw_name}
+
+
+def foreign_write(info):
+    """Ignore group write only when the group belongs exclusively to this user."""
+    bits = info.st_mode & 0o022
+    if bits & 0o020 and private_group(info.st_gid):
+        bits &= ~0o020
+    return bits
 
 
 def no_symlinks(path):
@@ -23,14 +41,14 @@ def no_symlinks(path):
         if part != path and part.exists():
             info = part.stat()
             trusted_sticky = info.st_uid == 0 and info.st_mode & stat.S_ISVTX
-            if info.st_uid not in (0, os.getuid()) or (info.st_mode & 0o022 and not trusted_sticky):
+            if info.st_uid not in (0, os.getuid()) or (foreign_write(info) and not trusted_sticky):
                 raise ValueError(f"unsafe ancestor: {part}")
 
 
 def owned_directory(path):
     no_symlinks(path)
     info = path.stat()
-    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o022:
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or foreign_write(info):
         raise ValueError(f"directory must be owned and not group/world writable: {path}")
 
 
@@ -40,7 +58,7 @@ def read_binary(path):
         info = os.fstat(source.fileno())
         if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid():
             raise ValueError(f"binary must be a regular owned file: {path}")
-        if not info.st_mode & 0o111 or info.st_mode & 0o7022:
+        if not info.st_mode & 0o111 or info.st_mode & 0o7000 or foreign_write(info):
             raise ValueError(
                 f"binary must be executable, without special or writable group/world bits: {path}"
             )
@@ -97,7 +115,7 @@ def rollback(receipt):
     owned_directory(receipt)
     no_symlinks(receipt / "receipt.json")
     info = (receipt / "receipt.json").stat()
-    if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o022:
+    if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or foreign_write(info):
         raise ValueError("unsafe receipt")
     record = json.loads((receipt / "receipt.json").read_text())
     destination = Path(record["destination"])
