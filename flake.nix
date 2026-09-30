@@ -116,15 +116,15 @@
             mkdir -p "$HOME" "$DOTFILES_TEST_ROOT/scripts" "$DOTFILES_TEST_ROOT/tmux/.tmux" \
               "$DOTFILES_TEST_ROOT/extras/tmux" "$DOTFILES_TEST_ROOT/tests" \
               "$DOTFILES_TEST_ROOT/fish/.config/fish"
-            cp ${./scripts/install-myr.py} "$DOTFILES_TEST_ROOT/scripts/install-myr.py"
-            cp ${./tests/install-myr.py} "$DOTFILES_TEST_ROOT/tests/install-myr.py"
+            cp ${./scripts/install-myran.py} "$DOTFILES_TEST_ROOT/scripts/install-myran.py"
+            cp ${./tests/install-myran.py} "$DOTFILES_TEST_ROOT/tests/install-myran.py"
             cp ${./fish/.config/fish/config.fish} "$DOTFILES_TEST_ROOT/fish/.config/fish/config.fish"
             cp ${./tmux/.tmux.conf} "$DOTFILES_TEST_ROOT/tmux/.tmux.conf"
             cp ${./tmux/.tmux/workspace-status.conf} "$DOTFILES_TEST_ROOT/tmux/.tmux/workspace-status.conf"
             cp ${./extras/tmux/colors.conf} "$DOTFILES_TEST_ROOT/extras/tmux/colors.conf"
             bash ${./tests/tmux-config.sh}
             bash ${./tests/fish-nvim.sh}
-            python3 "$DOTFILES_TEST_ROOT/tests/install-myr.py"
+            python3 "$DOTFILES_TEST_ROOT/tests/install-myran.py"
             PYTHONPATH=${./tracker-tui} python3 -m unittest discover \
               -s ${./tracker-tui} -p 'test_*.py'
             touch "$out"

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Disposable installer proof. Never writes the real HOME or installed binary."""
+
 import hashlib
 import json
 import os
@@ -9,25 +10,33 @@ import sys
 import tempfile
 import unittest
 
-INSTALLER = Path(__file__).resolve().parents[1] / "scripts/install-myr.py"
+INSTALLER = Path(__file__).resolve().parents[1] / "scripts/install-myran.py"
 
 
 class InstallTest(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory(prefix="install-myr-test-")
+        self.temporary = tempfile.TemporaryDirectory(prefix="install-myran-test-")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         self.home = self.root / "home"
-        self.destination = self.home / ".local/bin/myr"
+        self.destination = self.home / ".local/bin/myran"
         self.destination.parent.mkdir(parents=True)
         self.source = self.root / "candidate"
         self.source.write_bytes(b"#!/bin/sh\nexit 0\n")
         self.source.chmod(0o700)
-        self.env = dict(os.environ, HOME=str(self.home), XDG_STATE_HOME=str(self.home / ".local/state"))
+        self.env = dict(
+            os.environ,
+            HOME=str(self.home),
+            XDG_STATE_HOME=str(self.home / ".local/state"),
+        )
 
     def run_installer(self, *args, success=True):
-        result = subprocess.run([sys.executable, str(INSTALLER), *map(str, args)], env=self.env,
-                                text=True, capture_output=True)
+        result = subprocess.run(
+            [sys.executable, str(INSTALLER), *map(str, args)],
+            env=self.env,
+            text=True,
+            capture_output=True,
+        )
         self.assertEqual(result.returncode == 0, success, result.stdout + result.stderr)
         return result
 
@@ -40,7 +49,9 @@ class InstallTest(unittest.TestCase):
         self.run_installer("install", self.source)
         receipt = self.receipt()
         record = json.loads((receipt / "receipt.json").read_text())
-        self.assertEqual(record["previous_sha256"], hashlib.sha256(b"old binary").hexdigest())
+        self.assertEqual(
+            record["previous_sha256"], hashlib.sha256(b"old binary").hexdigest()
+        )
         self.assertEqual(self.destination.read_bytes(), self.source.read_bytes())
         self.assertEqual(receipt.stat().st_mode & 0o777, 0o700)
         self.run_installer("rollback", receipt)
@@ -68,7 +79,7 @@ class InstallTest(unittest.TestCase):
         self.destination.unlink()
         parent_link = self.root / "bin-link"
         parent_link.symlink_to(self.destination.parent)
-        self.run_installer("install", self.source, parent_link / "myr", success=False)
+        self.run_installer("install", self.source, parent_link / "myran", success=False)
         self.assertFalse(self.destination.exists())
 
     def test_writable_ancestor_refused(self):
@@ -76,8 +87,8 @@ class InstallTest(unittest.TestCase):
         protected = unsafe / "protected"
         protected.mkdir(parents=True)
         unsafe.chmod(0o777)
-        self.run_installer("install", self.source, protected / "myr", success=False)
-        self.assertFalse((protected / "myr").exists())
+        self.run_installer("install", self.source, protected / "myran", success=False)
+        self.assertFalse((protected / "myran").exists())
         self.env["XDG_STATE_HOME"] = str(protected / "state")
         self.run_installer("install", self.source, success=False)
         self.assertFalse(self.destination.exists())

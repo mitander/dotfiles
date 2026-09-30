@@ -8,18 +8,18 @@ local function run_command(command)
     end)
 end
 
-local function run_myr(args)
+local function run_myran(args)
     if not vim.env.TMUX then
         vim.notify("Not inside tmux", vim.log.levels.WARN, { title = "tmux" })
         return
     end
 
-    if vim.fn.executable("myr") ~= 1 then
-        vim.notify("myr is not executable", vim.log.levels.ERROR, { title = "tmux" })
+    if vim.fn.executable("myran") ~= 1 then
+        vim.notify("myran is not executable", vim.log.levels.ERROR, { title = "tmux" })
         return
     end
 
-    local command = { "myr" }
+    local command = { "myran" }
     vim.list_extend(command, args)
 
     run_command(command)
@@ -27,7 +27,7 @@ end
 
 local function open_project_role(role)
     return function()
-        run_myr({ "role", "open", role, vim.fn.getcwd() })
+        run_myran({ "role", "open", role, vim.fn.getcwd() })
     end
 end
 
@@ -95,7 +95,7 @@ return {
         {
             "<leader>TA",
             function()
-                run_myr({ "role", "split", "agent", vim.fn.getcwd() })
+                run_myran({ "role", "split", "agent", vim.fn.getcwd() })
             end,
             desc = "Tmux new pi split",
         },

@@ -23,12 +23,12 @@ function nvim
                 continue
             end
             if test $literal = 0; and string match -qr '^[+-]' -- "$arg"
-                echo 'Use command nvim for startup flags or +commands (myr open accepts paths only).' >&2
+                echo 'Use command nvim for startup flags or +commands (myran open accepts paths only).' >&2
                 return 2
             end
             set -a paths "$arg"
         end
-        myr open -- $paths
+        myran open -- $paths
     else
         command nvim $argv
     end
@@ -72,11 +72,11 @@ end
 
 # tmux
 function tn
-    myr workspace open $argv
+    myran workspace open $argv
 end
 alias ta "tmux attach-session -t "
 function tm
-    myr workspace switch $argv
+    myran workspace switch $argv
 end
 alias tls "tmux ls"
 
@@ -88,7 +88,7 @@ end
 
 function gg
     if test -n "$TMUX"
-        myr role open git $argv
+        myran role open git $argv
     else
         lazygit $argv
     end
