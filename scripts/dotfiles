@@ -28,37 +28,37 @@ fi
 
 command_name="${1:-reload}"
 case "$command_name" in
-  reload | apply)
-    DOTFILES_ALLOW_ACTIVATE=1 "$NIX_SCRIPT" switch
+reload | apply)
+  DOTFILES_ALLOW_ACTIVATE=1 "$NIX_SCRIPT" switch
 
-    if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
-      tmux source-file "$HOME/.tmux.conf"
-      printf 'Reloaded tmux.\n'
-    fi
+  if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
+    tmux source-file "$HOME/.tmux.conf"
+    printf 'Reloaded tmux.\n'
+  fi
 
-    cat <<'EOF'
+  cat <<'EOF'
 Applied dotfiles.
 
 Fish reloads in the calling shell. Ghostty watches its linked config. Neovim
 configuration is intentionally restarted rather than hot-reloaded. Use :restart
 inside Neovim when changing its Lua configuration.
 EOF
-    ;;
-  check)
-    "$NIX_SCRIPT" check
-    ;;
-  doctor)
-    "$NIX_SCRIPT" doctor
-    ;;
-  generations)
-    "$NIX_SCRIPT" generations
-    ;;
-  help | -h | --help)
-    usage
-    ;;
-  *)
-    printf 'Unknown command: %s\n\n' "$command_name" >&2
-    usage >&2
-    exit 2
-    ;;
+  ;;
+check)
+  "$NIX_SCRIPT" check
+  ;;
+doctor)
+  "$NIX_SCRIPT" doctor
+  ;;
+generations)
+  "$NIX_SCRIPT" generations
+  ;;
+help | -h | --help)
+  usage
+  ;;
+*)
+  printf 'Unknown command: %s\n\n' "$command_name" >&2
+  usage >&2
+  exit 2
+  ;;
 esac

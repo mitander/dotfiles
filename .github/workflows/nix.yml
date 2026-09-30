@@ -2,20 +2,8 @@ name: Nix
 
 on:
   pull_request:
-    paths:
-      - "flake.nix"
-      - "flake.lock"
-      - "home/**"
-      - "scripts/dotfiles-nix.sh"
-      - ".github/workflows/nix.yml"
   push:
     branches: [main]
-    paths:
-      - "flake.nix"
-      - "flake.lock"
-      - "home/**"
-      - "scripts/dotfiles-nix.sh"
-      - ".github/workflows/nix.yml"
 
 permissions:
   contents: read
@@ -42,3 +30,5 @@ jobs:
         run: nix flake check --all-systems --no-build
       - name: Build native Home Manager profile
         run: nix build ".#checks.${{ matrix.system }}.home" --no-link
+      - name: Check formatting and tooling
+        run: nix build ".#checks.${{ matrix.system }}.formatting" --no-link

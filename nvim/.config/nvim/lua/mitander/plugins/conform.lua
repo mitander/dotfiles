@@ -17,27 +17,28 @@ return {
         notify_no_formatters = false,
         formatters_by_ft = {
             lua = { "stylua" },
-            python = { "ruff_format" },
+            python = { "ruff_organize_imports", "ruff_format" },
             zig = { "zigfmt" },
             rust = { "rustfmt", lsp_format = "fallback" },
             go = { "gofmt", "goimports" },
-            javascript = { "prettierd", "prettier", stop_after_first = true },
-            typescript = { "prettierd", "prettier", stop_after_first = true },
-            javascriptreact = { "prettierd", "prettier", stop_after_first = true },
-            typescriptreact = { "prettierd", "prettier", stop_after_first = true },
-            json = { "prettierd", "prettier", stop_after_first = true },
-            jsonc = { "prettierd", "prettier", stop_after_first = true },
-            yaml = { "prettierd", "prettier", stop_after_first = true },
-            markdown = { "prettierd", "prettier", stop_after_first = true },
-            html = { "prettierd", "prettier", stop_after_first = true },
-            css = { "prettierd", "prettier", stop_after_first = true },
-            scss = { "prettierd", "prettier", stop_after_first = true },
+            javascript = { "prettier" },
+            typescript = { "prettier" },
+            javascriptreact = { "prettier" },
+            typescriptreact = { "prettier" },
+            json = { "prettier" },
+            jsonc = { "prettier" },
+            yaml = { "prettier" },
+            markdown = { "prettier" },
+            html = { "prettier" },
+            css = { "prettier" },
+            scss = { "prettier" },
             c = { "clang_format" },
             cpp = { "clang_format" },
             sh = { "shfmt" },
             bash = { "shfmt" },
             fish = { "fish_indent" },
             toml = { "taplo" },
+            nix = { "alejandra" },
             ["*"] = { "trim_whitespace" },
         },
         default_format_opts = {
@@ -48,6 +49,19 @@ return {
         formatters = {
             shfmt = {
                 prepend_args = { "-i", "2" },
+            },
+            fish_indent = {
+                command = vim.fn.expand("~/.nix-profile/bin/fish_indent"),
+            },
+
+            rustfmt = {
+                prepend_args = function(_, ctx)
+                    local config = vim.fs.find("rustfmt-nightly.toml", { path = ctx.dirname, upward = true })[1]
+                    if config then
+                        return { "+nightly-2026-07-03", "--config-path", config }
+                    end
+                    return {}
+                end,
             },
             zigfmt = {
                 command = function(_, ctx)

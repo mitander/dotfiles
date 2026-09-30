@@ -1,7 +1,19 @@
 #!/usr/bin/env python3
 """Installed Myran caller proof on a private tmux server, with a recording Agent fixture."""
 
-import fcntl, json, os, pathlib, pty, select, shutil, struct, subprocess, tempfile, termios, threading, time
+import fcntl
+import json
+import os
+import pathlib
+import pty
+import select
+import shutil
+import struct
+import subprocess
+import tempfile
+import termios
+import threading
+import time
 
 source_root = pathlib.Path(__file__).resolve().parents[1]
 root = pathlib.Path(tempfile.mkdtemp(prefix="myran21-prompt-", dir="/tmp")).resolve()
@@ -120,14 +132,10 @@ try:
     source = (source_root / "tmux/.tmux.conf").read_text()
     status = (source_root / "tmux/.tmux/workspace-status.conf").read_text()
     lines = [
-        line
-        for line in source.splitlines()
-        if line.startswith(("bind-key A ", "bind-key w "))
+        line for line in source.splitlines() if line.startswith(("bind-key A ", "bind-key w "))
     ]
     lines += [
-        line
-        for line in status.splitlines()
-        if line.startswith("bind-key -n MouseDown1StatusLeft ")
+        line for line in status.splitlines() if line.startswith("bind-key -n MouseDown1StatusLeft ")
     ]
     (root / "bindings.conf").write_text("\n".join(lines) + "\n")
     tm("source-file", str(root / "bindings.conf"))
@@ -152,9 +160,7 @@ try:
     time.sleep(0.3)
     os.write(terminal, b"\r")
     wait(
-        lambda: (
-            tm("display-message", "-p", "-c", client, "#{session_name}") == "alternate"
-        ),
+        lambda: tm("display-message", "-p", "-c", client, "#{session_name}") == "alternate",
         "selected Workspace",
     )
     # An actual SGR left click on status-left invokes the same selector from the other Session.
@@ -165,9 +171,7 @@ try:
     time.sleep(0.3)
     os.write(terminal, b"\r")
     wait(
-        lambda: (
-            tm("display-message", "-p", "-c", client, "#{session_name}") == "origin"
-        ),
+        lambda: tm("display-message", "-p", "-c", client, "#{session_name}") == "origin",
         "status-click selection",
     )
     assert tm("show-option", "-qv", "-t", "alternate", "@workspace_root") == ""

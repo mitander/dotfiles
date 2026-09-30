@@ -11,9 +11,11 @@ import ltui
 
 def issue(identifier, rank, kind="unstarted", assignee=None):
     return {
-        "id": identifier, "identifier": identifier, "title": identifier,
-        "sortOrder": rank, "state": {"id": kind, "name": kind, "type": kind,
-                                    "position": 0, "color": None},
+        "id": identifier,
+        "identifier": identifier,
+        "title": identifier,
+        "sortOrder": rank,
+        "state": {"id": kind, "name": kind, "type": kind, "position": 0, "color": None},
         "assignee": {"id": assignee, "displayName": assignee} if assignee else None,
         "project": None,
         "projectMilestone": None,
@@ -36,8 +38,9 @@ class LinearQueueTests(unittest.TestCase):
         self.rows.highlighted = None
         self.rows.content_size = SimpleNamespace(width=100)
         self.centre = SimpleNamespace(border_subtitle="")
-        self.app.query_one = Mock(side_effect=lambda selector, *args:
-                                  self.rows if selector == "#issues" else self.centre)
+        self.app.query_one = Mock(
+            side_effect=lambda selector, *args: self.rows if selector == "#issues" else self.centre
+        )
         self.app._issue_row = lambda i, *args: ltui.Text(i["identifier"])
 
     def render(self, issues):
@@ -46,15 +49,18 @@ class LinearQueueTests(unittest.TestCase):
         return [o for o in self.rows.add_options.call_args.args[0] if o.id]
 
     def test_default_focus_and_manual_order_ignore_assignment(self):
-        issues = [issue("KAP-2", 20, assignee="me"), issue("KAP-1", 0),
-                  issue("KAP-3", 30, "backlog"), issue("KAP-4", 40, "completed"),
-                  issue("KAP-5", 50, "started")]
+        issues = [
+            issue("KAP-2", 20, assignee="me"),
+            issue("KAP-1", 0),
+            issue("KAP-3", 30, "backlog"),
+            issue("KAP-4", 40, "completed"),
+            issue("KAP-5", 50, "started"),
+        ]
         before = copy.deepcopy(issues)
         rows = self.render(issues)
         self.assertTrue(self.app._focus)
         self.assertEqual([r.id for r in rows], ["KAP-5", "KAP-1", "KAP-2"])
-        self.assertEqual([r.prompt.plain for r in rows],
-                         ["    KAP-5", " 1  KAP-1", " 2  KAP-2"])
+        self.assertEqual([r.prompt.plain for r in rows], ["    KAP-5", " 1  KAP-1", " 2  KAP-2"])
         self.assertEqual(issues, before)
         self.assertIn("Now and next", self.centre.border_subtitle)
 
@@ -109,17 +115,29 @@ class LinearQueueTests(unittest.TestCase):
 
 class PaginationTests(unittest.IsolatedAsyncioTestCase):
     def page(self, ids, more=False, cursor=None):
-        return {"team": {"issues": {"nodes": [{"id": i} for i in ids],
-                                   "pageInfo": {"hasNextPage": more, "endCursor": cursor}},
-                         "states": {"nodes": []}}}
+        return {
+            "team": {
+                "issues": {
+                    "nodes": [{"id": i} for i in ids],
+                    "pageInfo": {"hasNextPage": more, "endCursor": cursor},
+                },
+                "states": {"nodes": []},
+            }
+        }
 
     async def test_fetches_all_pages_and_deduplicates(self):
-        app = SimpleNamespace(gql=AsyncMock(side_effect=[
-            self.page(["old", "shared"], True, "cursor"),
-            self.page(["shared", "ready"])]))
+        app = SimpleNamespace(
+            gql=AsyncMock(
+                side_effect=[
+                    self.page(["old", "shared"], True, "cursor"),
+                    self.page(["shared", "ready"]),
+                ]
+            )
+        )
         result = await ltui.LTUI.fetch_team_issues(app, "team")
-        self.assertEqual([i["id"] for i in result["team"]["issues"]["nodes"]],
-                         ["old", "shared", "ready"])
+        self.assertEqual(
+            [i["id"] for i in result["team"]["issues"]["nodes"]], ["old", "shared", "ready"]
+        )
         self.assertEqual(app.gql.call_args.args[1], {"teamId": "team", "after": "cursor"})
 
     async def test_nonadvancing_cursor_fails(self):
@@ -128,8 +146,9 @@ class PaginationTests(unittest.IsolatedAsyncioTestCase):
             await ltui.LTUI.fetch_team_issues(app, "team")
 
     async def test_later_failure_does_not_return_partial_queue(self):
-        app = SimpleNamespace(gql=AsyncMock(side_effect=[
-            self.page(["old"], True, "cursor"), RuntimeError("offline")]))
+        app = SimpleNamespace(
+            gql=AsyncMock(side_effect=[self.page(["old"], True, "cursor"), RuntimeError("offline")])
+        )
         with self.assertRaisesRegex(RuntimeError, "offline"):
             await ltui.LTUI.fetch_team_issues(app, "team")
 

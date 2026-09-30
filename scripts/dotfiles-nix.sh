@@ -20,34 +20,34 @@ EOF
 
 profile() {
   case "$(uname -s):$(uname -m)" in
-    Darwin:arm64 | Darwin:aarch64)
-      printf '%s\n' "mitander@darwin"
-      ;;
-    Linux:x86_64 | Linux:amd64)
-      printf '%s\n' "mitander@linux-x86_64"
-      ;;
-    Linux:arm64 | Linux:aarch64)
-      printf '%s\n' "mitander@linux-aarch64"
-      ;;
-    *)
-      printf 'Unsupported host: %s %s\n' "$(uname -s)" "$(uname -m)" >&2
-      return 1
-      ;;
+  Darwin:arm64 | Darwin:aarch64)
+    printf '%s\n' "mitander@darwin"
+    ;;
+  Linux:x86_64 | Linux:amd64)
+    printf '%s\n' "mitander@linux-x86_64"
+    ;;
+  Linux:arm64 | Linux:aarch64)
+    printf '%s\n' "mitander@linux-aarch64"
+    ;;
+  *)
+    printf 'Unsupported host: %s %s\n' "$(uname -s)" "$(uname -m)" >&2
+    return 1
+    ;;
   esac
 }
 
 checkout_for_profile() {
   case "$1" in
-    mitander@darwin)
-      printf '%s\n' "/Users/mitander/dotfiles"
-      ;;
-    mitander@linux-aarch64 | mitander@linux-x86_64)
-      printf '%s\n' "/home/mitander/dotfiles"
-      ;;
-    *)
-      printf 'Unknown profile: %s\n' "$1" >&2
-      return 1
-      ;;
+  mitander@darwin)
+    printf '%s\n' "/Users/mitander/dotfiles"
+    ;;
+  mitander@linux-aarch64 | mitander@linux-x86_64)
+    printf '%s\n' "/home/mitander/dotfiles"
+    ;;
+  *)
+    printf 'Unknown profile: %s\n' "$1" >&2
+    return 1
+    ;;
   esac
 }
 
@@ -145,32 +145,32 @@ EOF
 
 command="${1:-}"
 case "$command" in
-  profile)
-    profile
-    ;;
-  doctor)
-    doctor
-    ;;
-  check)
-    require_nix
-    run_nix flake check "$FLAKE" --all-systems --no-build
-    ;;
-  build)
-    build
-    ;;
-  switch)
-    switch_generation
-    ;;
-  generations)
-    require_nix
-    home_manager generations
-    ;;
-  -h | --help | help | "")
-    usage
-    ;;
-  *)
-    printf 'Unknown command: %s\n\n' "$command" >&2
-    usage >&2
-    exit 2
-    ;;
+profile)
+  profile
+  ;;
+doctor)
+  doctor
+  ;;
+check)
+  require_nix
+  run_nix flake check "$FLAKE" --all-systems --no-build
+  ;;
+build)
+  build
+  ;;
+switch)
+  switch_generation
+  ;;
+generations)
+  require_nix
+  home_manager generations
+  ;;
+-h | --help | help | "")
+  usage
+  ;;
+*)
+  printf 'Unknown command: %s\n\n' "$command" >&2
+  usage >&2
+  exit 2
+  ;;
 esac

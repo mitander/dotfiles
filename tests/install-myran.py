@@ -4,11 +4,11 @@
 import hashlib
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 INSTALLER = Path(__file__).resolve().parents[1] / "scripts/install-myran.py"
 
@@ -49,9 +49,7 @@ class InstallTest(unittest.TestCase):
         self.run_installer("install", self.source)
         receipt = self.receipt()
         record = json.loads((receipt / "receipt.json").read_text())
-        self.assertEqual(
-            record["previous_sha256"], hashlib.sha256(b"old binary").hexdigest()
-        )
+        self.assertEqual(record["previous_sha256"], hashlib.sha256(b"old binary").hexdigest())
         self.assertEqual(self.destination.read_bytes(), self.source.read_bytes())
         self.assertEqual(receipt.stat().st_mode & 0o777, 0o700)
         self.run_installer("rollback", receipt)

@@ -14,88 +14,113 @@
     };
   };
 
-  outputs =
-    inputs@{
-      nixpkgs,
-      home-manager,
-      ...
+  outputs = inputs @ {
+    nixpkgs,
+    home-manager,
+    ...
+  }: let
+    systems = [
+      "aarch64-darwin"
+      "aarch64-linux"
+      "x86_64-linux"
+    ];
+
+    forAllSystems = nixpkgs.lib.genAttrs systems;
+    pkgsFor = system: import nixpkgs {inherit system;};
+
+    mkHome = {
+      system,
+      username,
+      homeDirectory,
+      dotfilesDirectory,
+      platformModule,
     }:
-    let
-      systems = [
-        "aarch64-darwin"
-        "aarch64-linux"
-        "x86_64-linux"
-      ];
-
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-      pkgsFor = system: import nixpkgs { inherit system; };
-
-      mkHome =
-        {
-          system,
-          username,
-          homeDirectory,
-          dotfilesDirectory,
-          platformModule,
-        }:
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor system;
-          extraSpecialArgs = { inherit inputs username dotfilesDirectory; };
-          modules = [
-            ./home/common.nix
-            platformModule
-            {
-              home = {
-                inherit username homeDirectory;
-              };
-            }
-          ];
-        };
-
-      homes = {
-        "mitander@darwin" = mkHome {
-          system = "aarch64-darwin";
-          username = "mitander";
-          homeDirectory = "/Users/mitander";
-          dotfilesDirectory = "/Users/mitander/dotfiles";
-          platformModule = ./home/darwin.nix;
-        };
-
-        "mitander@linux-aarch64" = mkHome {
-          system = "aarch64-linux";
-          username = "mitander";
-          homeDirectory = "/home/mitander";
-          dotfilesDirectory = "/home/mitander/dotfiles";
-          platformModule = ./home/linux.nix;
-        };
-
-        "mitander@linux-x86_64" = mkHome {
-          system = "x86_64-linux";
-          username = "mitander";
-          homeDirectory = "/home/mitander";
-          dotfilesDirectory = "/home/mitander/dotfiles";
-          platformModule = ./home/linux.nix;
-        };
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = pkgsFor system;
+        extraSpecialArgs = {inherit inputs username dotfilesDirectory;};
+        modules = [
+          ./home/common.nix
+          platformModule
+          {
+            home = {
+              inherit username homeDirectory;
+            };
+          }
+        ];
       };
 
-      profileForSystem = {
-        aarch64-darwin = "mitander@darwin";
-        aarch64-linux = "mitander@linux-aarch64";
-        x86_64-linux = "mitander@linux-x86_64";
+    homes = {
+      "mitander@darwin" = mkHome {
+        system = "aarch64-darwin";
+        username = "mitander";
+        homeDirectory = "/Users/mitander";
+        dotfilesDirectory = "/Users/mitander/dotfiles";
+        platformModule = ./home/darwin.nix;
       };
-    in
-    {
-      homeConfigurations = homes;
 
-      checks = forAllSystems (
-        system:
-        let
-          profile = profileForSystem.${system};
-          pkgs = pkgsFor system;
-        in
-        {
-          home = homes.${profile}.activationPackage;
-          tmux-callers = pkgs.runCommand "tmux-callers-check" {
+      "mitander@linux-aarch64" = mkHome {
+        system = "aarch64-linux";
+        username = "mitander";
+        homeDirectory = "/home/mitander";
+        dotfilesDirectory = "/home/mitander/dotfiles";
+        platformModule = ./home/linux.nix;
+      };
+
+      "mitander@linux-x86_64" = mkHome {
+        system = "x86_64-linux";
+        username = "mitander";
+        homeDirectory = "/home/mitander";
+        dotfilesDirectory = "/home/mitander/dotfiles";
+        platformModule = ./home/linux.nix;
+      };
+    };
+
+    profileForSystem = {
+      aarch64-darwin = "mitander@darwin";
+      aarch64-linux = "mitander@linux-aarch64";
+      x86_64-linux = "mitander@linux-x86_64";
+    };
+  in {
+    homeConfigurations = homes;
+
+    checks = forAllSystems (
+      system: let
+        profile = profileForSystem.${system};
+        pkgs = pkgsFor system;
+        ltui =
+          nixpkgs.lib.findFirst
+          (package: (package.pname or "") == "ltui-linear")
+          (throw "Home Manager must provide ltui-linear for tracker tests")
+          homes.${profile}.config.home.packages;
+        trackerPython = pkgs.python3.withPackages (_: ltui.propagatedBuildInputs);
+      in {
+        home = homes.${profile}.activationPackage;
+        formatting =
+          pkgs.runCommand "formatting" {
+            nativeBuildInputs = [
+              inputs.ruff-nixpkgs.legacyPackages.${system}.ruff
+              inputs.ruff-nixpkgs.legacyPackages.${system}.shfmt
+              inputs.ruff-nixpkgs.legacyPackages.${system}.shellcheck
+              inputs.ruff-nixpkgs.legacyPackages.${system}.prettier
+              inputs.ruff-nixpkgs.legacyPackages.${system}.taplo
+              pkgs.stylua
+              pkgs.alejandra
+              pkgs.fish
+              pkgs.python3
+              pkgs.git
+            ];
+          } ''
+            cp -R ${./.} source
+            chmod -R u+w source
+            cd source
+            git init -q
+            export FISH_INDENT="${pkgs.fish}/bin/fish_indent"
+            sh scripts/format.sh check
+            python3 tests/python-format.py
+            touch "$out"
+          '';
+        tmux-callers =
+          pkgs.runCommand "tmux-callers-check" {
             nativeBuildInputs = with pkgs; [
               bash
               coreutils
@@ -104,10 +129,7 @@
               gawk
               gnugrep
               neovim
-              (python3.withPackages (pythonPackages: with pythonPackages; [
-                textual
-                watchfiles
-              ]))
+              trackerPython
               tmux
             ];
           } ''
@@ -125,43 +147,39 @@
             bash ${./tests/tmux-config.sh}
             bash ${./tests/fish-nvim.sh}
             python3 "$DOTFILES_TEST_ROOT/tests/install-myran.py"
-            PYTHONPATH=${./tracker-tui} python3 -m unittest discover \
+            PYTHONPATH=${ltui}/${pkgs.python3.sitePackages}:${./tracker-tui} python3 -m unittest discover \
               -s ${./tracker-tui} -p 'test_*.py'
             touch "$out"
           '';
-        }
-      );
+      }
+    );
 
-      devShells = forAllSystems (
-        system:
-        let
-          pkgs = pkgsFor system;
-        in
-        {
-          default = pkgs.mkShellNoCC {
-            packages = with pkgs; [
-              alejandra
-              deadnix
-              statix
-            ];
-          };
-        }
-      );
+    devShells = forAllSystems (
+      system: let
+        pkgs = pkgsFor system;
+      in {
+        default = pkgs.mkShellNoCC {
+          packages = with pkgs; [
+            alejandra
+            deadnix
+            statix
+          ];
+        };
+      }
+    );
 
-      formatter = forAllSystems (system: (pkgsFor system).alejandra);
+    formatter = forAllSystems (system: (pkgsFor system).alejandra);
 
-      apps = forAllSystems (
-        system:
-        let
-          homeManager = home-manager.packages.${system}.home-manager;
-        in
-        {
-          home-manager = {
-            type = "app";
-            program = "${homeManager}/bin/home-manager";
-            meta.description = "Home Manager CLI pinned by this flake";
-          };
-        }
-      );
-    };
+    apps = forAllSystems (
+      system: let
+        homeManager = home-manager.packages.${system}.home-manager;
+      in {
+        home-manager = {
+          type = "app";
+          program = "${homeManager}/bin/home-manager";
+          meta.description = "Home Manager CLI pinned by this flake";
+        };
+      }
+    );
+  };
 }

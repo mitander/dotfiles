@@ -1,0 +1,4 @@
+themes/
+extras/lsd/colors.yaml
+lsd/.config/lsd/colors.yaml
+pi/.pi/agent/themes/flume.json

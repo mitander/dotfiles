@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   assertions = [
     {
       assertion = pkgs.stdenv.hostPlatform.isDarwin;

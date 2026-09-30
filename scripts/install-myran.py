@@ -4,10 +4,10 @@
 import hashlib
 import json
 import os
-from pathlib import Path
 import stat
 import sys
 import tempfile
+from pathlib import Path
 
 
 def digest(data):
@@ -23,30 +23,20 @@ def no_symlinks(path):
         if part != path and part.exists():
             info = part.stat()
             trusted_sticky = info.st_uid == 0 and info.st_mode & stat.S_ISVTX
-            if info.st_uid not in (0, os.getuid()) or (
-                info.st_mode & 0o022 and not trusted_sticky
-            ):
+            if info.st_uid not in (0, os.getuid()) or (info.st_mode & 0o022 and not trusted_sticky):
                 raise ValueError(f"unsafe ancestor: {part}")
 
 
 def owned_directory(path):
     no_symlinks(path)
     info = path.stat()
-    if (
-        not stat.S_ISDIR(info.st_mode)
-        or info.st_uid != os.getuid()
-        or info.st_mode & 0o022
-    ):
-        raise ValueError(
-            f"directory must be owned and not group/world writable: {path}"
-        )
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o022:
+        raise ValueError(f"directory must be owned and not group/world writable: {path}")
 
 
 def read_binary(path):
     no_symlinks(path)
-    with os.fdopen(
-        os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb"
-    ) as source:
+    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb") as source:
         info = os.fstat(source.fileno())
         if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid():
             raise ValueError(f"binary must be a regular owned file: {path}")
@@ -92,9 +82,7 @@ def install(source, destination, state):
         # Keep the receipt filename compatible with pre-rename rollbacks.
         atomic_write(receipt / "myr.previous", old_data, old_mode)
         record.update(previous_sha256=digest(old_data), previous_mode=old_mode)
-    atomic_write(
-        receipt / "receipt.json", (json.dumps(record, indent=2) + "\n").encode(), 0o600
-    )
+    atomic_write(receipt / "receipt.json", (json.dumps(record, indent=2) + "\n").encode(), 0o600)
     atomic_write(destination, data, 0o755)
     print(f"Installed SHA-256: {digest(data)}")
     print(f"Receipt: {receipt}")
@@ -109,11 +97,7 @@ def rollback(receipt):
     owned_directory(receipt)
     no_symlinks(receipt / "receipt.json")
     info = (receipt / "receipt.json").stat()
-    if (
-        not stat.S_ISREG(info.st_mode)
-        or info.st_uid != os.getuid()
-        or info.st_mode & 0o022
-    ):
+    if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o022:
         raise ValueError("unsafe receipt")
     record = json.loads((receipt / "receipt.json").read_text())
     destination = Path(record["destination"])
@@ -125,10 +109,7 @@ def rollback(receipt):
         destination.unlink()
     else:
         previous, mode = read_binary(receipt / "myr.previous")
-        if (
-            digest(previous) != record["previous_sha256"]
-            or mode != record["previous_mode"]
-        ):
+        if digest(previous) != record["previous_sha256"] or mode != record["previous_mode"]:
             raise ValueError("backup checksum or mode changed, refusing rollback")
         atomic_write(destination, previous, mode)
     print(f"Rolled back exactly: {destination}")
@@ -136,9 +117,7 @@ def rollback(receipt):
 
 def main():
     if len(sys.argv) in (3, 4) and sys.argv[1] == "install":
-        destination = (
-            Path(sys.argv[3]) if len(sys.argv) == 4 else Path.home() / ".local/bin/myran"
-        )
+        destination = Path(sys.argv[3]) if len(sys.argv) == 4 else Path.home() / ".local/bin/myran"
         state = (
             Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state")))
             / "myran/cutover"

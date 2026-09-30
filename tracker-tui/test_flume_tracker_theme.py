@@ -11,7 +11,6 @@ from pathlib import Path
 
 import flume_tracker_theme as flume
 
-
 THEME = {
     "name": "flume-dusk",
     "dark": True,

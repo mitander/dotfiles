@@ -44,16 +44,17 @@
     ps.watchfiles
   ]);
 
-  bronson = pkgs.runCommand "bronson-0.3.0" {
-    nativeBuildInputs = [pkgs.makeWrapper];
-  } ''
-    install -Dm755 ${../scripts/bronson-wrapper.sh} $out/bin/bronson
-    wrapProgram $out/bin/bronson \
-      --set-default BRONSON_PYTHON "${bronsonPython}/bin/python3" \
-      --prefix PYTHONPATH : ${flumeTrackerTheme}/${pkgs.python3.sitePackages} \
-      --set-default FLUME_TRACKER_THEME_DIR "${dotfilesDirectory}/themes/flume/extras/tracker-tui" \
-      --set-default FLUME_SCHEMA_FILE "${dotfilesDirectory}/themes/flume/extras/current/schema"
-  '';
+  bronson =
+    pkgs.runCommand "bronson-0.3.0" {
+      nativeBuildInputs = [pkgs.makeWrapper];
+    } ''
+      install -Dm755 ${../scripts/bronson-wrapper.sh} $out/bin/bronson
+      wrapProgram $out/bin/bronson \
+        --set-default BRONSON_PYTHON "${bronsonPython}/bin/python3" \
+        --prefix PYTHONPATH : ${flumeTrackerTheme}/${pkgs.python3.sitePackages} \
+        --set-default FLUME_TRACKER_THEME_DIR "${dotfilesDirectory}/themes/flume/extras/tracker-tui" \
+        --set-default FLUME_SCHEMA_FILE "${dotfilesDirectory}/themes/flume/extras/current/schema"
+    '';
 
   mkTrackerTui = {
     pname,
@@ -97,6 +98,7 @@ in {
       bronson
       inputs.atuin-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.atuin
       bat
+      alejandra
       curl
       delta
       fd
@@ -115,9 +117,12 @@ in {
       })
       lsd
       neovim
+      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.prettier
+      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.taplo
       ripgrep
       inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.ruff
-      shfmt
+      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.shfmt
+      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.shellcheck
       stylua
       tmux
       tree
@@ -171,6 +176,7 @@ in {
     ".copilot/AGENTS.md".source = agentLive "pi/AGENTS.md";
     ".local/bin/agents-skills-link".source = live "scripts/agents-skills-link.sh";
     ".local/bin/dotfiles".source = live "scripts/dotfiles";
+    ".local/bin/dotfiles-format".source = live "scripts/format.sh";
     ".tmux.conf".source = live "tmux/.tmux.conf";
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
   };

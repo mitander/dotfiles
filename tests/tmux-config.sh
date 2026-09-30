@@ -9,7 +9,10 @@ cleanup() {
   rm -rf "$TEST_ROOT"
 }
 trap cleanup EXIT INT TERM
-fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
+fail() {
+  printf 'FAIL: %s\n' "$*" >&2
+  exit 1
+}
 
 mkdir -p "$TEST_ROOT/home/dotfiles/scripts" "$TEST_ROOT/home/dotfiles/extras/tmux" \
   "$TEST_ROOT/home/dotfiles/tmux/.tmux" "$TEST_ROOT/home/.tmux/plugins/tpm" "$TEST_ROOT/state"
@@ -34,7 +37,7 @@ reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix ,' || true)"
 [[ "$reload_binding" == *source-file*'.tmux.conf'* ]] || fail 'reload is not prefix ,'
 run_focus="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
 [[ "$run_focus" == *'select-window -t :run'* && "$run_focus" != *source-file* ]] || fail 'prefix r changed'
-[[ "$binding" == *'myran run >/dev/null 2>&1'* && "$binding" == *'myran pick-run >/dev/null 2>&1'* ]] || \
+[[ "$binding" == *'myran run >/dev/null 2>&1'* && "$binding" == *'myran pick-run >/dev/null 2>&1'* ]] ||
   fail 'Run bindings missing or output can force view mode'
 for role in term edit agent git tracker actions; do
   [[ "$binding" == *"myran role open $role"* ]] || fail "missing role: $role"
@@ -42,19 +45,19 @@ done
 [[ "$binding" != *tuxedo* && "$binding" != *toggle-workspace-pin* ]] || fail 'obsolete binding remains'
 [[ "$binding" == *'#{q:pane_current_path}'* ]] || fail 'caller paths are not quoted'
 agent="$(printf '%s\n' "$binding" | awk '$4 == "A"')"
-[[ "$agent" == *'run-shell -C'*display-popup*'read -r name'*'myran agent-new'* ]] || \
+[[ "$agent" == *'run-shell -C'*display-popup*'read -r name'*'myran agent-new'* ]] ||
   fail 'Agent popup must expand caller formats before reading the literal name'
 [[ "$agent" != *command-prompt* ]] || fail 'Agent name interpolates through a prompt template'
 for raw in s v S '|' '-'; do
-  [[ "$(printf '%s\n' "$binding" | awk -v key="$raw" '$4 == key')" == *split-window* ]] || \
+  [[ "$(printf '%s\n' "$binding" | awk -v key="$raw" '$4 == key')" == *split-window* ]] ||
     fail "native split changed: $raw"
 done
 
 root_bindings="$(tmux -L "$SOCKET" list-keys -T root)"
 [[ "$root_bindings" != *tuxedo* ]] || fail 'obsolete root binding remains'
-[[ "$root_bindings" == *'@workspace_navigation'* && "$root_bindings" != *'ps -o state='* ]] || \
+[[ "$root_bindings" == *'@workspace_navigation'* && "$root_bindings" != *'ps -o state='* ]] ||
   fail 'navigation no longer uses metadata'
-[[ "$root_bindings" == *'myran close-run'* && "$root_bindings" == *'@myran.run.state'* ]] || \
+[[ "$root_bindings" == *'myran close-run'* && "$root_bindings" == *'@myran.run.state'* ]] ||
   fail 'supervised Run dismissal missing'
 enter="$(printf '%s\n' "$root_bindings" | grep -E 'bind-key +(-r )?-T root +Enter ' || true)"
 [[ "$enter" == *'myran close-run'* && "$enter" != *kill-window* ]] || fail 'Enter may close sibling Runs'

@@ -15,19 +15,24 @@ def replace_once(source: str, old: str, new: str) -> str:
 
 def patch_linear_queue(source: str) -> str:
     replacements = [
-        ('        updatedAt createdAt\n', '        updatedAt createdAt sortOrder\n'),
-        ('GROUP_MODES = ["status", "project", "initiative"]', 'GROUP_MODES = ["status", "project", "initiative", "milestone"]'),
-        ('        project { id name color }\n', '        project { id name color }\n        projectMilestone { id name targetDate }\n'),
+        ("        updatedAt createdAt\n", "        updatedAt createdAt sortOrder\n"),
         (
-            '    # most recently updated first within each status group\n'
+            'GROUP_MODES = ["status", "project", "initiative"]',
+            'GROUP_MODES = ["status", "project", "initiative", "milestone"]',
+        ),
+        (
+            "        project { id name color }\n",
+            "        project { id name color }\n        projectMilestone { id name targetDate }\n",
+        ),
+        (
+            "    # most recently updated first within each status group\n"
             '    return (-parse_dt(i["updatedAt"]).timestamp(),)\n',
             '    rank = i.get("sortOrder")\n'
             '    return (rank is None, rank if rank is not None else 0, i["identifier"])\n',
         ),
         (
             '    "toggle_mine": (["m"], "mine"),\n',
-            '    "toggle_mine": (["m"], "mine"),\n'
-            '    "toggle_focus": (["f"], "view"),\n',
+            '    "toggle_mine": (["m"], "mine"),\n    "toggle_focus": (["f"], "view"),\n',
         ),
         ('    "toggle_mine": "m",\n', '    "toggle_mine": "m",\n    "toggle_focus": "f",\n'),
         (
@@ -42,41 +47,39 @@ def patch_linear_queue(source: str) -> str:
         ),
         (
             '        data["group_by"] = self._group_by\n',
-            '        data["group_by"] = self._group_by\n'
-            '        data["focus"] = self._focus\n',
+            '        data["group_by"] = self._group_by\n        data["focus"] = self._focus\n',
         ),
         (
-            '        issues = self._issues\n        if self._mine and self._viewer_id:\n',
-            '        issues = self._issues\n'
-            '        if self._focus:\n'
+            "        issues = self._issues\n        if self._mine and self._viewer_id:\n",
+            "        issues = self._issues\n"
+            "        if self._focus:\n"
             '            issues = [i for i in issues if i["state"]["type"] in {"started", "unstarted"}]\n'
-            '        if self._mine and self._viewer_id:\n',
+            "        if self._mine and self._viewer_id:\n",
         ),
         (
-            '        def mine_first(i: dict):\n'
+            "        def mine_first(i: dict):\n"
             '            is_mine = (i.get("assignee") or {}).get("id") == self._viewer_id\n'
-            '            return (0 if is_mine else 1, *issue_sort_key(i))\n',
-            '        def manual_order(i: dict):\n'
-            '            return issue_sort_key(i)\n',
+            "            return (0 if is_mine else 1, *issue_sort_key(i))\n",
+            "        def manual_order(i: dict):\n            return issue_sort_key(i)\n",
         ),
         (
-            '            for i in group:\n'
+            "            for i in group:\n"
             '                self._opt_index[i["id"]] = len(opts)\n'
             '                opts.append(Option(self._issue_row(i, width, id_w), id=i["id"]))\n',
-            '            ready_position = 0\n'
-            '            for i in group:\n'
+            "            ready_position = 0\n"
+            "            for i in group:\n"
             '                self._opt_index[i["id"]] = len(opts)\n'
             '                prefix = ""\n'
-            '                if self._focus:\n'
+            "                if self._focus:\n"
             '                    if i["state"]["type"] == "unstarted":\n'
-            '                        ready_position += 1\n'
+            "                        ready_position += 1\n"
             '                        position = str(ready_position) if i.get("sortOrder") is not None else "?"\n'
             '                        prefix = f"{position:>2}  "\n'
-            '                    else:\n'
+            "                    else:\n"
             '                        prefix = "    "\n'
-            '                row = self._issue_row(i, width - len(prefix), id_w)\n'
-            '                if prefix:\n'
-            '                    row = Text(prefix, style=C_BLUE) + row\n'
+            "                row = self._issue_row(i, width - len(prefix), id_w)\n"
+            "                if prefix:\n"
+            "                    row = Text(prefix, style=C_BLUE) + row\n"
             '                opts.append(Option(row, id=i["id"]))\n',
         ),
         (
@@ -85,50 +88,49 @@ def patch_linear_queue(source: str) -> str:
         ),
         (
             '            f"{mine_tag}{proj_tag}{group_tag} {len(issues)} issues "\n',
-            '            f" {\'Now and next\' if self._focus else \'All issues\'} · manual ·"\n'
+            "            f\" {'Now and next' if self._focus else 'All issues'} · manual ·\"\n"
             '            f"{mine_tag}{proj_tag}{group_tag} {len(issues)} issues "\n',
         ),
         (
-            '    def action_toggle_mine(self) -> None:\n',
-            '    def action_toggle_focus(self) -> None:\n'
-            '        self._focus = not self._focus\n'
-            '        self._save_state()\n'
-            '        self.render_issues()\n\n'
-            '    def action_toggle_mine(self) -> None:\n',
+            "    def action_toggle_mine(self) -> None:\n",
+            "    def action_toggle_focus(self) -> None:\n"
+            "        self._focus = not self._focus\n"
+            "        self._save_state()\n"
+            "        self.render_issues()\n\n"
+            "    def action_toggle_mine(self) -> None:\n",
         ),
         (
-            '      m mine only   v group status/project/initiative\n',
-            '      m mine only   f Now and next / All issues   v group status/project/initiative/milestone\n',
+            "      m mine only   v group status/project/initiative\n",
+            "      m mine only   f Now and next / All issues   v group status/project/initiative/milestone\n",
         ),
-        ('query($teamId: String!) {{\n', 'query($teamId: String!, $after: String) {{\n'),
+        ("query($teamId: String!) {{\n", "query($teamId: String!, $after: String) {{\n"),
         (
-            '    issues(first: 250, orderBy: updatedAt) {{\n'
-            '      nodes {{ {ISSUE_FIELDS} }}\n',
-            '    issues(first: 50, after: $after, orderBy: updatedAt) {{\n'
-            '      pageInfo {{ hasNextPage endCursor }}\n'
-            '      nodes {{ {ISSUE_FIELDS} }}\n',
+            "    issues(first: 250, orderBy: updatedAt) {{\n      nodes {{ {ISSUE_FIELDS} }}\n",
+            "    issues(first: 50, after: $after, orderBy: updatedAt) {{\n"
+            "      pageInfo {{ hasNextPage endCursor }}\n"
+            "      nodes {{ {ISSUE_FIELDS} }}\n",
         ),
         (
             '    @work(exclusive=True, group="issues")\n'
-            '    async def load_team(self, team: dict) -> None:\n',
-            '    async def fetch_team_issues(self, team_id: str) -> dict:\n'
-            '        after = None\n'
-            '        nodes = []\n'
-            '        seen = set()\n'
-            '        while True:\n'
+            "    async def load_team(self, team: dict) -> None:\n",
+            "    async def fetch_team_issues(self, team_id: str) -> dict:\n"
+            "        after = None\n"
+            "        nodes = []\n"
+            "        seen = set()\n"
+            "        while True:\n"
             '            data = await self.gql(QL_ISSUES, {"teamId": team_id, "after": after})\n'
             '            connection = data["team"]["issues"]\n'
             '            nodes.extend(connection["nodes"])\n'
             '            page = connection["pageInfo"]\n'
             '            if not page["hasNextPage"]:\n'
             '                connection["nodes"] = list({i["id"]: i for i in nodes}.values())\n'
-            '                return data\n'
+            "                return data\n"
             '            after = page["endCursor"]\n'
-            '            if not after or after in seen:\n'
+            "            if not after or after in seen:\n"
             '                raise RuntimeError("Linear issue pagination did not advance")\n'
-            '            seen.add(after)\n\n'
+            "            seen.add(after)\n\n"
             '    @work(exclusive=True, group="issues")\n'
-            '    async def load_team(self, team: dict) -> None:\n',
+            "    async def load_team(self, team: dict) -> None:\n",
         ),
         (
             '            data = await self.gql(QL_ISSUES, {"teamId": team["id"]})\n',
@@ -139,13 +141,15 @@ def patch_linear_queue(source: str) -> str:
             '            *(self.fetch_team_issues(t["id"]) for t in teams),\n',
         ),
         (
-            '        returns 250 issues *per team* instead of 250 in total, and keeps the\n',
-            '        paginates every team instead of truncating the queue, and keeps the\n',
+            "        returns 250 issues *per team* instead of 250 in total, and keeps the\n",
+            "        paginates every team instead of truncating the queue, and keeps the\n",
         ),
     ]
     for old, new in replacements:
         source = replace_once(source, old, new)
-    source = source.replace('mine_first(i)', 'manual_order(i)').replace('key=mine_first', 'key=manual_order')
+    source = source.replace("mine_first(i)", "manual_order(i)").replace(
+        "key=mine_first", "key=manual_order"
+    )
     source = replace_once(
         source,
         '        self._render_boot(data)\n        write_cache("boot", data)\n        self.load_initiatives(rerender=True)\n',
@@ -153,69 +157,69 @@ def patch_linear_queue(source: str) -> str:
     )
     source = replace_once(
         source,
-        '    def action_first(self) -> None:\n',
-        '    def scroll_to_highlight(self, top: bool = False) -> None:\n'
-        '        super().scroll_to_highlight(top=top)\n'
-        '        index = self.highlighted\n'
-        '        if index is not None and index > 0 and all(\n'
-        '            self.get_option_at_index(n).disabled for n in range(index)\n'
-        '        ):\n'
-        '            self.scroll_home(animate=False)\n\n'
-        '    def action_first(self) -> None:\n',
+        "    def action_first(self) -> None:\n",
+        "    def scroll_to_highlight(self, top: bool = False) -> None:\n"
+        "        super().scroll_to_highlight(top=top)\n"
+        "        index = self.highlighted\n"
+        "        if index is not None and index > 0 and all(\n"
+        "            self.get_option_at_index(n).disabled for n in range(index)\n"
+        "        ):\n"
+        "            self.scroll_home(animate=False)\n\n"
+        "    def action_first(self) -> None:\n",
     )
     source = replace_once(
         source,
         '        elif self._group_by == "initiative":\n',
         '        elif self._group_by == "milestone":\n'
-        '            by_milestone: dict[str, list[dict]] = {}\n'
-        '            milestone_of: dict[str, dict] = {}\n'
-        '            for i in issues:\n'
+        "            by_milestone: dict[str, list[dict]] = {}\n"
+        "            milestone_of: dict[str, dict] = {}\n"
+        "            for i in issues:\n"
         '                milestone = i.get("projectMilestone") or {"id": "", "name": "no milestone", "targetDate": None}\n'
         '                by_milestone.setdefault(milestone["id"], []).append(i)\n'
         '                milestone_of[milestone["id"]] = milestone\n'
-        '            ordered_groups = sorted(\n'
-        '                milestone_of.values(),\n'
+        "            ordered_groups = sorted(\n"
+        "                milestone_of.values(),\n"
         '                key=lambda m: (m["id"] == "", m.get("targetDate") or "9999-12-31", m.get("name") or ""),\n'
-        '            )\n'
-        '            groups = [\n'
+        "            )\n"
+        "            groups = [\n"
         '                (self._milestone_header_row(m, len(by_milestone[m["id"]]), width),\n'
         '                 sorted(by_milestone[m["id"]], key=in_group_key))\n'
-        '                for m in ordered_groups\n'
-        '            ]\n'
+        "                for m in ordered_groups\n"
+        "            ]\n"
         '        elif self._group_by == "initiative":\n',
     )
     source = replace_once(
         source,
-        '    def _initiative_header_row(self, init: dict, count: int, width: int) -> Text:\n',
-        '    def _milestone_header_row(self, milestone: dict, count: int, width: int) -> Text:\n'
+        "    def _initiative_header_row(self, init: dict, count: int, width: int) -> Text:\n",
+        "    def _milestone_header_row(self, milestone: dict, count: int, width: int) -> Text:\n"
         '        t = Text(no_wrap=True, overflow="ellipsis")\n'
         '        t.append("\\uf133 ", style=C_BLUE)\n'
         '        t.append(milestone["name"], style=f"bold {C_BLUE}")\n'
         '        if target := milestone.get("targetDate"):\n'
         '            t.append(f" · due {target}", style=C_DIM)\n'
         '        t.append(f" · {count} ", style=C_DIM)\n'
-        '        fill = width - t.cell_len - 1\n'
-        '        if fill > 0:\n'
+        "        fill = width - t.cell_len - 1\n"
+        "        if fill > 0:\n"
         '            t.append("─" * fill, style=C_FAINT)\n'
-        '        return t\n\n'
-        '    def _initiative_header_row(self, init: dict, count: int, width: int) -> Text:\n',
+        "        return t\n\n"
+        "    def _initiative_header_row(self, init: dict, count: int, width: int) -> Text:\n",
     )
     source = source.replace(
         '        project = issue.get("project")\n'
-        '        if project:\n'
+        "        if project:\n"
         '            m.append("   ")\n'
         '            m.append("\\uf07b ", style=project.get("color") or C_DIM)\n'
         '            m.append(project["name"], style=C_SUB)\n',
         '        project = issue.get("project")\n'
-        '        if project:\n'
+        "        if project:\n"
         '            m.append("   ")\n'
         '            m.append("\\uf07b ", style=project.get("color") or C_DIM)\n'
         '            m.append(project["name"], style=C_SUB)\n'
         '        milestone = issue.get("projectMilestone")\n'
-        '        if milestone:\n'
+        "        if milestone:\n"
         '            m.append("   ")\n'
         '            m.append("\\uf133 ", style=C_BLUE)\n'
-        '            m.append(milestone["name"], style=C_SUB)\n'
+        '            m.append(milestone["name"], style=C_SUB)\n',
     )
     return source
 
@@ -241,41 +245,41 @@ def main() -> None:
     )
     source = replace_once(
         source,
-        'def set_palette(ansi: bool) -> None:\n'
+        "def set_palette(ansi: bool) -> None:\n"
         '    """Swap the chrome palette; `system` draws it in terminal ANSI colors."""\n'
         "    globals().update(_PALETTE_ANSI if ansi else _PALETTE)\n",
-        '_TRACKER_ROLES: dict[str, str] = {}\n\n\n'
-        'def set_palette(theme: str) -> None:\n'
+        "_TRACKER_ROLES: dict[str, str] = {}\n\n\n"
+        "def set_palette(theme: str) -> None:\n"
         '    """Swap the chrome palette for built-in, ANSI, or Flume themes."""\n'
         "    roles = theme_roles(theme) or {}\n"
-        "    globals()[\"_TRACKER_ROLES\"] = roles\n"
-        "    globals().update(theme_palette(theme) or (_PALETTE_ANSI if theme == \"system\" else _PALETTE))\n\n\n"
+        '    globals()["_TRACKER_ROLES"] = roles\n'
+        '    globals().update(theme_palette(theme) or (_PALETTE_ANSI if theme == "system" else _PALETTE))\n\n\n'
         "def tracker_role_color(role: str, fallback: str | None = None) -> str:\n"
-        "    \"\"\"Resolve a deliberately assigned tracker role in the active theme.\"\"\"\n"
+        '    """Resolve a deliberately assigned tracker role in the active theme."""\n'
         "    return _TRACKER_ROLES.get(role, fallback or C_SUB)\n\n\n"
         "def tracker_state_color(state: dict) -> str:\n"
-        "    \"\"\"Map workflow semantics onto deliberately assigned Flume roles.\"\"\"\n"
+        '    """Map workflow semantics onto deliberately assigned Flume roles."""\n'
         "    role = {\n"
-        "        \"triage\": \"status_triage\",\n"
-        "        \"started\": \"status_started\",\n"
-        "        \"unstarted\": \"status_unstarted\",\n"
-        "        \"backlog\": \"status_backlog\",\n"
-        "        \"completed\": \"status_completed\",\n"
-        "        \"canceled\": \"status_canceled\",\n"
-        "        \"duplicate\": \"status_canceled\",\n"
-        "    }.get(state.get(\"type\"))\n"
+        '        "triage": "status_triage",\n'
+        '        "started": "status_started",\n'
+        '        "unstarted": "status_unstarted",\n'
+        '        "backlog": "status_backlog",\n'
+        '        "completed": "status_completed",\n'
+        '        "canceled": "status_canceled",\n'
+        '        "duplicate": "status_canceled",\n'
+        '    }.get(state.get("type"))\n'
         "    return tracker_role_color(role, C_SUB) if role else C_SUB\n\n\n"
         "def preferred_tracker_scope(scopes: list[dict]) -> dict | None:\n"
-        "    \"\"\"Choose the scope matching repo config, issue branch, or repository name.\"\"\"\n"
+        '    """Choose the scope matching repo config, issue branch, or repository name."""\n'
         "    def token(value: object) -> str:\n"
-        "        return re.sub(r\"[^a-z0-9]\", \"\", str(value or \"\").casefold())\n\n"
-        "    explicit = token(os.environ.get(\"TRACKER_SCOPE\"))\n"
-        "    repository = token(os.environ.get(\"TRACKER_REPOSITORY\"))\n"
+        '        return re.sub(r"[^a-z0-9]", "", str(value or "").casefold())\n\n'
+        '    explicit = token(os.environ.get("TRACKER_SCOPE"))\n'
+        '    repository = token(os.environ.get("TRACKER_REPOSITORY"))\n'
         "    for hint, fuzzy in ((explicit, False), (repository, True)):\n"
         "        if not hint:\n"
         "            continue\n"
         "        for scope in scopes:\n"
-        "            candidates = (token(scope.get(\"key\")), token(scope.get(\"name\")))\n"
+        '            candidates = (token(scope.get("key")), token(scope.get("name")))\n'
         "            if hint in candidates or (fuzzy and len(hint) >= 4 and any(hint in value or value in hint for value in candidates)):\n"
         "                return scope\n"
         "    return None\n",
@@ -283,14 +287,12 @@ def main() -> None:
     source = replace_once(
         source,
         '    "toggle_group": (["v"], "group"),\n',
-        '    "toggle_group": (["v"], "group"),\n'
-        '    "toggle_sidebar": (["b"], None),\n',
+        '    "toggle_group": (["v"], "group"),\n    "toggle_sidebar": (["b"], None),\n',
     )
     source = replace_once(
         source,
         '            ("m", "toggle mine only"),\n',
-        '            ("m", "toggle mine only"),\n'
-        '            ("b", "toggle team sidebar"),\n',
+        '            ("m", "toggle mine only"),\n            ("b", "toggle team sidebar"),\n',
     )
     source = replace_once(
         source,
@@ -301,8 +303,7 @@ def main() -> None:
     source = replace_once(
         source,
         '    "toggle_group": "v",\n',
-        '    "toggle_group": "v",\n'
-        '    "toggle_sidebar": "b",\n',
+        '    "toggle_group": "v",\n    "toggle_sidebar": "b",\n',
     )
     source = replace_once(
         source,
@@ -311,7 +312,7 @@ def main() -> None:
         "for _theme in THEMES:\n"
         "    _chrome = theme_palette(_theme.name) or _PALETTE\n"
         "    for _key, _value in _chrome.items():\n"
-        "        _variable = \"tracker-\" + _key.removeprefix(\"C_\").lower().replace(\"_\", \"-\")\n"
+        '        _variable = "tracker-" + _key.removeprefix("C_").lower().replace("_", "-")\n'
         "        _theme.variables.setdefault(_variable, _value)\n"
         "THEME_NAMES = [t.name for t in THEMES]\n",
     )
@@ -333,7 +334,7 @@ def main() -> None:
         'p.get("color") or C_DIM': 'tracker_role_color("project", C_DIM)',
         'to_state["color"]': "tracker_state_color(to_state)",
         's["color"] or C_SUB': "tracker_state_color(s)",
-        "f\"bold {st['color'] or C_SUB}\"": "f\"bold {tracker_state_color(st)}\"",
+        "f\"bold {st['color'] or C_SUB}\"": 'f"bold {tracker_state_color(st)}"',
     }
     for old, new in replacements.items():
         source = source.replace(old, new)
@@ -347,11 +348,11 @@ def main() -> None:
     )
     source = source.replace(
         't.append(" ", style=f"bold {C_PEACH}")',
-        "t.append(\" \", style=f\"bold {tracker_role_color('priority_urgent', C_PEACH)}\")",
+        't.append(" ", style=f"bold {tracker_role_color(\'priority_urgent\', C_PEACH)}")',
     )
 
-    css_start = source.index('    CSS = f\"\"\"')
-    css_end = source.index('\n    \"\"\"', css_start)
+    css_start = source.index('    CSS = f"""')
+    css_end = source.index('\n    """', css_start)
     css = source[css_start:css_end]
     css = css.replace(
         "    OptionList:focus {{ background: transparent; border: none; }}\n",
@@ -359,8 +360,17 @@ def main() -> None:
         "    OptionList > .option-list--option-disabled {{ text-opacity: 100%; text-style: not dim; }}\n",
     )
     for constant in (
-        "C_TEXT", "C_SUB", "C_DIM", "C_FAINT", "C_VFAINT", "C_BLUE",
-        "C_LAV", "C_PEACH", "C_GREEN", "C_RED", "C_MAUVE",
+        "C_TEXT",
+        "C_SUB",
+        "C_DIM",
+        "C_FAINT",
+        "C_VFAINT",
+        "C_BLUE",
+        "C_LAV",
+        "C_PEACH",
+        "C_GREEN",
+        "C_RED",
+        "C_MAUVE",
     ):
         variable = "$tracker-" + constant.removeprefix("C_").lower().replace("_", "-")
         css = css.replace("{" + constant + "}", variable)
@@ -369,9 +379,8 @@ def main() -> None:
     source = source[:css_start] + css + source[css_end:]
     source = replace_once(
         source,
-        "    def on_mount(self) -> None:\n"
-        "        for t in THEMES:\n",
-        "    @work(exclusive=True, group=\"flume-theme\")\n"
+        "    def on_mount(self) -> None:\n        for t in THEMES:\n",
+        '    @work(exclusive=True, group="flume-theme")\n'
         "    async def watch_flume_theme(self) -> None:\n"
         "        async for theme in watch_flume_theme_changes():\n"
         "            if theme in self.available_themes and theme != self.theme:\n"
@@ -381,26 +390,25 @@ def main() -> None:
     )
     source = replace_once(
         source,
+        '        layout = load_state()\n        if w := layout.get("sidebar_w"):\n',
         "        layout = load_state()\n"
-        "        if w := layout.get(\"sidebar_w\"):\n",
-        "        layout = load_state()\n"
-        "        self._sidebar_hidden = bool(layout.get(\"sidebar_hidden\", True))\n"
-        "        if w := layout.get(\"sidebar_w\"):\n",
+        '        self._sidebar_hidden = bool(layout.get("sidebar_hidden", True))\n'
+        '        if w := layout.get("sidebar_w"):\n',
     )
     source = replace_once(
         source,
-        "        if w := layout.get(\"detail_w\"):\n"
-        "            self.query_one(\"#detail\").styles.width = int(w)\n",
-        "        if w := layout.get(\"detail_w\"):\n"
-        "            self.query_one(\"#detail\").styles.width = int(w)\n"
+        '        if w := layout.get("detail_w"):\n'
+        '            self.query_one("#detail").styles.width = int(w)\n',
+        '        if w := layout.get("detail_w"):\n'
+        '            self.query_one("#detail").styles.width = int(w)\n'
         "        self._apply_sidebar_visibility()\n",
     )
     source = replace_once(
         source,
-        "        saved = load_state().get(\"theme\")\n"
+        '        saved = load_state().get("theme")\n'
         "        self.theme = saved if saved in self.available_themes else THEME_NAMES[0]\n"
         "        self.ansi_color = self._theme_is_ansi()\n",
-        "        saved = active_flume_theme() or load_state().get(\"theme\")\n"
+        '        saved = active_flume_theme() or load_state().get("theme")\n'
         "        self.theme = saved if saved in self.available_themes else THEME_NAMES[0]\n"
         "        set_palette(self.theme)\n"
         "        self.ansi_color = self._theme_is_ansi()\n"
@@ -411,11 +419,11 @@ def main() -> None:
         source,
         "    def _save_layout(self, reset: str | None = None) -> None:\n",
         "    def _apply_sidebar_visibility(self) -> None:\n"
-        "        display = \"none\" if self._sidebar_hidden else \"block\"\n"
-        "        self.query_one(\"#sidebar\").styles.display = display\n"
-        "        self.query_one(\"#split-left\").styles.display = display\n"
-        "        if self._sidebar_hidden and getattr(self.focused, \"id\", None) in {\"teams\", \"profile\"}:\n"
-        "            self.query_one(\"#issues\", NavList).focus()\n\n"
+        '        display = "none" if self._sidebar_hidden else "block"\n'
+        '        self.query_one("#sidebar").styles.display = display\n'
+        '        self.query_one("#split-left").styles.display = display\n'
+        '        if self._sidebar_hidden and getattr(self.focused, "id", None) in {"teams", "profile"}:\n'
+        '            self.query_one("#issues", NavList).focus()\n\n'
         "    def action_toggle_sidebar(self) -> None:\n"
         "        self._sidebar_hidden = not self._sidebar_hidden\n"
         "        self._apply_sidebar_visibility()\n"
@@ -424,8 +432,7 @@ def main() -> None:
     )
     source = replace_once(
         source,
-        '        data["group_by"] = self._group_by\n'
-        "        save_state(data)\n",
+        '        data["group_by"] = self._group_by\n        save_state(data)\n',
         '        data["group_by"] = self._group_by\n'
         '        data["sidebar_hidden"] = self._sidebar_hidden\n'
         "        save_state(data)\n",
@@ -452,7 +459,7 @@ def main() -> None:
             '        scope = next((t for t in scopes if t["id"] == last), None) or (\n'
             "            self._teams[0] if self._teams else None\n"
             "        )\n"
-            '        if scope is None:\n'
+            "        if scope is None:\n"
             "            issues_list.loading = False\n"
             '            self.notify("no teams found", severity="warning")\n'
             "            return\n",
@@ -470,8 +477,7 @@ def main() -> None:
         )
         source = replace_once(
             source,
-            "    async def load_team(self, team: dict) -> None:\n"
-            "        self._team = team\n",
+            "    async def load_team(self, team: dict) -> None:\n        self._team = team\n",
             "    async def load_team(self, team: dict) -> None:\n"
             "        self._team = team\n"
             "        self._update_header()\n",
@@ -479,12 +485,11 @@ def main() -> None:
         source = replace_once(
             source,
             "        self._team = ALL_TEAMS\n",
-            "        self._team = ALL_TEAMS\n"
-            "        self._update_header()\n",
+            "        self._team = ALL_TEAMS\n        self._update_header()\n",
         )
         source = replace_once(
             source,
-            '        markup = (\n'
+            "        markup = (\n"
             '            f"[bold {C_BLUE}] \\uf03a [/]"\n'
             '            + wave_markup("ltui", self._wave_pos, f"bold {C_BLUE}", C_LAV)\n'
             '            + f"[{C_VFAINT}]  \\u00b7  [/][{C_SUB}]{escape(self._org)}[/]"\n'
@@ -497,7 +502,7 @@ def main() -> None:
             '            identity = f"{self._org} \\u00b7 all teams"\n'
             "        else:\n"
             "            identity = f\"{team['name']} ({team['key']})\"\n"
-            '        markup = (\n'
+            "        markup = (\n"
             '            f"[bold {C_BLUE}] \\uf03a [/]"\n'
             '            + wave_markup("ltui", self._wave_pos, f"bold {C_BLUE}", C_LAV)\n'
             '            + f"[{C_VFAINT}]  \\u00b7  [/][{C_SUB}]{escape(identity)}[/]"\n'
@@ -517,7 +522,7 @@ def main() -> None:
             '        team = next((t for t in self._teams if t["id"] == last), None) or (\n'
             "            self._teams[0] if self._teams else None\n"
             "        )\n"
-            '        if team is None:\n'
+            "        if team is None:\n"
             "            issues_list.loading = False\n"
             '            self.notify("no projects found", severity="warning")\n'
             "            return\n",

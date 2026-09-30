@@ -26,21 +26,21 @@ check_all=0
 
 while (($# > 0)); do
   case "$1" in
-    --activate)
-      activate=1
-      ;;
-    --check)
-      check_all=1
-      ;;
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    *)
-      printf 'Unknown option: %s\n\n' "$1" >&2
-      usage >&2
-      exit 2
-      ;;
+  --activate)
+    activate=1
+    ;;
+  --check)
+    check_all=1
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    printf 'Unknown option: %s\n\n' "$1" >&2
+    usage >&2
+    exit 2
+    ;;
   esac
   shift
 done

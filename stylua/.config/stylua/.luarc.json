@@ -1,5 +1,3 @@
 {
-    "diagnostics.disable": [
-        "deprecated"
-    ]
+  "diagnostics.disable": ["deprecated"]
 }

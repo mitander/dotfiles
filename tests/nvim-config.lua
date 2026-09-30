@@ -67,7 +67,12 @@ assert(#requests == 1, "standalone Neovim should not call tmux")
 
 -- Role callbacks use literal argv, with no legacy policy wrapper.
 vim.env.TMUX = "/tmp/not-a-real-tmux-server,1,0"
-for lhs, role in pairs({ ["<leader>Te"] = "edit", ["<leader>Ts"] = "term", ["<leader>Ta"] = "agent", ["<leader>Tt"] = "tracker" }) do
+for lhs, role in pairs({
+    ["<leader>Te"] = "edit",
+    ["<leader>Ts"] = "term",
+    ["<leader>Ta"] = "agent",
+    ["<leader>Tt"] = "tracker",
+}) do
     key(tmux, lhs)()
     assert(vim.deep_equal(requests[#requests], { "myran", "role", "open", role, vim.fn.getcwd() }))
 end
@@ -83,7 +88,9 @@ key(lazygit, "<leader>gg")()
 assert(vim.deep_equal(git_request, { "myran", "role", "open", "git", vim.fn.getcwd() }))
 vim.env.TMUX = nil
 local native_git = false
-vim.api.nvim_create_user_command("LazyGit", function() native_git = true end, {})
+vim.api.nvim_create_user_command("LazyGit", function()
+    native_git = true
+end, {})
 key(lazygit, "<leader>gg")()
 assert(native_git, "standalone LazyGit must remain native")
 local before = #requests
@@ -123,6 +130,13 @@ assert(oil.opts.keymaps.q == "actions.close")
 assert(not oil.config, "Oil should not implement a second sidebar lifecycle")
 
 local conform = spec("conform")
+assert(
+    vim.deep_equal(conform.opts.formatters_by_ft.python, { "ruff_organize_imports", "ruff_format" }),
+    "Python saves must organize imports before formatting, without broad lint fixes"
+)
+assert(vim.deep_equal(conform.opts.formatters_by_ft.markdown, { "prettier" }))
+assert(vim.deep_equal(conform.opts.formatters.shfmt.prepend_args, { "-i", "2" }))
+assert(conform.opts.formatters.rustfmt.prepend_args(nil, { dirname = root })[1] == nil)
 assert(conform.opts.format_on_save.timeout_ms == 500)
 assert(conform.opts.notify_on_error)
 assert(not conform.opts.format_after_save, "save should not be modified asynchronously")
