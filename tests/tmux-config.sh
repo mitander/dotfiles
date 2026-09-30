@@ -34,15 +34,15 @@ reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix ,' || true)"
 [[ "$reload_binding" == *source-file*'.tmux.conf'* ]] || fail 'reload is not prefix ,'
 run_focus="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
 [[ "$run_focus" == *'select-window -t :run'* && "$run_focus" != *source-file* ]] || fail 'prefix r changed'
-[[ "$binding" == *'myr run >/dev/null 2>&1'* && "$binding" == *'myr pick-run >/dev/null 2>&1'* ]] || \
+[[ "$binding" == *'myran run >/dev/null 2>&1'* && "$binding" == *'myran pick-run >/dev/null 2>&1'* ]] || \
   fail 'Run bindings missing or output can force view mode'
 for role in term edit agent git tracker actions; do
-  [[ "$binding" == *"myr role open $role"* ]] || fail "missing role: $role"
+  [[ "$binding" == *"myran role open $role"* ]] || fail "missing role: $role"
 done
 [[ "$binding" != *tuxedo* && "$binding" != *toggle-workspace-pin* ]] || fail 'obsolete binding remains'
 [[ "$binding" == *'#{q:pane_current_path}'* ]] || fail 'caller paths are not quoted'
 agent="$(printf '%s\n' "$binding" | awk '$4 == "A"')"
-[[ "$agent" == *'run-shell -C'*display-popup*'read -r name'*'myr agent-new'* ]] || \
+[[ "$agent" == *'run-shell -C'*display-popup*'read -r name'*'myran agent-new'* ]] || \
   fail 'Agent popup must expand caller formats before reading the literal name'
 [[ "$agent" != *command-prompt* ]] || fail 'Agent name interpolates through a prompt template'
 for raw in s v S '|' '-'; do
@@ -54,17 +54,17 @@ root_bindings="$(tmux -L "$SOCKET" list-keys -T root)"
 [[ "$root_bindings" != *tuxedo* ]] || fail 'obsolete root binding remains'
 [[ "$root_bindings" == *'@workspace_navigation'* && "$root_bindings" != *'ps -o state='* ]] || \
   fail 'navigation no longer uses metadata'
-[[ "$root_bindings" == *'myr close-run'* && "$root_bindings" == *'@myran.run.state'* ]] || \
+[[ "$root_bindings" == *'myran close-run'* && "$root_bindings" == *'@myran.run.state'* ]] || \
   fail 'supervised Run dismissal missing'
 enter="$(printf '%s\n' "$root_bindings" | grep -E 'bind-key +(-r )?-T root +Enter ' || true)"
-[[ "$enter" == *'myr close-run'* && "$enter" != *kill-window* ]] || fail 'Enter may close sibling Runs'
+[[ "$enter" == *'myran close-run'* && "$enter" != *kill-window* ]] || fail 'Enter may close sibling Runs'
 ctrl_q="$(printf '%s\n' "$root_bindings" | grep -E 'bind-key +(-r )?-T root +C-q ' || true)"
 prefix_q="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +q ' || true)"
 for close in "$ctrl_q" "$prefix_q"; do
-  [[ "$close" == *'TMUX_PANE=#{q:pane_id} myr close-run'* ]] || fail 'Run close loses invoking pane'
+  [[ "$close" == *'TMUX_PANE=#{q:pane_id} myran close-run'* ]] || fail 'Run close loses invoking pane'
 done
 mouse="$(printf '%s\n' "$root_bindings" | grep -F MouseDown1StatusLeft || true)"
-[[ "$mouse" == *'myr workspace switch'* ]] || fail 'status picker bypasses Myran'
+[[ "$mouse" == *'myran workspace switch'* ]] || fail 'status picker bypasses Myran'
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_residency_script)" ]] || fail 'callback helper remains'
 style="$(tmux -L "$SOCKET" show-option -gv status-style)"
 [[ "$style" == *'bg=#232136'* && "$style" == *'fg=#c9c5d9'* ]] || fail 'fallback theme changed'
