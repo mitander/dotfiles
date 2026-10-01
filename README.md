@@ -50,6 +50,20 @@ Restart Neovim after updating its configuration.
 The flake's `formatting` check runs the same command in check mode. Other projects own their native
 settings and existing format command; they do not depend on this checkout.
 
+## Myran shortcuts
+
+Tmux delegates workspace, role and run shortcuts through one `myran tmux configure --replace` setup
+call. Personal tool argv, named agents and shortcut choices belong in `~/.config/myran/config.toml`;
+project run declarations remain in `.myran.toml`. Install a Myran binary supporting `tmux configure`
+before reloading this tmux config. General navigation, native splits, copy mode, themes and plugins
+remain here. Plain Enter/q/Escape are not intercepted by these dotfiles.
+
+The disposable config proof can use a source-built binary without installing it:
+
+```sh
+MYRAN_TEST_BINARY="$HOME/c/p/myran/target/debug/myran" ./tests/tmux-config.sh
+```
+
 ## Safe bootstrap
 
 Clone this repository and the Flume theme source at the paths used by the selected profiles, then

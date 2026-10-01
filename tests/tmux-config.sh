@@ -14,6 +14,13 @@ fail() {
   exit 1
 }
 
+MYRAN_BINARY="${MYRAN_TEST_BINARY:-$(command -v myran)}"
+mkdir -p "$TEST_ROOT/bin"
+ln -s "$MYRAN_BINARY" "$TEST_ROOT/bin/myran"
+export PATH="$TEST_ROOT/bin:$PATH"
+export XDG_CONFIG_HOME="$TEST_ROOT/home/.config"
+export MYRAN_CONFIG_FILE="$XDG_CONFIG_HOME/myran/config.toml"
+
 mkdir -p "$TEST_ROOT/home/dotfiles/scripts" "$TEST_ROOT/home/dotfiles/extras/tmux" \
   "$TEST_ROOT/home/dotfiles/tmux/.tmux" "$TEST_ROOT/home/.tmux/plugins/tpm" "$TEST_ROOT/state"
 cp "$SOURCE_ROOT/tmux/.tmux.conf" "$TEST_ROOT/home/dotfiles/tmux/.tmux.conf"
@@ -26,6 +33,13 @@ chmod +x "$TEST_ROOT/home/.tmux/plugins/tpm/tpm"
 HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" \
   tmux -L "$SOCKET" -f "$TEST_ROOT/home/dotfiles/tmux/.tmux.conf" new-session -d -s smoke 'sleep 300'
 
+for _attempt in {1..100}; do
+  [[ -n "$(tmux -L "$SOCKET" show-option -gqv @myran.integration.bindings)" ]] && break
+  sleep 0.05
+done
+[[ -n "$(tmux -L "$SOCKET" show-option -gqv @myran.integration.bindings)" ]] ||
+  fail "Myran setup failed: $(tmux -L "$SOCKET" show-messages)"
+
 hooks="$(tmux -L "$SOCKET" show-hooks -g)"
 [[ "$hooks" != *request-reconcile* ]] || fail 'cooling hook remains'
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_residency_mode)" ]] || fail 'cooling option remains'
@@ -37,16 +51,15 @@ reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix ,' || true)"
 [[ "$reload_binding" == *source-file*'.tmux.conf'* ]] || fail 'reload is not prefix ,'
 run_focus="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
 [[ "$run_focus" == *'select-window -t :run'* && "$run_focus" != *source-file* ]] || fail 'prefix r changed'
-[[ "$binding" == *'myran run >/dev/null 2>&1'* && "$binding" == *'myran pick-run >/dev/null 2>&1'* ]] ||
-  fail 'Run bindings missing or output can force view mode'
+[[ "$binding" == *'__tmux-action run >/dev/null'* && "$binding" == *'__tmux-action pick-run >/dev/null'* ]] ||
+  fail 'Myran-owned Run bindings missing'
 for role in term edit agent git tracker actions; do
-  [[ "$binding" == *"myran role open $role"* ]] || fail "missing role: $role"
+  [[ "$binding" == *"__tmux-action $role"* ]] || fail "missing role: $role"
 done
 [[ "$binding" != *tuxedo* && "$binding" != *toggle-workspace-pin* ]] || fail 'obsolete binding remains'
 [[ "$binding" == *'#{q:pane_current_path}'* ]] || fail 'caller paths are not quoted'
 agent="$(printf '%s\n' "$binding" | awk '$4 == "A"')"
-[[ "$agent" == *'run-shell -C'*display-popup*'read -r name'*'myran agent-new'* ]] ||
-  fail 'Agent popup must expand caller formats before reading the literal name'
+[[ "$agent" == *'__tmux-action new-agent'* ]] || fail 'Agent popup is not Myran-owned'
 [[ "$agent" != *command-prompt* ]] || fail 'Agent name interpolates through a prompt template'
 for raw in s v S '|' '-'; do
   [[ "$(printf '%s\n' "$binding" | awk -v key="$raw" '$4 == key')" == *split-window* ]] ||
@@ -57,17 +70,17 @@ root_bindings="$(tmux -L "$SOCKET" list-keys -T root)"
 [[ "$root_bindings" != *tuxedo* ]] || fail 'obsolete root binding remains'
 [[ "$root_bindings" == *'@workspace_navigation'* && "$root_bindings" != *'ps -o state='* ]] ||
   fail 'navigation no longer uses metadata'
-[[ "$root_bindings" == *'myran close-run'* && "$root_bindings" == *'@myran.run.state'* ]] ||
-  fail 'supervised Run dismissal missing'
-enter="$(printf '%s\n' "$root_bindings" | grep -E 'bind-key +(-r )?-T root +Enter ' || true)"
-[[ "$enter" == *'myran close-run'* && "$enter" != *kill-window* ]] || fail 'Enter may close sibling Runs'
+for key in Enter q Escape; do
+  [[ -z "$(printf '%s\n' "$root_bindings" | awk -v key="$key" '$4 == key')" ]] ||
+    fail "plain $key still intercepts command input"
+done
 ctrl_q="$(printf '%s\n' "$root_bindings" | grep -E 'bind-key +(-r )?-T root +C-q ' || true)"
 prefix_q="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +q ' || true)"
 for close in "$ctrl_q" "$prefix_q"; do
-  [[ "$close" == *'TMUX_PANE=#{q:pane_id} myran close-run'* ]] || fail 'Run close loses invoking pane'
+  [[ "$close" == *'TMUX_PANE=#{q:pane_id}'*'__tmux-action close-run'* ]] || fail 'Run close loses invoking pane'
 done
 mouse="$(printf '%s\n' "$root_bindings" | grep -F MouseDown1StatusLeft || true)"
-[[ "$mouse" == *'myran workspace switch'* ]] || fail 'status picker bypasses Myran'
+[[ "$mouse" == *'__tmux-action workspace'* ]] || fail 'status picker bypasses Myran'
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_residency_script)" ]] || fail 'callback helper remains'
 style="$(tmux -L "$SOCKET" show-option -gv status-style)"
 [[ "$style" == *'bg=#232136'* && "$style" == *'fg=#c9c5d9'* ]] || fail 'fallback theme changed'
