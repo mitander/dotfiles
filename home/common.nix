@@ -38,24 +38,6 @@
     '';
   };
 
-  # Bronson runs from a private live checkout.
-  bronsonPython = pkgs.python3.withPackages (ps: [
-    ps.textual
-    ps.watchfiles
-  ]);
-
-  bronson =
-    pkgs.runCommand "bronson-0.3.0" {
-      nativeBuildInputs = [pkgs.makeWrapper];
-    } ''
-      install -Dm755 ${../scripts/bronson-wrapper.sh} $out/bin/bronson
-      wrapProgram $out/bin/bronson \
-        --set-default BRONSON_PYTHON "${bronsonPython}/bin/python3" \
-        --prefix PYTHONPATH : ${flumeTrackerTheme}/${pkgs.python3.sitePackages} \
-        --set-default FLUME_TRACKER_THEME_DIR "${dotfilesDirectory}/themes/flume/extras/tracker-tui" \
-        --set-default FLUME_SCHEMA_FILE "${dotfilesDirectory}/themes/flume/extras/current/schema"
-    '';
-
   mkTrackerTui = {
     pname,
     subdirectory,
@@ -95,7 +77,6 @@ in {
     stateVersion = "26.05";
 
     packages = with pkgs; [
-      bronson
       inputs.atuin-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.atuin
       bat
       alejandra
