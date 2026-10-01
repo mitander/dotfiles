@@ -62,7 +62,12 @@ The disposable config proof can use a source-built binary without installing it:
 
 ```sh
 MYRAN_TEST_BINARY="$HOME/c/p/myran/target/debug/myran" ./tests/tmux-config.sh
+./tests/tmux-run-borders.sh
 ```
+
+Quiet bottom borders are global defaults, not enforced window settings. Myran run windows retain
+readable top titles through native splits and closure. The border proof also checks repeated theme
+reloads remove the retired enforcement hooks without changing unrelated hooks or runner processes.
 
 ## Safe bootstrap
 
