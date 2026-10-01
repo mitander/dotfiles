@@ -234,7 +234,7 @@ local function show_welcome()
         end
     end
 
-    vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter", "BufLeave", "WinLeave" }, {
+    vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter", "BufLeave", "WinLeave", "BufWipeout" }, {
         group = group,
         buffer = source_buf,
         once = true,
