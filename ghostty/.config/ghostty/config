@@ -43,6 +43,9 @@ notify-on-command-finish-action = no-bell,notify
 notify-on-command-finish-after = 30s
 
 # Tmux keybindings (\x01 = ctrl-a)
+# Let tmux receive Ctrl+Enter.
+keybind = ctrl+enter=unbind
+
 # Search in pane
 keybind = cmd+/=text:\x01\x06
 
