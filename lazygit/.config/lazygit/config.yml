@@ -2,6 +2,7 @@ quitOnTopLevelReturn: false
 confirmOnQuit: false
 promptToReturnFromSubprocess: false
 gui:
+  shortTimeFormat: "15:04"
   showFileTree: true
   nerdFontsVersion: "3"
   sidePanelWidth: 0.22
