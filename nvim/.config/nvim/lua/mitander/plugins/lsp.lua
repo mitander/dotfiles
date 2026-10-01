@@ -58,7 +58,8 @@ return {
             rust_analyzer = {},
             pyright = {},
             ruff = {},
-            ts_ls = {},
+            tsc = {},
+            eslint = {},
             zls = {
                 cmd = { zls_bin },
                 root_dir = zls_root_dir,

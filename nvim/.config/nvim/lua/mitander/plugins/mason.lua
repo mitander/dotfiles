@@ -26,9 +26,9 @@ return {
             max_concurrent_installers = 10,
         },
         init = function()
-            -- add binaries installed by mason to path
+            -- Prefer Mason tools over system versions.
             local is_windows = vim.uv.os_uname().sysname == "Windows_NT"
-            vim.env.PATH = vim.env.PATH .. (is_windows and ";" or ":") .. vim.fn.stdpath("data") .. "/mason/bin"
+            vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin" .. (is_windows and ";" or ":") .. vim.env.PATH
         end,
     },
 }
