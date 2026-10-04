@@ -174,9 +174,8 @@ function __workspace_navigation_postexec --on-event fish_postexec
     __workspace_navigation_clear
 end
 
-# Load the theme's fzf options.
-set -l flume_fzf_opts "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
-test -r "$flume_fzf_opts"; and set -gx FZF_DEFAULT_OPTS (string trim <"$flume_fzf_opts")
+# fzf reads the active theme on each invocation; keep personal options separate.
+set -gx FZF_DEFAULT_OPTS_FILE "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
 
 # fzf command
 if command -q rg
@@ -228,10 +227,6 @@ if command -q fzf
     fzf --fish 2>/dev/null | source
 
     function fzf
-        set -l opts_file "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
-        if test -r "$opts_file"
-            set -lx FZF_DEFAULT_OPTS (string trim <"$opts_file")
-        end
         __workspace_navigation_set
         command fzf $argv
         set -l fzf_status $status

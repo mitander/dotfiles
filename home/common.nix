@@ -12,29 +12,42 @@
   # Private agent configuration lives in ~/.agents.
   agentLive = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/${path}";
 
-  trackerTuiSource = pkgs.fetchFromGitHub {
-    owner = "runpantheon";
-    repo = "ltui";
-    rev = "598c4039999e07b3dc03f4f199ccab8d63648dc5";
-    hash = "sha256-tbf2rxNsHmtrUPJTXoGvzTjPhONBTxCK0xnkR9tWhWI=";
+  # Local maintained fork; see tracker-tui/README.md before updating the pin.
+  trackerTuiSource = builtins.path {
+    path = /. + "${config.home.homeDirectory}/c/p/ltui";
+    name = "ltui-personal-source";
+    filter = path: _type: !(builtins.elem (baseNameOf path) [".git" "__pycache__" ".venv"]);
+    sha256 = "sha256-yiCWSvb1XtxCmy1SkhZ/2g5Woxxtkcw3WtsUY0pktkI=";
   };
+
+  flumeTrackerThemes =
+    pkgs.runCommand "flume-tracker-themes" {
+      nativeBuildInputs = [pkgs.neovim];
+      paletteSource = /. + "${dotfilesDirectory}/themes/flume/lua/flume/palette.lua";
+    } ''
+      mkdir -p runtime/lua/flume
+      cp "$paletteSource" runtime/lua/flume/palette.lua
+      export HOME="$TMPDIR" FLUME_RUNTIME="$PWD/runtime" FLUME_TRACKER_OUTPUT="$out"
+      nvim --headless --clean -l ${trackerTuiSource}/flume-theme/generate.lua
+    '';
 
   flumeTrackerTheme = pkgs.python3Packages.buildPythonPackage {
     pname = "flume-tracker-theme";
     version = "0.1.0";
-    src = ../tracker-tui;
-    format = "other";
+    src = trackerTuiSource;
+    sourceRoot = "ltui-personal-source/flume-theme";
+    pyproject = true;
+    build-system = [pkgs.python3Packages.setuptools];
+    pythonImportsCheck = ["flume_tracker_theme"];
 
     dependencies = with pkgs.python3Packages; [
       textual
       watchfiles
     ];
 
-    installPhase = ''
-      runHook preInstall
-      install -Dm644 flume_tracker_theme.py \
-        "$out/${pkgs.python3.sitePackages}/flume_tracker_theme.py"
-      runHook postInstall
+    postInstall = ''
+      install -Dm644 ../LICENSE "$out/share/doc/flume-tracker-theme/LICENSE"
+      install -Dm644 ../NOTICE "$out/share/doc/flume-tracker-theme/NOTICE"
     '';
   };
 
@@ -46,12 +59,8 @@
       inherit pname;
       version = "unstable-2026-09-03";
       src = trackerTuiSource;
-      sourceRoot = "${trackerTuiSource.name}/${subdirectory}";
+      sourceRoot = "ltui-personal-source/${subdirectory}";
       pyproject = true;
-
-      postPatch = ''
-        ${pkgs.python3}/bin/python ${../tracker-tui/patch_upstream.py} ${subdirectory} ${subdirectory}.py
-      '';
 
       build-system = with pkgs.python3Packages; [setuptools];
       dependencies = with pkgs.python3Packages; [
@@ -63,13 +72,18 @@
       makeWrapperArgs = [
         "--set-default"
         "FLUME_TRACKER_THEME_DIR"
-        "${dotfilesDirectory}/themes/flume/extras/tracker-tui"
+        "${flumeTrackerThemes}"
         "--set-default"
         "FLUME_SCHEMA_FILE"
         "${dotfilesDirectory}/themes/flume/extras/current/schema"
       ];
 
-      doCheck = false;
+      pythonImportsCheck = [subdirectory];
+      passthru.flumeTrackerThemes = flumeTrackerThemes;
+      postInstall = ''
+        install -Dm644 ../LICENSE "$out/share/doc/${pname}/LICENSE"
+        install -Dm644 ../NOTICE "$out/share/doc/${pname}/NOTICE"
+      '';
     };
 in {
   home = {

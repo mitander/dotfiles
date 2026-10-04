@@ -149,27 +149,6 @@ return {
     config = function(_, opts)
         require("nvim-tree").setup(opts)
 
-        local function setup_tree_highlights()
-            local ok, flume = pcall(require, "flume")
-            if ok and flume.colors then
-                local colors = flume.colors
-                vim.api.nvim_set_hl(0, "NvimTreeStatusLine", {
-                    fg = colors.text or "#c0caf5",
-                    bg = colors.surface_alt or "#1e1e2e",
-                    bold = true,
-                })
-            else
-                vim.api.nvim_set_hl(0, "NvimTreeStatusLine", { link = "StatusLine" })
-            end
-        end
-
-        setup_tree_highlights()
-
-        vim.api.nvim_create_autocmd("ColorScheme", {
-            group = vim.api.nvim_create_augroup("mitander_nvim_tree_colors", { clear = true }),
-            callback = setup_tree_highlights,
-        })
-
         local function apply_tree_window_options()
             if vim.bo.filetype ~= "NvimTree" then
                 return

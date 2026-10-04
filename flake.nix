@@ -92,7 +92,12 @@
           (package: (package.pname or "") == "ltui-linear")
           (throw "Home Manager must provide ltui-linear for tracker tests")
           homes.${profile}.config.home.packages;
-        trackerPython = pkgs.python3.withPackages (_: ltui.propagatedBuildInputs);
+        jtui =
+          nixpkgs.lib.findFirst
+          (package: (package.pname or "") == "jtui")
+          (throw "Home Manager must provide jtui for tracker tests")
+          homes.${profile}.config.home.packages;
+        trackerPython = pkgs.python3.withPackages (_: ltui.propagatedBuildInputs ++ jtui.propagatedBuildInputs);
       in {
         home = homes.${profile}.activationPackage;
         formatting =
@@ -119,6 +124,19 @@
             python3 tests/python-format.py
             touch "$out"
           '';
+        tracker-tui =
+          pkgs.runCommand "tracker-tui-check" {
+            nativeBuildInputs = [trackerPython];
+          } ''
+            export HOME="$TMPDIR/home"
+            mkdir -p "$HOME"
+            export FLUME_TRACKER_THEME_DIR=${ltui.flumeTrackerThemes}
+            export PYTHONPATH=${ltui}/${pkgs.python3.sitePackages}:${jtui}/${pkgs.python3.sitePackages}:${ltui.src}/sctui
+            python3 -m unittest discover -s ${ltui.src}/flume-theme/tests -p 'test_*.py'
+            python3 -m unittest discover -s ${ltui.src}/tests -p 'test_*.py'
+            python3 -m unittest discover -s ${ltui.src}/ltui/tests -p 'test_*.py'
+            touch "$out"
+          '';
         tmux-callers =
           pkgs.runCommand "tmux-callers-check" {
             nativeBuildInputs = with pkgs; [
@@ -129,7 +147,6 @@
               gawk
               gnugrep
               neovim
-              trackerPython
               tmux
             ];
           } ''
@@ -147,8 +164,6 @@
             bash ${./tests/tmux-config.sh}
             bash ${./tests/fish-nvim.sh}
             python3 "$DOTFILES_TEST_ROOT/tests/install-myran.py"
-            PYTHONPATH=${ltui}/${pkgs.python3.sitePackages}:${./tracker-tui} python3 -m unittest discover \
-              -s ${./tracker-tui} -p 'test_*.py'
             touch "$out"
           '';
       }

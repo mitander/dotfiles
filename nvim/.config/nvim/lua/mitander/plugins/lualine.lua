@@ -1,13 +1,9 @@
 local function make_opts()
-    local colors = require("flume").colors
     return {
         options = {
             component_separators = { left = "", right = "" },
             section_separators = { left = "", right = "" },
-            theme = {
-                normal = { c = { fg = colors.text, bg = colors.surface_alt } },
-                inactive = { c = { fg = colors.placeholder, bg = colors.surface, gui = "bold" } },
-            },
+            theme = "flume",
             disabled_filetypes = {
                 statusline = { "NvimTree" },
             },
@@ -19,7 +15,10 @@ local function make_opts()
                 {
                     "mode",
                     fmt = string.upper,
-                    color = { fg = colors.accent, bg = colors.surface_alt, gui = "bold" },
+                    color = function()
+                        local colors = require("flume").colors
+                        return { fg = colors.accent, bg = colors.surface_alt, gui = "bold" }
+                    end,
                 },
                 {
                     "filename",
@@ -33,11 +32,6 @@ local function make_opts()
                     "diagnostics",
                     sources = { "nvim_diagnostic" },
                     symbols = { error = " ", warn = " ", info = " " },
-                    diagnostics_color = {
-                        color_error = { fg = colors.red },
-                        color_warn = { fg = colors.yellow },
-                        color_info = { fg = colors.accent },
-                    },
                     padding = { right = 1 },
                 },
                 {
@@ -60,12 +54,16 @@ local function make_opts()
                         return clients[1].name
                     end,
                     icon = "",
-                    color = { fg = colors.green, gui = "bold" },
+                    color = function()
+                        return { fg = require("flume").colors.green, gui = "bold" }
+                    end,
                     padding = { right = 1 },
                 },
                 {
                     "location",
-                    color = { fg = colors.accent, gui = "bold" },
+                    color = function()
+                        return { fg = require("flume").colors.accent, gui = "bold" }
+                    end,
                     padding = { right = 1 },
                 },
             },
@@ -93,21 +91,4 @@ return {
     "nvim-lualine/lualine.nvim",
     event = "VeryLazy",
     opts = make_opts,
-    config = function(_, opts)
-        local lualine = require("lualine")
-        lualine.setup(opts)
-        vim.api.nvim_create_autocmd("ColorScheme", {
-            group = vim.api.nvim_create_augroup("mitander_lualine_flume", { clear = true }),
-            pattern = {
-                "flume-dusk",
-                "flume-opal",
-                "flume-mira",
-                "flume-mesa",
-            },
-            callback = function()
-                lualine.setup(make_opts())
-                lualine.refresh({ force = true })
-            end,
-        })
-    end,
 }

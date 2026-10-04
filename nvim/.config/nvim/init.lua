@@ -163,16 +163,6 @@ end, { desc = "Toggle colorcolumn" })
 -- replace word globally
 vim.keymap.set("n", "<leader>rw", [[*N:s//<c-r>=expand("<cword>")<enter>]])
 
-local function apply_flume_schema()
-    local ok, flume = pcall(require, "flume")
-    if not ok then
-        return
-    end
-
-    local schema = require("mitander.plugins.colors").schema
-    flume.setup({ schema = schema, transparent = false })
-end
-
 -- Restart Neovim after configuration changes. Plugin setup is not safely reloadable.
 
 local group = vim.api.nvim_create_augroup("mitander", { clear = true })
@@ -336,13 +326,6 @@ vim.api.nvim_create_autocmd("BufEnter", {
             vim.api.nvim_set_current_dir(root_cache[path])
         end
     end,
-})
-
--- Reapply Flume after editing its Lua sources.
-vim.api.nvim_create_autocmd("BufWritePost", {
-    group = group,
-    pattern = "*/flume.nvim/lua/flume/*.lua",
-    callback = apply_flume_schema,
 })
 
 -- Claim pane navigation for nested editors such as `git commit`. Dedicated edit
