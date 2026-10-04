@@ -93,7 +93,14 @@ function gg
         lazygit $argv
     end
 end
-alias gs "git status"
+function gs
+    git status $argv
+    git diff --stat
+
+    for file in (git ls-files --others --exclude-standard)
+        git diff --no-index --stat /dev/null "$file"; or true
+    end
+end
 alias gl "git log --oneline --graph --color=always --abbrev-commit --date=short | less -REX"
 alias gc "git commit"
 alias ga "git add"
