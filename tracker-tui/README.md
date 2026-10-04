@@ -10,6 +10,11 @@ canonical palette source at build time. The wrapper points `FLUME_TRACKER_THEME_
 assets, not at a removed directory in Flume. `FLUME_SCHEMA_FILE` still follows Flume's active schema
 marker. Rebuild after editing palette colors; palette switches among loaded themes remain live.
 
+Home Manager links `~/.config/bronson/flume-themes` to the same generated palettes and
+`~/.config/bronson/flume` to Flume's live extras directory. Bronson loads colors separately from the
+active schema marker. Flume does not need to ship application-specific tracker exports. Restart
+applications after the first activation so they register all four palettes.
+
 ## Validate without deploying
 
 ```sh

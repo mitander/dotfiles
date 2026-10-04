@@ -149,6 +149,8 @@ in {
 
   xdg.configFile = {
     ".lldbinit".source = live "lldb/.config/.lldbinit";
+    "bronson/flume".source = live "themes/flume/extras";
+    "bronson/flume-themes".source = flumeTrackerThemes;
     "fish/config.fish".source = live "fish/.config/fish/config.fish";
     "ghostty/config".source = live "ghostty/.config/ghostty/config";
     "lazygit/config.yml".source = live "lazygit/.config/lazygit/config.yml";
