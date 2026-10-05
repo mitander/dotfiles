@@ -12,18 +12,27 @@
   # Private agent configuration lives in ~/.agents.
   agentLive = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/${path}";
 
-  # Local maintained fork; see tracker-tui/README.md before updating the pin.
-  trackerTuiSource = builtins.path {
-    path = /. + "${config.home.homeDirectory}/c/p/ltui";
+  # Personal fork; see tracker-tui/README.md before updating the pin.
+  trackerTuiSource = pkgs.fetchFromGitHub {
+    owner = "mitander";
+    repo = "ltui";
+    rev = "37b7fc02a3898596a06b97fbe531aaff281a3830";
     name = "ltui-personal-source";
-    filter = path: _type: !(builtins.elem (baseNameOf path) [".git" "__pycache__" ".venv"]);
-    sha256 = "sha256-yiCWSvb1XtxCmy1SkhZ/2g5Woxxtkcw3WtsUY0pktkI=";
+    hash = "sha256-v9BAYjfPHr+1eyPIfG7yq19Qe+fkmVnBTW8ToEMNw50=";
+  };
+
+  # Build-time palettes are pinned; runtime schema selection remains live-linked.
+  flumeSource = pkgs.fetchFromGitHub {
+    owner = "mitander";
+    repo = "flume.nvim";
+    rev = "b767a86b02d3a936a8609f2fa4ff50bb4b468cb4";
+    hash = "sha256-+FkqFM/yVXJCL4abZgYp4Qp7AO5lc9uxa4CkFou14dQ=";
   };
 
   flumeTrackerThemes =
     pkgs.runCommand "flume-tracker-themes" {
       nativeBuildInputs = [pkgs.neovim];
-      paletteSource = /. + "${dotfilesDirectory}/themes/flume/lua/flume/palette.lua";
+      paletteSource = "${flumeSource}/lua/flume/palette.lua";
     } ''
       mkdir -p runtime/lua/flume
       cp "$paletteSource" runtime/lua/flume/palette.lua
