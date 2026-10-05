@@ -44,6 +44,8 @@ hooks="$(tmux -L "$SOCKET" show-hooks -g)"
 [[ "$hooks" != *request-reconcile* ]] || fail 'cooling hook remains'
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_residency_mode)" ]] || fail 'cooling option remains'
 [[ "$(tmux -L "$SOCKET" show-option -gqv @continuum-restore)" == off ]] || fail 'continuum restore must not replay old processes'
+[[ "$(tmux -L "$SOCKET" show-option -gwv copy-mode-line-numbers)" == off ]] ||
+  fail 'copy-mode line numbers reintroduce the hidden-pane redraw loop'
 binding="$(tmux -L "$SOCKET" list-keys -T prefix)"
 [[ -z "$(printf '%s\n' "$binding" | awk '$4 == "I"')" ]] || fail 'retired cooling chord rebound by TPM'
 [[ "$binding" != *workspace_residency_script*sleep* ]] || fail 'Workspace sleep binding remains'
@@ -103,7 +105,10 @@ tmux -L "$SOCKET" new-session -d -s unclassified -c "$TEST_ROOT" 'sleep 300'
 unclassified="$(tmux -L "$SOCKET" display-message -p -t unclassified '#{session_id}')"
 tmux -L "$SOCKET" set-option -g @workspace_project_script /obsolete/project
 tmux -L "$SOCKET" set-option -g @workspace_session_script /obsolete/session
+tmux -L "$SOCKET" set-option -gw copy-mode-line-numbers relative
 HOME="$TEST_ROOT/home" tmux -L "$SOCKET" source-file "$TEST_ROOT/home/dotfiles/tmux/.tmux.conf"
+[[ "$(tmux -L "$SOCKET" show-option -gwv copy-mode-line-numbers)" == off ]] ||
+  fail 'reload did not disable copy-mode line numbers'
 [[ -z "$(tmux -L "$SOCKET" show-option -qv -t "$unclassified" @workspace_root)" ]] || fail 'reload adopted root'
 [[ -z "$(tmux -L "$SOCKET" show-option -qv -t "$unclassified" @workspace_residency_deadline)" ]] || fail 'reload scheduled cooling'
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_project_script)" ]] || fail 'obsolete project option'
