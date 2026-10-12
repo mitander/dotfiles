@@ -26,7 +26,26 @@
     ];
 
     forAllSystems = nixpkgs.lib.genAttrs systems;
-    pkgsFor = system: import nixpkgs {inherit system;};
+    pkgsFor = system:
+      import nixpkgs {
+        inherit system;
+        overlays = [
+          (final: prev: {
+            # Keep Home Manager and checks on the same tmux release across platforms.
+            tmux = prev.tmux.overrideAttrs (old: {
+              version = "3.8";
+              buildInputs = old.buildInputs ++ final.lib.optionals final.stdenv.hostPlatform.isDarwin [final.jemalloc];
+              configureFlags = old.configureFlags ++ final.lib.optionals final.stdenv.hostPlatform.isDarwin ["--enable-jemalloc"];
+              src = final.fetchFromGitHub {
+                owner = "tmux";
+                repo = "tmux";
+                tag = "3.8";
+                hash = "sha256-pv2wlr3coo+E0pfpb58giJJQn9PGgMFqtVA6nk+9JdE=";
+              };
+            });
+          })
+        ];
+      };
 
     mkHome = {
       system,
