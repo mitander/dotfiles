@@ -1,9 +1,16 @@
 local function open_lazygit()
     if vim.env.TMUX then
-        local output = vim.fn.system({ "myran", "role", "open", "git", vim.fn.getcwd() })
-        if vim.v.shell_error ~= 0 then
-            vim.notify(output, vim.log.levels.ERROR, { title = "lazygit" })
-        end
+        vim.system({ "myran", "role", "open", "git", vim.fn.getcwd() }, { text = true }, function(result)
+            if result.code ~= 0 then
+                vim.schedule(function()
+                    vim.notify(
+                        result.stderr ~= "" and result.stderr or result.stdout,
+                        vim.log.levels.ERROR,
+                        { title = "lazygit" }
+                    )
+                end)
+            end
+        end)
         return
     end
 

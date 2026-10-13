@@ -52,7 +52,8 @@ binding="$(tmux -L "$SOCKET" list-keys -T prefix)"
 reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix ,' || true)"
 [[ "$reload_binding" == *source-file*'.tmux.conf'* ]] || fail 'reload is not prefix ,'
 run_focus="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
-[[ "$run_focus" == *'select-window -t :run'* && "$run_focus" != *source-file* ]] || fail 'prefix r changed'
+[[ "$run_focus" == *'__tmux-action focus-run >/dev/null'* && "$run_focus" != *source-file* ]] ||
+  fail 'prefix r no longer delegates Run focus to Myran'
 [[ "$binding" == *'__tmux-action run >/dev/null'* && "$binding" == *'__tmux-action pick-run >/dev/null'* ]] ||
   fail 'Myran-owned Run bindings missing'
 for role in term edit agent git tracker actions; do
@@ -88,6 +89,23 @@ style="$(tmux -L "$SOCKET" show-option -gv status-style)"
 [[ "$style" == *'bg=#232136'* && "$style" == *'fg=#c9c5d9'* ]] || fail 'fallback theme changed'
 status_right="$(tmux -L "$SOCKET" show-option -gqv status-right)"
 [[ "$status_right" == *'#(true)'* && "$status_right" == *zoom* ]] || fail 'autosave/status styling lost'
+
+# Run focus follows role metadata even after renaming, not an unrelated window named run.
+origin="$(tmux -L "$SOCKET" display-message -p -t smoke '#{pane_id}')"
+origin_window="$(tmux -L "$SOCKET" display-message -p -t "$origin" '#{window_id}')"
+caller="$(tmux -L "$SOCKET" display-message -p -t "$origin" '#{socket_path},#{pid},#{s/^.//:session_id}')"
+run_window="$(tmux -L "$SOCKET" new-window -d -P -F '#{window_id}' -t smoke: -n renamed-run 'sleep 300')"
+tmux -L "$SOCKET" new-window -d -t smoke: -n run 'sleep 300'
+tmux -L "$SOCKET" set-option -w -t "$run_window" @myran.run.window 1
+focus_run() {
+  HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" TMUX="$caller" TMUX_PANE="$origin" \
+    "$MYRAN_BINARY" __tmux-action focus-run
+}
+focus_run
+[[ "$(tmux -L "$SOCKET" display-message -p -t smoke '#{window_id}')" == "$run_window" ]] ||
+  fail 'Run focus followed the display name instead of role metadata'
+tmux -L "$SOCKET" set-option -wu -t "$run_window" @myran.run.window
+tmux -L "$SOCKET" select-window -t "$origin_window"
 
 # Native pane navigation must target the origin and stop at the window boundary.
 left="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t smoke: -n navigation 'sleep 300')"

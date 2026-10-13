@@ -1,3 +1,31 @@
+local kind_icons = {
+    Text = "󰊄",
+    Method = "󰊕",
+    Function = "",
+    Constructor = "",
+    Field = "",
+    Variable = "󰆧",
+    Class = "󰌗",
+    Interface = "",
+    Module = "󰅩",
+    Property = "",
+    Unit = "󰜫",
+    Value = "󰎠",
+    Enum = "󰘨",
+    EnumMember = "",
+    Keyword = "󰌆",
+    Snippet = "󰘍",
+    Color = "󰏘",
+    File = "",
+    Folder = "",
+    Reference = "󰆑",
+    Constant = "󰏿",
+    Struct = "󰙅",
+    Event = "",
+    Operator = "󰒕",
+    TypeParameter = "",
+}
+
 local quiet_cmdline_commands = {
     q = true,
     qa = true,
@@ -61,9 +89,7 @@ return {
                 buffer = {
                     name = "Buffer",
                     module = "blink.cmp.sources.buffer",
-                    opts = {
-                        max_items = 5,
-                    },
+                    max_items = 5,
                 },
                 snippets = {
                     name = "Snippets",
@@ -117,33 +143,6 @@ return {
                     components = {
                         kind_icon = {
                             text = function(ctx)
-                                local kind_icons = {
-                                    Text = "󰊄",
-                                    Method = "󰊕",
-                                    Function = "",
-                                    Constructor = "",
-                                    Field = "",
-                                    Variable = "󰆧",
-                                    Class = "󰌗",
-                                    Interface = "",
-                                    Module = "󰅩",
-                                    Property = "",
-                                    Unit = "󰜫",
-                                    Value = "󰎠",
-                                    Enum = "󰘨",
-                                    EnumMember = "",
-                                    Keyword = "󰌆",
-                                    Snippet = "󰘍",
-                                    Color = "󰏘",
-                                    File = "",
-                                    Folder = "",
-                                    Reference = "󰆑",
-                                    Constant = "󰏿",
-                                    Struct = "󰙅",
-                                    Event = "",
-                                    Operator = "󰒕",
-                                    TypeParameter = "",
-                                }
                                 return kind_icons[ctx.kind] or ctx.kind
                             end,
                         },

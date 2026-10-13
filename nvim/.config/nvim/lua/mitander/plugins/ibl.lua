@@ -5,7 +5,7 @@ return {
     opts = {
         debounce = 100,
         viewport_buffer = {
-            min = 120,
+            min = 30,
         },
         indent = {
             char = "▎",

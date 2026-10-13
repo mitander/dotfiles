@@ -88,6 +88,27 @@ end
 return {
     "aserowy/tmux.nvim",
     event = "VeryLazy",
+    init = function()
+        if not vim.env.TMUX or vim.fn.executable("tmux") ~= 1 then
+            return
+        end
+
+        -- Share the current clipboard, not tmux history, through Neovim's provider.
+        -- Literal argv and stdin avoid a shell and keep clipboard text out of commands.
+        vim.g.clipboard = {
+            name = "tmux",
+            copy = {
+                ["+"] = { "tmux", "load-buffer", "-w", "-" },
+                ["*"] = { "tmux", "load-buffer", "-w", "-" },
+            },
+            paste = {
+                ["+"] = { "tmux", "save-buffer", "-" },
+                ["*"] = { "tmux", "save-buffer", "-" },
+            },
+            cache_enabled = 0,
+        }
+        vim.opt.clipboard:append("unnamedplus")
+    end,
     keys = {
         { "<leader>Te", open_project_role("edit"), desc = "Tmux project nvim window" },
         { "<leader>Ts", open_project_role("term"), desc = "Tmux project shell window" },
@@ -111,17 +132,7 @@ return {
         { "<C-w>l", navigate("l"), desc = "Tmux navigate right" },
     },
     opts = {
-        copy_sync = {
-            enable = true,
-            -- Make ordinary yanks/deletes the shared tmux and system clipboard.
-            ignore_buffers = { empty = false },
-            redirect_to_clipboard = true,
-            register_offset = 0,
-            sync_clipboard = true,
-            sync_deletes = true,
-            sync_registers = true,
-            sync_unnamed = true,
-        },
+        copy_sync = { enable = false },
         navigation = {
             cycle_navigation = false,
             enable_default_keybindings = false,

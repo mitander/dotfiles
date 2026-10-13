@@ -1,6 +1,13 @@
 # general
 set -q DOTFILES_DIR; or set -gx DOTFILES_DIR "$HOME/dotfiles"
 
+if test -x /opt/homebrew/bin/brew
+    if not set -q HOMEBREW_PREFIX; or not contains -- /opt/homebrew/bin $PATH
+        # init before applying nix PATH priority
+        eval (/opt/homebrew/bin/brew shellenv fish)
+    end
+end
+
 # Keep the Home Manager profile ahead of host packages.
 for nix_bin in /nix/var/nix/profiles/default/bin $HOME/.nix-profile/bin
     if test -d $nix_bin
@@ -14,7 +21,6 @@ set -gx PATH $PATH
 
 function nvim
     if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"
-        # Myran accepts paths, not Neovim startup commands.
         set -l paths
         set -l literal 0
         for arg in $argv
@@ -120,7 +126,7 @@ alias dps "docker ps"
 alias dpp "docker-compose pull --parallel"
 
 # linux
-if test (uname) = Linux; and test -n "$DISPLAY"; and command -q xset
+if status is-interactive; and test -n "$DISPLAY"; and command -q xset; and test (uname) = Linux
     xset r rate 275 40
 end
 
@@ -128,7 +134,9 @@ end
 set fish_greeting
 
 # vi bindings
-fish_vi_key_bindings
+if status is-interactive
+    fish_vi_key_bindings
+end
 function fish_mode_prompt
     # disable mode indicator
 end
@@ -136,11 +144,11 @@ end
 # prompt
 function fish_prompt
     set_color --bold white
-    echo -n "[$(hostname)] "
+    echo -n "[$hostname] "
     set_color --bold blue
     echo -n (prompt_pwd)
     set_color --bold green
-    set branch_output (fish_git_prompt)
+    set -l branch_output (fish_git_prompt)
     set branch_output (string replace -r '\(' '[' -- $branch_output)
     set branch_output (string replace -r '\)' ']' -- $branch_output)
     echo -n $branch_output
@@ -186,8 +194,24 @@ set -gx FZF_DEFAULT_OPTS_FILE "$DOTFILES_DIR/themes/flume/extras/current/fzf.opt
 
 # fzf command
 if command -q rg
-    set -gx FZF_DEFAULT_COMMAND "rg --files --no-ignore --hidden --sort-files -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
+    set -gx FZF_DEFAULT_COMMAND "rg --files --hidden -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 end
+
+# ctrl-t uses a separate command, keep directory-prefix behavior and ignore rules
+function __dotfiles_fzf_files
+    set -l root .
+    if set -q dir; and test -n "$dir"
+        # Keep directory newlines inside one record, including at the end of its name.
+        set root (string unescape -- "$dir/" | string collect)
+    end
+    if command -q fd
+        command fd --print0 --color=never --type f --type d --hidden --follow --exclude .git -- . "$root"
+    else
+        command rg --files --null --hidden -g '!.git' -- "$root"
+    end
+end
+set -gx FZF_CTRL_T_COMMAND 'fish -c __dotfiles_fzf_files'
+set -gx FZF_CTRL_T_OPTS "$FZF_CTRL_T_OPTS --read0"
 
 # editor and other settings
 set -gx EDITOR nvim
@@ -230,7 +254,7 @@ test -r $HOME/.custom.fish; and source $HOME/.custom.fish
 test -f ~/.config/fish/scripts/fish-autosuggestions.fish; and source ~/.config/fish/scripts/fish-autosuggestions.fish
 
 # fzf
-if command -q fzf
+if status is-interactive; and command -q fzf
     fzf --fish 2>/dev/null | source
 
     function fzf
@@ -253,41 +277,7 @@ if command -q hx
 end
 
 # atuin
-command -q atuin; and atuin init fish --disable-up-arrow | source
+status is-interactive; and command -q atuin; and atuin init fish --disable-up-arrow | source
 
 # zoxide
-command -q zoxide; and zoxide init fish | source
-
-# depthbound developer DX helpers
-function drun
-    if test -f scripts/db-run.sh
-        ./scripts/db-run.sh $argv
-    else if test -f build.zig
-        if test -f ./zig/zig
-            ./zig/zig build run $argv
-        else
-            zig build run $argv
-        end
-    else
-        echo "No scripts/db-run.sh or build.zig found in the current directory."
-    end
-end
-
-function dtest
-    if test -f scripts/db-test.py
-        ./scripts/db-test.py $argv
-    else if test -f build.zig
-        if test -f ./zig/zig
-            ./zig/zig build test $argv
-        else
-            zig build test $argv
-        end
-    else
-        echo "No scripts/db-test.py or build.zig found in the current directory."
-    end
-end
-
-abbr -a dr drun
-abbr -a dt dtest
-
-test -x /opt/homebrew/bin/brew; and eval (/opt/homebrew/bin/brew shellenv fish)
+status is-interactive; and command -q zoxide; and zoxide init fish | source

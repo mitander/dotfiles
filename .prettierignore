@@ -1,4 +1,5 @@
 themes/
+**/lazy-lock.json
 extras/lsd/colors.yaml
 lsd/.config/lsd/colors.yaml
 pi/.pi/agent/themes/flume.json

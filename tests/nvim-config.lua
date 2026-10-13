@@ -15,19 +15,24 @@ local function key(plugin, lhs)
 end
 
 local tmux = spec("tmux")
-assert(tmux.opts.copy_sync.sync_registers == true, "ordinary registers must sync to tmux")
-assert(tmux.opts.copy_sync.sync_clipboard == true, "Neovim clipboard integration must remain enabled")
-assert(tmux.opts.copy_sync.redirect_to_clipboard == true, "Neovim yanks must reach the system clipboard")
-assert(tmux.opts.copy_sync.sync_deletes == true, "Neovim deletes must remain clipboard-compatible")
-assert(tmux.opts.copy_sync.sync_unnamed == true, "the unnamed register must follow tmux clipboard state")
+assert(tmux.opts.copy_sync.enable == false, "tmux history must not replace Neovim registers")
+local clipboard_before = vim.o.clipboard
+local provider_before = vim.g.clipboard
+local tmux_before = vim.env.TMUX
+vim.env.TMUX = nil
+tmux.init()
+assert(vim.o.clipboard == clipboard_before and vim.deep_equal(vim.g.clipboard, provider_before))
+vim.env.TMUX = tmux_before
 
 -- Exercise local split navigation and inspect the single asynchronous tmux request.
 vim.env.TMUX = "/tmp/not-a-real-tmux-server,1,0"
 vim.env.TMUX_PANE = "%42"
 local requests = {}
+local completions = {}
 vim.system = function(command, opts, callback)
     assert(opts.text and callback)
     requests[#requests + 1] = command
+    completions[#requests] = callback
     return {
         wait = function()
             error("navigation must not wait")
@@ -40,6 +45,11 @@ end
 vim.fn.executable = function()
     return 1
 end
+tmux.init()
+assert(vim.tbl_contains(vim.opt.clipboard:get(), "unnamedplus"), "ordinary operations must share the clipboard")
+assert(vim.deep_equal(vim.g.clipboard.copy["+"], { "tmux", "load-buffer", "-w", "-" }))
+assert(vim.deep_equal(vim.g.clipboard.paste["+"], { "tmux", "save-buffer", "-" }))
+assert(vim.g.clipboard.cache_enabled == 0, "clipboard writes must finish before the next operation")
 vim.cmd.vsplit()
 vim.cmd.wincmd("l")
 local right = vim.api.nvim_get_current_win()
@@ -79,13 +89,10 @@ end
 key(tmux, "<leader>TA")()
 assert(vim.deep_equal(requests[#requests], { "myran", "role", "split", "agent", vim.fn.getcwd() }))
 local lazygit = spec("lazygit")
-local git_request
-vim.fn.system = function(command)
-    git_request = command
-    return ""
-end
+local git_requests = #requests
 key(lazygit, "<leader>gg")()
-assert(vim.deep_equal(git_request, { "myran", "role", "open", "git", vim.fn.getcwd() }))
+assert(#requests == git_requests + 1, "Git role should launch asynchronously")
+assert(vim.deep_equal(requests[#requests], { "myran", "role", "open", "git", vim.fn.getcwd() }))
 vim.env.TMUX = nil
 local native_git = false
 vim.api.nvim_create_user_command("LazyGit", function()
@@ -148,7 +155,58 @@ package.loaded.conform = {
 }
 key(conform, "<leader>f")()
 assert(format_args.async, "explicit formatting should remain asynchronous")
+local blink = spec("blink")
+assert(blink.opts.sources.providers.buffer.max_items == 5, "buffer result limit must be a provider option")
+local icon = blink.opts.completion.menu.draw.components.kind_icon.text
+assert(icon({ kind = "Text" }) == "󰊄" and icon({ kind = "Function" }) == "")
+assert(icon({ kind = "Unknown" }) == "Unknown")
+local ibl = spec("ibl")
+assert(ibl.opts.viewport_buffer.min == 30, "indent guides should not render 120 offscreen lines per side")
+assert(ibl.opts.scope.enabled == false)
+
 local fzf = spec("fzf")
+local files
+package.loaded["fzf-lua"] = {
+    files = function(opts)
+        files = opts
+    end,
+}
+local cwd = vim.fn.getcwd()
+local project = vim.fn.tempname()
+vim.fn.mkdir(project .. "/src", "p")
+project = vim.uv.fs_realpath(project)
+vim.api.nvim_set_current_dir(project .. "/src")
+key(fzf, "<c-p>")()
+assert(files == nil, "project picker must not wait for Git")
+assert(vim.deep_equal(requests[#requests], { "git", "-C", project .. "/src", "rev-parse", "--show-toplevel" }))
+completions[#requests]({ code = 0, stdout = project .. "\n" })
+assert(vim.wait(100, function()
+    return files ~= nil
+end))
+assert(files.cwd == project)
+local git_dir, git_work_tree = vim.env.GIT_DIR, vim.env.GIT_WORK_TREE
+vim.env.GIT_DIR = project .. "/metadata"
+vim.env.GIT_WORK_TREE = project .. "/custom-root"
+files = nil
+key(fzf, "<c-p>")()
+completions[#requests]({ code = 0, stdout = vim.env.GIT_WORK_TREE .. "\n" })
+assert(vim.wait(100, function()
+    return files ~= nil
+end))
+assert(files.cwd == vim.env.GIT_WORK_TREE, "custom Git roots must come from Git")
+vim.env.GIT_DIR, vim.env.GIT_WORK_TREE = git_dir, git_work_tree
+files = nil
+key(fzf, "<c-p>")()
+completions[#requests]({ code = 1, stdout = "" })
+assert(vim.wait(100, function()
+    return files ~= nil
+end))
+assert(files.cwd == project .. "/src", "outside Git the picker must use the invoking cwd")
+key(fzf, "<leader>P")()
+assert(files.cmd:find("--no-ignore", 1, true), "explicit all-files picker must include ignored files")
+assert(not fzf.opts.files.cmd:find("--no-ignore", 1, true), "default files must respect ignores")
+vim.api.nvim_set_current_dir(cwd)
+vim.fn.delete(project, "rf")
 -- Multiprocess children fail to bootstrap config on this machine and yield
 -- empty file lists; see the comment in fzf.lua.
 assert(fzf.opts.files.multiprocess == false and fzf.opts.git.files.multiprocess == false)
