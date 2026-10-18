@@ -4,11 +4,13 @@
 import hashlib
 import json
 import os
+import runpy
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 INSTALLER = Path(__file__).resolve().parents[1] / "scripts/install-myran.py"
 
@@ -32,7 +34,7 @@ class InstallTest(unittest.TestCase):
 
     def run_installer(self, *args, success=True):
         result = subprocess.run(
-            [sys.executable, str(INSTALLER), *map(str, args)],
+            [sys.executable, str(Path(__file__).resolve()), "--run-installer", *map(str, args)],
             env=self.env,
             text=True,
             capture_output=True,
@@ -85,12 +87,34 @@ class InstallTest(unittest.TestCase):
         protected = unsafe / "protected"
         protected.mkdir(parents=True)
         unsafe.chmod(0o777)
-        self.run_installer("install", self.source, protected / "myran", success=False)
+        result = self.run_installer("install", self.source, protected / "myran", success=False)
+        self.assertIn(f"unsafe ancestor: {unsafe}", result.stderr)
         self.assertFalse((protected / "myran").exists())
         self.env["XDG_STATE_HOME"] = str(protected / "state")
         self.run_installer("install", self.source, success=False)
         self.assertFalse(self.destination.exists())
         self.assertFalse((protected / "state").exists())
+
+    def test_foreign_owned_or_world_writable_root_refused(self):
+        installer = runpy.run_path(str(INSTALLER))
+        original_stat = Path.stat
+        root_info = original_stat(Path("/"))
+        foreign_uid = max(0, os.getuid()) + 1
+
+        for owner, mode in ((foreign_uid, 0o755), (0, 0o757)):
+            with self.subTest(owner=owner, mode=oct(mode)):
+                fields = list(root_info)
+                fields[0] = (fields[0] & ~0o777) | mode
+                fields[4] = owner
+
+                def stat_with_unsafe_root(path, *args, root_fields=fields, **kwargs):
+                    if path == Path("/"):
+                        return os.stat_result(root_fields)
+                    return original_stat(path, *args, **kwargs)
+
+                with patch.object(Path, "stat", stat_with_unsafe_root):
+                    with self.assertRaisesRegex(ValueError, "^unsafe ancestor: /$"):
+                        installer["no_symlinks"](self.source)
 
     def test_permissions_and_corrupted_backup_refused(self):
         self.source.chmod(0o777)
@@ -107,5 +131,26 @@ class InstallTest(unittest.TestCase):
         self.assertEqual(self.destination.read_bytes(), self.source.read_bytes())
 
 
+def run_installer_with_trusted_root():
+    original_stat = Path.stat
+
+    def stat_with_trusted_root(path, *args, **kwargs):
+        info = original_stat(path, *args, **kwargs)
+        if path == Path("/"):
+            # Linux Nix sandboxes leave the host-owned root UID unmapped. Model
+            # a root-owned /, but keep its real permissions and all other metadata.
+            fields = list(info)
+            fields[4] = 0
+            return os.stat_result(fields)
+        return info
+
+    sys.argv = [str(INSTALLER), *sys.argv[2:]]
+    with patch.object(Path, "stat", stat_with_trusted_root):
+        runpy.run_path(str(INSTALLER), run_name="__main__")
+
+
 if __name__ == "__main__":
-    unittest.main()
+    if sys.argv[1:2] == ["--run-installer"]:
+        run_installer_with_trusted_root()
+    else:
+        unittest.main()
