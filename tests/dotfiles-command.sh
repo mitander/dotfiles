@@ -6,17 +6,17 @@ TEST_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-command.XXXXXX")"
 trap 'rm -rf "$TEST_ROOT"' EXIT
 mkdir -p "$TEST_ROOT/scripts" "$TEST_ROOT/bin"
 cp "$ROOT/scripts/dotfiles" "$TEST_ROOT/scripts/dotfiles"
-cat >"$TEST_ROOT/scripts/dotfiles-nix.sh" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$(command -v bash)" >"$TEST_ROOT/scripts/dotfiles-nix.sh"
+cat >>"$TEST_ROOT/scripts/dotfiles-nix.sh" <<'EOF'
 printf '%s %s\n' "$*" "${DOTFILES_ALLOW_ACTIVATE:-0}" >>"$CALLS"
 exit "${APPLY_STATUS:-0}"
 EOF
-cat >"$TEST_ROOT/bin/tmux" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$(command -v bash)" >"$TEST_ROOT/bin/tmux"
+cat >>"$TEST_ROOT/bin/tmux" <<'EOF'
 printf 'tmux %s\n' "$*" >>"$CALLS"
 EOF
-cat >"$TEST_ROOT/scripts/check" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$(command -v bash)" >"$TEST_ROOT/scripts/check"
+cat >>"$TEST_ROOT/scripts/check" <<'EOF'
 printf 'check\n' >>"$CALLS"
 EOF
 chmod +x "$TEST_ROOT/scripts/"* "$TEST_ROOT/bin/tmux"

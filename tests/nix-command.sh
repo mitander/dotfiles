@@ -7,8 +7,8 @@ trap 'rm -rf "$TEST_ROOT"' EXIT
 mkdir -p "$TEST_ROOT/bin"
 export PATH="$TEST_ROOT/bin:$PATH" NIX_CALLS="$TEST_ROOT/nix-calls"
 unset DOTFILES_ALLOW_ACTIVATE
-cat >"$TEST_ROOT/bin/nix" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$(command -v bash)" >"$TEST_ROOT/bin/nix"
+cat >>"$TEST_ROOT/bin/nix" <<'EOF'
 printf '<%s>\n' "$@" >>"$NIX_CALLS"
 EOF
 chmod +x "$TEST_ROOT/bin/nix"

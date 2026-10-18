@@ -20,8 +20,8 @@ fi
 grep -q setup-trackers "$TEST_ROOT/error"
 [[ ! -e "$LTUI_CHECKOUT/.venv" ]]
 
-cat >"$TEST_ROOT/bin/python" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$(command -v bash)" >"$TEST_ROOT/bin/python"
+cat >>"$TEST_ROOT/bin/python" <<'EOF'
 printf '<%s>\n' "$@" >>"$CALLS"
 if [[ "$1 $2" == '-m venv' ]]; then
   mkdir -p "$3/bin"
@@ -36,8 +36,8 @@ for package in ltui jtui flume-theme; do
   grep -Fqx "<$LTUI_CHECKOUT/$package>" "$CALLS"
 done
 
-cat >"$LTUI_CHECKOUT/.venv/bin/ltui" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$(command -v bash)" >"$LTUI_CHECKOUT/.venv/bin/ltui"
+cat >>"$LTUI_CHECKOUT/.venv/bin/ltui" <<'EOF'
 printf 'scope=%s\nthemes=%s\nschema=%s\n' "${TRACKER_SCOPE:-unset}" "$FLUME_TRACKER_THEME_DIR" "$FLUME_SCHEMA_FILE"
 printf '<%s>\n' "$@"
 EOF

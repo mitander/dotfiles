@@ -129,6 +129,7 @@
             mkdir -p "$HOME"
             cp -R ${./.} source
             chmod -R u+w source
+            patchShebangs source
             cd source
             git init -q
             export FISH_INDENT="${pkgs.fish}/bin/fish_indent"
