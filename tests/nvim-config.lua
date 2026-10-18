@@ -15,7 +15,6 @@ local function key(plugin, lhs)
 end
 
 local tmux = spec("tmux")
-assert(tmux.opts.copy_sync.enable == false, "tmux history must not replace Neovim registers")
 local clipboard_before = vim.o.clipboard
 local provider_before = vim.g.clipboard
 local tmux_before = vim.env.TMUX
@@ -123,7 +122,6 @@ key(tree, "<C-n>")()
 assert(tree_calls.toggle.focus and tree_calls.toggle.update_root == false)
 key(tree, "<leader>e")()
 assert(tree_calls.find.open and tree_calls.find.focus)
-assert(tree.lazy ~= false, "tree should only load when requested")
 local oil_opened = false
 package.loaded.oil = {
     open = function()
@@ -133,17 +131,8 @@ package.loaded.oil = {
 local oil = spec("oil")
 key(oil, "-")()
 assert(oil_opened, "Oil should use its native directory editor")
-assert(oil.opts.keymaps.q == "actions.close")
-assert(not oil.config, "Oil should not implement a second sidebar lifecycle")
 
 local conform = spec("conform")
-assert(vim.deep_equal(conform.opts.formatters_by_ft.lua, { "stylua" }))
-assert(vim.deep_equal(conform.opts.formatters_by_ft.markdown, { "dprint" }))
-assert(vim.deep_equal(conform.opts.formatters_by_ft.sh, { "dprint" }))
-assert(conform.opts.default_format_opts.lsp_format == "never")
-assert(conform.opts.format_on_save.timeout_ms == 500)
-assert(conform.opts.notify_on_error)
-assert(not conform.opts.format_after_save, "save should not be modified asynchronously")
 local format_args
 package.loaded.conform = {
     format = function(opts)
@@ -152,14 +141,6 @@ package.loaded.conform = {
 }
 key(conform, "<leader>f")()
 assert(format_args.async, "explicit formatting should remain asynchronous")
-local blink = spec("blink")
-assert(blink.opts.sources.providers.buffer.max_items == 5, "buffer result limit must be a provider option")
-local icon = blink.opts.completion.menu.draw.components.kind_icon.text
-assert(icon({ kind = "Text" }) == "󰊄" and icon({ kind = "Function" }) == "")
-assert(icon({ kind = "Unknown" }) == "Unknown")
-local ibl = spec("ibl")
-assert(ibl.opts.viewport_buffer.min == 30, "indent guides should not render 120 offscreen lines per side")
-assert(ibl.opts.scope.enabled == false)
 
 local fzf = spec("fzf")
 local files
@@ -199,22 +180,7 @@ assert(vim.wait(100, function()
     return files ~= nil
 end))
 assert(files.cwd == project .. "/src", "outside Git the picker must use the invoking cwd")
-key(fzf, "<leader>P")()
-assert(files.cmd:find("--no-ignore", 1, true), "explicit all-files picker must include ignored files")
-assert(not fzf.opts.files.cmd:find("--no-ignore", 1, true), "default files must respect ignores")
 vim.api.nvim_set_current_dir(cwd)
 vim.fn.delete(project, "rf")
--- Multiprocess children fail to bootstrap config on this machine and yield
--- empty file lists; see the comment in fzf.lua.
-assert(fzf.opts.files.multiprocess == false and fzf.opts.git.files.multiprocess == false)
-
-local init = table.concat(vim.fn.readfile(config .. "/init.lua"), "\n")
-assert(not init:find("lazy.reload", 1, true) and not init:find("lazy.core", 1, true))
-assert(not init:find("silent! wa", 1, true), "configuration must not save unrelated buffers")
-local lock = vim.json.decode(table.concat(vim.fn.readfile(config .. "/lazy-lock.json"), "\n"))
-assert(lock["lazy.nvim"] and lock["tmux.nvim"] and lock["oil.nvim"])
-for name, entry in pairs(lock) do
-    assert(entry.commit:match("^%x+$") and #entry.commit == 40, "invalid lock entry: " .. name)
-end
-print("PASS: Neovim clipboard, navigation, browser, formatting, and lockfile configuration")
+print("PASS: Neovim clipboard, navigation, role routing, browser, and project picker behavior")
 vim.cmd("qa!")

@@ -8,15 +8,15 @@ usage() {
   cat <<'EOF'
 Usage: dotfiles [command]
 
-With no command, apply the Home Manager profile and reload what can be
-reloaded in the current session.
+With no command, reload live configuration without building or activating Nix.
 
 Commands:
-  reload, apply  Apply Nix and reload tmux
-  check         Evaluate every supported system
-  doctor        Evaluate the selected profile
-  generations   List Home Manager generations
-  help          Show this help
+  reload       Reload tmux and the calling Fish shell
+  apply        Activate the Home Manager profile, then reload
+  check        Run formatting and isolated behavior checks
+  doctor       Evaluate the selected Home Manager profile
+  generations  List Home Manager generations
+  help         Show this help
 EOF
 }
 
@@ -29,7 +29,9 @@ fi
 command_name="${1:-reload}"
 case "$command_name" in
 reload | apply)
-  DOTFILES_ALLOW_ACTIVATE=1 "$NIX_SCRIPT" switch
+  if [[ "$command_name" == apply ]]; then
+    DOTFILES_ALLOW_ACTIVATE=1 "$NIX_SCRIPT" switch
+  fi
 
   if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
     tmux source-file "$HOME/.tmux.conf"
@@ -37,7 +39,7 @@ reload | apply)
   fi
 
   cat <<'EOF'
-Applied dotfiles.
+Reloaded live configuration.
 
 Fish reloads in the calling shell. Ghostty watches its linked config. Neovim
 configuration is intentionally restarted rather than hot-reloaded. Use :restart
@@ -45,7 +47,7 @@ inside Neovim when changing its Lua configuration.
 EOF
   ;;
 check)
-  "$NIX_SCRIPT" check
+  "$ROOT/scripts/check"
   ;;
 doctor)
   "$NIX_SCRIPT" doctor

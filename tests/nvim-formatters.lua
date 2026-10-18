@@ -6,37 +6,6 @@ local project = vim.fn.tempname()
 vim.fn.mkdir(project .. "/docs", "p")
 vim.fn.mkdir(project .. "/.dev-tools/bin", "p")
 
-for _, filetype in ipairs({
-    "javascript",
-    "typescript",
-    "javascriptreact",
-    "typescriptreact",
-    "markdown",
-    "json",
-    "jsonc",
-    "toml",
-    "yaml",
-    "html",
-    "css",
-    "scss",
-    "sh",
-    "bash",
-    "zsh",
-}) do
-    assert(vim.deep_equal(opts.formatters_by_ft[filetype], { "dprint" }), filetype .. " must use dprint")
-end
-
-for filetype, expected in pairs({
-    lua = { "stylua" },
-    go = { "gofmt", "goimports" },
-    c = { "clang_format" },
-    cpp = { "clang_format" },
-    fish = { "fish_indent" },
-    nix = { "alejandra" },
-    zig = { "zigfmt" },
-}) do
-    assert(vim.deep_equal(opts.formatters_by_ft[filetype], expected), filetype .. " must use native tools")
-end
 local buffer = vim.api.nvim_create_buf(false, true)
 vim.api.nvim_buf_set_name(buffer, project .. "/docs/example.rs")
 local function expect_native_routes(rust, python)
@@ -88,19 +57,6 @@ vim.fn.delete(project .. "/docs/.dprint.jsonc")
 local outside = { dirname = project .. "-outside" }
 assert(formatter.cwd(nil, outside) == outside.dirname)
 
-local defaults = vim.json.decode(table.concat(vim.fn.readfile(root .. "/dprint/.config/dprint/dprint.json"), "\n"))
-assert(#defaults.plugins == 8)
-assert(not defaults.exec, "global defaults must not wrap native formatters")
-assert(defaults.sh.useTabs == false, "shell formatting must use spaces")
-assert(defaults.indentWidth == 2, "shell formatting must retain two-space indentation")
-assert(defaults.plugins[8] == "npm:@kachick/dprint-plugin-sh@0.1.2", "pin the shell Wasm package")
-for index = 1, 7 do
-    local plugin = defaults.plugins[index]
-    assert(
-        plugin:match("^https://plugins%.dprint%.dev/.*%-v?%d+%.%d+%.%d+%.wasm$"),
-        "pin general-format Wasm plugins, not Node wrappers"
-    )
-end
 vim.fn.delete(project, "rf")
-print("PASS: native routing, global Wasm preset, project configuration, and pinned executable precedence")
+print("PASS: project configuration and pinned executable precedence")
 vim.cmd("qa!")

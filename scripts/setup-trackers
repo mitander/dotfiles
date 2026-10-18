@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Explicit dependency setup. Ordinary source edits only need an application restart.
+set -euo pipefail
+checkout="${LTUI_CHECKOUT:-$HOME/c/p/ltui}"
+for package in flume-theme ltui jtui; do
+  if [[ ! -f "$checkout/$package/pyproject.toml" ]]; then
+    printf 'Missing %s/pyproject.toml in %s\n' "$package" "$checkout" >&2
+    printf 'Clone the tracker fork there, or set LTUI_CHECKOUT to its location.\n' >&2
+    exit 1
+  fi
+done
+
+if [[ ! -x "$checkout/.venv/bin/python" ]]; then
+  "${PYTHON:-python3}" -m venv "$checkout/.venv"
+fi
+"$checkout/.venv/bin/python" -m pip --disable-pip-version-check install \
+  --editable "$checkout/flume-theme" \
+  --editable "$checkout/ltui" \
+  --editable "$checkout/jtui"
+printf 'Tracker applications now run from %s. Restart them after editing source.\n' "$checkout"

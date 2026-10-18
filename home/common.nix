@@ -11,95 +11,6 @@
 
   # Private agent configuration lives in ~/.agents.
   agentLive = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/${path}";
-
-  # The helper overrides this input with the local checkout when available.
-  # Keep one unpacked directory name for local and remote Python builds.
-  trackerTuiSource = builtins.path {
-    path = inputs.tracker-tui;
-    name = "ltui-personal-source";
-    filter = path: _type:
-      !(builtins.elem (baseNameOf path) [".git" "__pycache__" ".ruff_cache" ".venv" "build" "dist"])
-      && !(lib.hasSuffix ".egg-info" path);
-  };
-
-  # Build-time palettes are pinned; runtime schema selection remains live-linked.
-  flumeSource = pkgs.fetchFromGitHub {
-    owner = "mitander";
-    repo = "flume.nvim";
-    rev = "b767a86b02d3a936a8609f2fa4ff50bb4b468cb4";
-    hash = "sha256-+FkqFM/yVXJCL4abZgYp4Qp7AO5lc9uxa4CkFou14dQ=";
-  };
-
-  flumeTrackerThemes =
-    pkgs.runCommand "flume-tracker-themes" {
-      nativeBuildInputs = [pkgs.neovim];
-      paletteSource = "${flumeSource}/lua/flume/palette.lua";
-    } ''
-      mkdir -p runtime/lua/flume
-      cp "$paletteSource" runtime/lua/flume/palette.lua
-      export HOME="$TMPDIR" FLUME_RUNTIME="$PWD/runtime" FLUME_TRACKER_OUTPUT="$out"
-      nvim --headless --clean -l ${trackerTuiSource}/flume-theme/generate.lua
-    '';
-
-  flumeTrackerTheme = pkgs.python3Packages.buildPythonPackage {
-    pname = "flume-tracker-theme";
-    version = "0.1.0";
-    src = trackerTuiSource;
-    sourceRoot = "ltui-personal-source/flume-theme";
-    pyproject = true;
-    build-system = [pkgs.python3Packages.setuptools];
-    pythonImportsCheck = ["flume_tracker_theme"];
-
-    dependencies = with pkgs.python3Packages; [
-      textual
-      watchfiles
-    ];
-
-    postInstall = ''
-      install -Dm644 ../LICENSE "$out/share/doc/flume-tracker-theme/LICENSE"
-      install -Dm644 ../NOTICE "$out/share/doc/flume-tracker-theme/NOTICE"
-    '';
-  };
-
-  mkTrackerTui = {
-    pname,
-    subdirectory,
-  }:
-    pkgs.python3Packages.buildPythonApplication {
-      inherit pname;
-      version = "unstable-2026-09-03";
-      src = trackerTuiSource;
-      sourceRoot = "ltui-personal-source/${subdirectory}";
-      pyproject = true;
-
-      build-system = with pkgs.python3Packages; [setuptools];
-      dependencies = with pkgs.python3Packages; [
-        flumeTrackerTheme
-        httpx
-        textual
-      ];
-
-      makeWrapperArgs =
-        [
-          "--set-default"
-          "FLUME_TRACKER_THEME_DIR"
-          "${flumeTrackerThemes}"
-          "--set-default"
-          "FLUME_SCHEMA_FILE"
-          "${dotfilesDirectory}/themes/flume/extras/current/schema"
-        ]
-        ++ pkgs.lib.optionals (subdirectory == "ltui") [
-          "--run"
-          (pkgs.lib.escapeShellArg ''export TRACKER_SCOPE="''${TRACKER_SCOPE:-dev}"'')
-        ];
-
-      pythonImportsCheck = [subdirectory];
-      passthru.flumeTrackerThemes = flumeTrackerThemes;
-      postInstall = ''
-        install -Dm644 ../LICENSE "$out/share/doc/${pname}/LICENSE"
-        install -Dm644 ../NOTICE "$out/share/doc/${pname}/NOTICE"
-      '';
-    };
 in {
   home = {
     # Do not change during routine upgrades.
@@ -117,14 +28,6 @@ in {
       git
       jq
       lazygit
-      (mkTrackerTui {
-        pname = "ltui-linear";
-        subdirectory = "ltui";
-      })
-      (mkTrackerTui {
-        pname = "jtui";
-        subdirectory = "jtui";
-      })
       lsd
       neovim
       inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.prettier
@@ -165,7 +68,6 @@ in {
   xdg.configFile = {
     ".lldbinit".source = live "lldb/.config/.lldbinit";
     "bronson/flume".source = live "themes/flume/extras";
-    "bronson/flume-themes".source = flumeTrackerThemes;
     "dprint".source = live "dprint/.config/dprint";
     "fish/config.fish".source = live "fish/.config/fish/config.fish";
     "ghostty/config".source = live "ghostty/.config/ghostty/config";
@@ -192,6 +94,8 @@ in {
     ".local/bin/agents-skills-link".source = live "scripts/agents-skills-link.sh";
     ".local/bin/dotfiles".source = live "scripts/dotfiles";
     ".local/bin/dotfiles-format".source = live "scripts/format.sh";
+    ".local/bin/ltui".source = live "tracker-tui/launch";
+    ".local/bin/jtui".source = live "tracker-tui/launch";
     ".tmux.conf".source = live "tmux/.tmux.conf";
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
   };

@@ -26,9 +26,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
-      - name: Evaluate all profiles
-        run: nix flake check --all-systems --no-build
-      - name: Build native Home Manager profile
-        run: nix build ".#checks.${{ matrix.system }}.home" --no-link
-      - name: Check formatting and tooling
-        run: nix build ".#checks.${{ matrix.system }}.formatting" --no-link
+      - name: Build and check the native environment
+        run: >-
+          nix build ".#checks.${{ matrix.system }}.home" ".#checks.${{ matrix.system }}.default"
+          --no-link

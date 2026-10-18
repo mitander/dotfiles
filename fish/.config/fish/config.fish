@@ -44,10 +44,6 @@ function vim
     nvim $argv
 end
 
-function ltui
-    TRACKER_SCOPE=dev command ltui $argv
-end
-
 alias so "source ~/.config/fish/config.fish"
 
 function dotfiles

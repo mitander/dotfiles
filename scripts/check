@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# The default gate needs no installed plugins, Myran binary, credentials or live session.
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+export PYTHONDONTWRITEBYTECODE=1
+
+case "${1:-}" in
+'')
+  sh scripts/format.sh check
+  python3 tests/python-format.py
+  python3 tests/install-myran.py
+  for test in dotfiles-command nix-command tracker-local fish-config fish-nvim tmux-run-borders; do
+    bash "tests/$test.sh"
+  done
+  for test in nvim-config nvim-formatters nvim-clipboard; do
+    nvim --clean --headless -l "tests/$test.lua"
+  done
+  ;;
+myran)
+  # Installed-binary qualification runs only against private tmux servers.
+  bash tests/tmux-config.sh
+  ;;
+formatters)
+  # Uses the installed Conform plugin and real formatting tools.
+  nvim --clean --headless -l tests/nvim-dprint.lua
+  ;;
+trackers)
+  checkout="${LTUI_CHECKOUT:-$HOME/c/p/ltui}"
+  "$checkout/.venv/bin/python" tests/tracker-editable.py "$checkout"
+  FLUME_RUNTIME="${DOTFILES_DIR:-$HOME/dotfiles}/themes/flume" \
+    PYTHON="$checkout/.venv/bin/python" "$checkout/scripts/check"
+  ;;
+*)
+  printf 'Usage: scripts/check [myran|formatters|trackers]\n' >&2
+  exit 2
+  ;;
+esac
