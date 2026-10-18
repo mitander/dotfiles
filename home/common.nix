@@ -79,14 +79,19 @@
         textual
       ];
 
-      makeWrapperArgs = [
-        "--set-default"
-        "FLUME_TRACKER_THEME_DIR"
-        "${flumeTrackerThemes}"
-        "--set-default"
-        "FLUME_SCHEMA_FILE"
-        "${dotfilesDirectory}/themes/flume/extras/current/schema"
-      ];
+      makeWrapperArgs =
+        [
+          "--set-default"
+          "FLUME_TRACKER_THEME_DIR"
+          "${flumeTrackerThemes}"
+          "--set-default"
+          "FLUME_SCHEMA_FILE"
+          "${dotfilesDirectory}/themes/flume/extras/current/schema"
+        ]
+        ++ pkgs.lib.optionals (subdirectory == "ltui") [
+          "--run"
+          (pkgs.lib.escapeShellArg ''export TRACKER_SCOPE="''${TRACKER_SCOPE:-dev}"'')
+        ];
 
       pythonImportsCheck = [subdirectory];
       passthru.flumeTrackerThemes = flumeTrackerThemes;
@@ -161,6 +166,7 @@ in {
     ".lldbinit".source = live "lldb/.config/.lldbinit";
     "bronson/flume".source = live "themes/flume/extras";
     "bronson/flume-themes".source = flumeTrackerThemes;
+    "dprint".source = live "dprint/.config/dprint";
     "fish/config.fish".source = live "fish/.config/fish/config.fish";
     "ghostty/config".source = live "ghostty/.config/ghostty/config";
     "lazygit/config.yml".source = live "lazygit/.config/lazygit/config.yml";

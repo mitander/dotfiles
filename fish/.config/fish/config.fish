@@ -44,6 +44,10 @@ function vim
     nvim $argv
 end
 
+function ltui
+    TRACKER_SCOPE=dev command ltui $argv
+end
+
 alias so "source ~/.config/fish/config.fish"
 
 function dotfiles
@@ -238,6 +242,10 @@ set -gx XDG_DOWNLOAD_DIR $HOME/Downloads
 # paths
 contains ~/.local/bin $PATH
 or set PATH ~/.local/bin $PATH
+
+if test -d "$HOME/.dprint/bin"
+    fish_add_path --global --append --path "$HOME/.dprint/bin"
+end
 
 if status is-login
     contains /usr/bin $PATH

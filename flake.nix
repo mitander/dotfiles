@@ -155,12 +155,15 @@
             export HOME="$TMPDIR/home"
             export DOTFILES_TEST_ROOT="$TMPDIR/source"
             mkdir -p "$HOME" "$DOTFILES_TEST_ROOT/nvim/.config" \
-              "$DOTFILES_TEST_ROOT/fish/.config/fish" "$DOTFILES_TEST_ROOT/tests"
+              "$DOTFILES_TEST_ROOT/fish/.config/fish" "$DOTFILES_TEST_ROOT/dprint/.config" "$DOTFILES_TEST_ROOT/tests"
+            cp -R ${./dprint/.config/dprint} "$DOTFILES_TEST_ROOT/dprint/.config/dprint"
             cp -R ${./nvim/.config/nvim} "$DOTFILES_TEST_ROOT/nvim/.config/nvim"
             cp ${./fish/.config/fish/config.fish} "$DOTFILES_TEST_ROOT/fish/.config/fish/config.fish"
             cp ${./tests/nvim-config.lua} "$DOTFILES_TEST_ROOT/tests/nvim-config.lua"
+            cp ${./tests/nvim-formatters.lua} "$DOTFILES_TEST_ROOT/tests/nvim-formatters.lua"
             cp ${./tests/nvim-clipboard.lua} "$DOTFILES_TEST_ROOT/tests/nvim-clipboard.lua"
             nvim --clean --headless -l "$DOTFILES_TEST_ROOT/tests/nvim-config.lua"
+            nvim --clean --headless -l "$DOTFILES_TEST_ROOT/tests/nvim-formatters.lua"
             nvim --clean --headless -l "$DOTFILES_TEST_ROOT/tests/nvim-clipboard.lua"
             bash ${./tests/fish-nvim.sh}
             bash ${./tests/fish-config.sh}

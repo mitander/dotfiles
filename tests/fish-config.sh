@@ -6,7 +6,9 @@ TEST_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/fish-config-test.XXXXXX")"
 trap 'rm -rf "$TEST_ROOT"' EXIT
 FISH="$(command -v fish)"
 FZF_BINARY="$(command -v fzf)"
-mkdir -p "$TEST_ROOT/home/.nix-profile/bin" "$TEST_ROOT/home/.config/fish" "$TEST_ROOT/bin" "$TEST_ROOT/project/target"
+mkdir -p "$TEST_ROOT/home/.nix-profile/bin" "$TEST_ROOT/home/.dprint/bin" "$TEST_ROOT/home/.config/fish" "$TEST_ROOT/bin" "$TEST_ROOT/project/target"
+printf '#!/bin/sh\nexit 0\n' >"$TEST_ROOT/home/.dprint/bin/dprint"
+chmod +x "$TEST_ROOT/home/.dprint/bin/dprint"
 ln -s "$ROOT/fish/.config/fish/config.fish" "$TEST_ROOT/home/.config/fish/config.fish"
 for tool in fzf atuin zoxide; do
   printf '#!/bin/sh\nprintf "%%s\\n" "%s" >> "$DOTFILES_TEST_CALLS"\n' "$tool" >"$TEST_ROOT/bin/$tool"
@@ -27,6 +29,10 @@ export PATH="$PATH:/opt/homebrew/bin"
     set -l brew_index (contains -i -- /opt/homebrew/bin $PATH)
     test $nix_index -lt $brew_index; or exit 1
     test (count (string match -- "$HOME/.nix-profile/bin" $PATH)) -eq 1; or exit 1
+    test (count (string match -- "$HOME/.dprint/bin" $PATH)) -eq 1; or exit 1
+    command -q dprint; or exit 1
+    set -l dprint_index (contains -i -- "$HOME/.dprint/bin" $PATH)
+    test $nix_index -lt $dprint_index; or exit 1
     not functions -q fzf; or exit 1'
 [[ ! -e "$DOTFILES_TEST_CALLS" ]] || {
   echo 'FAIL: noninteractive shell initialized UI tools' >&2

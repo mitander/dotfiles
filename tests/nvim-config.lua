@@ -137,13 +137,10 @@ assert(oil.opts.keymaps.q == "actions.close")
 assert(not oil.config, "Oil should not implement a second sidebar lifecycle")
 
 local conform = spec("conform")
-assert(
-    vim.deep_equal(conform.opts.formatters_by_ft.python, { "ruff_organize_imports", "ruff_format" }),
-    "Python saves must organize imports before formatting, without broad lint fixes"
-)
-assert(vim.deep_equal(conform.opts.formatters_by_ft.markdown, { "prettier" }))
-assert(vim.deep_equal(conform.opts.formatters.shfmt.prepend_args, { "-i", "2" }))
-assert(conform.opts.formatters.rustfmt.prepend_args(nil, { dirname = root })[1] == nil)
+assert(vim.deep_equal(conform.opts.formatters_by_ft.lua, { "stylua" }))
+assert(vim.deep_equal(conform.opts.formatters_by_ft.markdown, { "dprint" }))
+assert(vim.deep_equal(conform.opts.formatters_by_ft.sh, { "dprint" }))
+assert(conform.opts.default_format_opts.lsp_format == "never")
 assert(conform.opts.format_on_save.timeout_ms == 500)
 assert(conform.opts.notify_on_error)
 assert(not conform.opts.format_after_save, "save should not be modified asynchronously")
