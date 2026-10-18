@@ -57,7 +57,8 @@
         "atuin-nixpkgs": "atuin-nixpkgs",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
-        "ruff-nixpkgs": "ruff-nixpkgs"
+        "ruff-nixpkgs": "ruff-nixpkgs",
+        "tracker-tui": "tracker-tui"
       }
     },
     "ruff-nixpkgs": {
@@ -73,6 +74,23 @@
         "owner": "NixOS",
         "repo": "nixpkgs",
         "rev": "422d1ae605d7fcd9896412b37dc065c456c0eefb",
+        "type": "github"
+      }
+    },
+    "tracker-tui": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791187398,
+        "narHash": "sha256-v9BAYjfPHr+1eyPIfG7yq19Qe+fkmVnBTW8ToEMNw50=",
+        "owner": "mitander",
+        "repo": "ltui",
+        "rev": "37b7fc02a3898596a06b97fbe531aaff281a3830",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mitander",
+        "repo": "ltui",
+        "rev": "37b7fc02a3898596a06b97fbe531aaff281a3830",
         "type": "github"
       }
     }

@@ -12,13 +12,14 @@
   # Private agent configuration lives in ~/.agents.
   agentLive = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/${path}";
 
-  # Personal fork; see tracker-tui/README.md before updating the pin.
-  trackerTuiSource = pkgs.fetchFromGitHub {
-    owner = "mitander";
-    repo = "ltui";
-    rev = "37b7fc02a3898596a06b97fbe531aaff281a3830";
+  # The helper overrides this input with the local checkout when available.
+  # Keep one unpacked directory name for local and remote Python builds.
+  trackerTuiSource = builtins.path {
+    path = inputs.tracker-tui;
     name = "ltui-personal-source";
-    hash = "sha256-v9BAYjfPHr+1eyPIfG7yq19Qe+fkmVnBTW8ToEMNw50=";
+    filter = path: _type:
+      !(builtins.elem (baseNameOf path) [".git" "__pycache__" ".ruff_cache" ".venv" "build" "dist"])
+      && !(lib.hasSuffix ".egg-info" path);
   };
 
   # Build-time palettes are pinned; runtime schema selection remains live-linked.

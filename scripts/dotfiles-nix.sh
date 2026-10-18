@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FLAKE="path:$ROOT"
+TRACKER_SOURCE_ARGS=(--no-write-lock-file)
 
 usage() {
   cat <<'EOF'
@@ -15,6 +16,11 @@ Commands:
   build        Build the selected Home Manager generation without activating it
   switch       Activate the selected generation (requires DOTFILES_ALLOW_ACTIVATE=1)
   generations  List Home Manager generations
+
+Tracker source:
+  Uses ~/c/p/ltui when present, otherwise the locked remote input.
+  DOTFILES_TRACKER_SOURCE=remote forces the remote input.
+  DOTFILES_TRACKER_SOURCE=/path/to/ltui selects a different checkout.
 EOF
 }
 
@@ -75,6 +81,24 @@ EOF
   fi
 }
 
+select_tracker_source() {
+  local source="${DOTFILES_TRACKER_SOURCE:-$HOME/c/p/ltui}"
+  TRACKER_SOURCE_ARGS=(--no-write-lock-file)
+
+  if [[ "$source" == remote ]]; then
+    printf 'tracker source: locked remote input\n' >&2
+  elif [[ -f "$source/ltui/pyproject.toml" && -f "$source/flume-theme/pyproject.toml" ]]; then
+    source="$(cd "$source" && pwd -P)"
+    TRACKER_SOURCE_ARGS+=(--override-input tracker-tui "path:$source")
+    printf 'tracker source: %s (including uncommitted edits)\n' "$source" >&2
+  elif [[ -n "${DOTFILES_TRACKER_SOURCE:-}" || -e "$source" ]]; then
+    printf 'Invalid tracker checkout: %s\n' "$source" >&2
+    return 1
+  else
+    printf 'tracker source: locked remote input (no local checkout)\n' >&2
+  fi
+}
+
 require_nix() {
   if ! command -v nix >/dev/null 2>&1; then
     cat >&2 <<'EOF'
@@ -84,6 +108,7 @@ this command.
 EOF
     return 1
   fi
+  select_tracker_source
 }
 
 run_nix() {
@@ -91,7 +116,7 @@ run_nix() {
 }
 
 home_manager() {
-  run_nix run "$FLAKE#home-manager" -- "$@"
+  run_nix run "$FLAKE#home-manager" "${TRACKER_SOURCE_ARGS[@]}" -- "$@"
 }
 
 doctor() {
@@ -104,8 +129,8 @@ doctor() {
 
   verify_checkout "$selected"
   require_nix
-  run_nix flake metadata "$FLAKE" --no-write-lock-file >/dev/null
-  run_nix eval "$FLAKE#homeConfigurations.\"$selected\".activationPackage.drvPath" --raw >/dev/null
+  run_nix flake metadata "$FLAKE" "${TRACKER_SOURCE_ARGS[@]}" >/dev/null
+  run_nix eval "$FLAKE#homeConfigurations.\"$selected\".activationPackage.drvPath" --raw "${TRACKER_SOURCE_ARGS[@]}" >/dev/null
 
   printf 'status:  selected Home Manager profile evaluates successfully\n'
 }
@@ -116,7 +141,7 @@ build() {
   selected="$(profile)"
   run_nix build \
     "$FLAKE#homeConfigurations.\"$selected\".activationPackage" \
-    --no-link
+    --no-link "${TRACKER_SOURCE_ARGS[@]}"
 }
 
 switch_generation() {
@@ -139,7 +164,7 @@ EOF
   fi
 
   backup_extension="pre-nix-$(date +%Y%m%d-%H%M%S)"
-  home_manager switch --flake "$FLAKE#$selected" -b "$backup_extension"
+  home_manager switch --flake "$FLAKE#$selected" -b "$backup_extension" "${TRACKER_SOURCE_ARGS[@]}"
   printf 'Activation complete. Home Manager conflict backups use .%s\n' "$backup_extension"
 }
 
@@ -153,7 +178,7 @@ doctor)
   ;;
 check)
   require_nix
-  run_nix flake check "$FLAKE" --all-systems --no-build
+  run_nix flake check "$FLAKE" --all-systems --no-build "${TRACKER_SOURCE_ARGS[@]}"
   ;;
 build)
   build

@@ -8,6 +8,11 @@
 
     ruff-nixpkgs.url = "github:NixOS/nixpkgs/422d1ae605d7fcd9896412b37dc065c456c0eefb";
 
+    tracker-tui = {
+      url = "github:mitander/ltui/37b7fc02a3898596a06b97fbe531aaff281a3830";
+      flake = false;
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -159,6 +164,13 @@
             nvim --clean --headless -l "$DOTFILES_TEST_ROOT/tests/nvim-clipboard.lua"
             bash ${./tests/fish-nvim.sh}
             bash ${./tests/fish-config.sh}
+            touch "$out"
+          '';
+        tracker-source =
+          pkgs.runCommand "tracker-source-check" {
+            nativeBuildInputs = with pkgs; [bash coreutils gawk gnugrep];
+          } ''
+            bash ${./tests/tracker-source.sh} ${./scripts/dotfiles-nix.sh}
             touch "$out"
           '';
         tracker-tui =

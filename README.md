@@ -30,6 +30,11 @@ Ghostty, Git, or other declared dotfiles takes effect immediately; run `switch` 
 packages, profiles, or Home Manager declarations. Each profile explicitly defines its expected
 checkout path.
 
+Tracker applications use the local `~/c/p/ltui` checkout when it exists, including uncommitted
+edits. Run the helper's `build` and guarded `switch` commands after changing application code.
+Machines without the checkout use the locked remote source. See
+[`tracker-tui/README.md`](tracker-tui/README.md) for source overrides and validation commands.
+
 ## Safe bootstrap
 
 Clone this repository and the Flume theme source at the paths used by the selected profiles, then
