@@ -21,14 +21,15 @@ copy-on-select = clipboard
 right-click-action = ignore
 
 # Typography
-font-size = 15
+font-size = 16
 font-family = "Maple Mono NF"
+# font-family = "Nordwand Mono"
 font-style = "Medium"
 font-style-bold = "Bold"
 font-style-italic = "Medium Italic"
 font-style-bold-italic = "Bold Italic"
-adjust-cell-height = 12%
-adjust-cell-width = 2%
+adjust-cell-height = 14%
+adjust-cell-width = 4%
 alpha-blending = linear-corrected
 theme = flume
 window-theme = auto
