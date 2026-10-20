@@ -49,6 +49,14 @@ printf 'source\n' >"$TEST_ROOT/project/name with spaces.rs"
 printf 'hidden\n' >"$TEST_ROOT/project/.hidden"
 printf 'ignored\n' >"$TEST_ROOT/project/target/artifact"
 cd "$TEST_ROOT/project"
+for listing in tree lt; do
+  "$FISH" --no-config -c 'source "$DOTFILES_TEST_CONFIG"; $argv[1] --noreport' -- "$listing" >"$TEST_ROOT/tree"
+  grep -q 'name with spaces.rs' "$TEST_ROOT/tree"
+  if grep -q 'target\|artifact' "$TEST_ROOT/tree"; then
+    echo "FAIL: $listing included gitignored files" >&2
+    exit 1
+  fi
+done
 "$FISH" --no-config -c 'source "$DOTFILES_TEST_CONFIG"; eval $FZF_DEFAULT_COMMAND' >"$TEST_ROOT/files"
 grep -qx 'name with spaces.rs' "$TEST_ROOT/files"
 grep -qx '.hidden' "$TEST_ROOT/files"

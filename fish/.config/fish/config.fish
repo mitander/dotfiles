@@ -58,7 +58,10 @@ function dotfiles
 end
 
 alias :q exit
-command -q tree; and alias tree "ls --tree"
+if command -q tree
+    alias tree "tree --gitignore"
+    alias lt tree
+end
 
 test -x ./zig/zig; and alias zig "./zig/zig"
 
@@ -69,7 +72,6 @@ if command -q lsd
     alias l "ls -l"
     alias la "ls -a"
     alias lla "ls -la"
-    alias lt "ls --tree"
 else
     alias l "ls -l"
     alias la "ls -a"
