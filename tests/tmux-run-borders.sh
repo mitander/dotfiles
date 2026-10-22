@@ -45,9 +45,32 @@ tmux -L "$SOCKET" kill-pane -t "$manual"
   fail 'closing manual split moved the run title'
 [[ "$(tmux -L "$SOCKET" display-message -p -t "$runner" '#{pane_pid}')" == "$run_pid" ]] ||
   fail 'runner process changed'
-[[ "$(tmux -L "$SOCKET" display-message -p -t "$ordinary" '#{pane-border-status}')" == bottom ]] ||
-  fail 'ordinary-window appearance changed'
+assert_ordinary_border() {
+  [[ "$(tmux -L "$SOCKET" display-message -p -t "$ordinary" '#{pane-border-status}')" == "$1" ]] ||
+    fail "ordinary window should have pane-border-status=$1"
+}
+assert_ordinary_border off
+split="$(tmux -L "$SOCKET" split-window -h -P -F '#{pane_id}' -t "$ordinary" 'sleep 300')"
+assert_ordinary_border bottom
+load_theme
+assert_ordinary_border bottom
+tmux -L "$SOCKET" kill-pane -t "$split"
+assert_ordinary_border off
+load_theme
+assert_ordinary_border off
+# A shell exiting must remove the row too, without an explicit kill-pane.
+exiting="$(tmux -L "$SOCKET" split-window -v -P -F '#{pane_id}' -t "$ordinary" 'sleep 300')"
+exiting_pid="$(tmux -L "$SOCKET" display-message -p -t "$exiting" '#{pane_pid}')"
+assert_ordinary_border bottom
+kill "$exiting_pid"
+for ((attempt = 0; attempt < 100; attempt++)); do
+  [[ "$(tmux -L "$SOCKET" display-message -p -t "$ordinary" '#{window_panes}')" == 1 ]] && break
+  sleep 0.02
+done
+[[ "$(tmux -L "$SOCKET" display-message -p -t "$ordinary" '#{window_panes}')" == 1 ]] ||
+  fail 'exiting pane did not close'
+assert_ordinary_border off
 load_theme
 [[ "$(tmux -L "$SOCKET" show-option -wv -t "$run_window" pane-border-status)" == top ]] ||
   fail 'repeated theme reload moved the run title'
-printf 'PASS: native splits, close and theme reload preserve run borders and unrelated hooks\n'
+printf 'PASS: split-only bottom borders, pane exit, reload, run titles and unrelated hooks\n'

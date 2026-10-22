@@ -10,7 +10,7 @@ type IndicatorStyle = "state" | "dot" | "wave" | "spinner";
 let enabled = true;
 let phase: Phase = "idle";
 let indicatorStyle: IndicatorStyle = "state";
-let bottomPadding = false;
+let bottomPadding = true;
 let turnCount = 0;
 let frame = 0;
 let requestRender: (() => void) | undefined;
@@ -169,9 +169,8 @@ function renderFooterLine(width: number, ctx: any, theme: any, footerData: any):
   const renderedLine = truncateToWidth(line, width, "");
   if (!bottomPadding) return [renderedLine];
 
-  // Risky but requested: Pi does not expose footer padding directly, so bottom
-  // breathing room means rendering one extra blank footer line. Keep it exactly
-  // one line and exactly terminal width to reduce tmux redraw artifacts.
+  // Bottom spacing is a blank footer line. Keep it exactly terminal width
+  // to reduce tmux redraw artifacts.
   return [renderedLine, " ".repeat(Math.max(0, width))];
 }
 
@@ -297,7 +296,7 @@ export default function flumeUi(pi: ExtensionAPI): void {
   });
 
   pi.registerCommand("flume-footer-padding", {
-    description: "Toggle risky one-line bottom padding for the Flume footer",
+    description: "Toggle one-line bottom padding for the Flume footer",
     handler: async (args, ctx) => {
       bottomPadding = parseToggle(args.trim().toLowerCase(), bottomPadding);
       requestRender?.();
