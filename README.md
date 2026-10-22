@@ -17,6 +17,48 @@ Use `apply` after changing packages or Home Manager links, not after every confi
 Ghostty watches its configuration. Restart Neovim after changing its Lua configuration. Other
 applications may also need a restart. Reloading tmux requires the installed Myran binary.
 
+## File links on macOS
+
+Run `./scripts/install-myran-editor` to build or update `~/Applications/Myran Editor.app` with the
+Xcode command line tools. Installation advertises document support and the `myran://` scheme. It
+does not select file or browser defaults and never requests bulk association confirmations. Use
+`--no-register` to build or update the bundle without advertising it to Launch Services.
+
+For each text-file type, select a representative file in Finder, then use **Get Info → Open with →
+Myran Editor → Change All**. Use **Other…** and select the app under `~/Applications` if necessary.
+The app supports macOS text types, including `.log`, and declares Rust, Fish, Lua, Nix and JSX
+source types. Existing per-type defaults still need manual selection. Keep web links and HTML on
+your browser, and images and movies on their existing apps. In particular, macOS can identify `.ts`
+as MPEG video, so it is not declared as a text extension.
+
+The launcher opens files through `myran open` in the most recently active attached tmux client's
+workspace on the default server. It pins that client's pane and server incarnation before forwarding
+paths. A server restart rejects the handoff instead of reusing an old pane ID. An attached client in
+a Myran workspace is required. Files outside the project, including handoffs, still open in that
+workspace's editor. Errors appear in a macOS dialog instead of starting another editor.
+
+Ordinary `file://` links use macOS's selected document app. For a line or inclusive range, use:
+
+```text
+myran://open?path=/absolute/path/tests/test_evidence.py&line=352&end=596
+```
+
+Percent-encode query values, especially spaces, `#`, `%`, `&` and `+` in paths. Omit `end` for a
+single line. Myran must support `open-at LINE[-END] -- path`. The editor opens at the first line and
+temporarily highlights the range without Visual selection. Movement, editing, Escape, leaving the
+buffer/window or another open clears the highlight. There is no timer. macOS drops fragments such as
+`file:///path#L352-L596` before document delivery, so use `myran://` rather than a file fragment for
+clickable location links. A bare `path:352-596` in terminal text does not automatically become a
+location link.
+
+The app live-links `scripts/myran-open-files`. After editing the Swift app or document declarations,
+rerun the installer. Installation rejects symlink destinations and atomically replaces the
+executable so a running copy is not truncated. To change defaults back, select the previous
+application using Finder's same **Open with → Change All** control. There are no automatic
+default-setting or restore commands. The default gate tests path forwarding in isolation.
+`./scripts/check myran-editor` tests parsing and native macOS URL delivery, plus install/update and
+failure safety in a disposable HOME without registering that fixture app or changing defaults.
+
 ## Ownership
 
 - **Home Manager** installs the common CLI packages and links declared in
@@ -48,6 +90,7 @@ additional configuration managers.
 ```sh
 ./scripts/check                # same gate as dotfiles check
 ./scripts/check myran          # installed Myran + private tmux caller/reload check
+./scripts/check myran-editor   # native macOS file-URL delivery, without changing defaults
 ./scripts/check formatters     # installed Conform + real formatter smoke tests
 ./scripts/check trackers       # editable installation + the tracker fork's own tests
 ```

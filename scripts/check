@@ -9,7 +9,7 @@ case "${1:-}" in
   sh scripts/format.sh check
   python3 tests/python-format.py
   python3 tests/install-myran.py
-  for test in dotfiles-command nix-command tracker-local fish-config fish-nvim tmux-run-borders; do
+  for test in dotfiles-command nix-command tracker-local fish-config fish-nvim myran-open-files tmux-run-borders; do
     bash "tests/$test.sh"
   done
   for test in nvim-config nvim-formatters nvim-clipboard; do
@@ -19,6 +19,10 @@ case "${1:-}" in
 myran)
   # Installed-binary qualification runs only against private tmux servers.
   bash tests/tmux-config.sh
+  ;;
+myran-editor)
+  bash tests/myran-editor-macos.sh
+  bash tests/myran-editor-install-macos.sh
   ;;
 formatters)
   # Uses the installed Conform plugin and real formatting tools.
@@ -31,7 +35,7 @@ trackers)
     PYTHON="$checkout/.venv/bin/python" "$checkout/scripts/check"
   ;;
 *)
-  printf 'Usage: scripts/check [myran|formatters|trackers]\n' >&2
+  printf 'Usage: scripts/check [myran|myran-editor|formatters|trackers]\n' >&2
   exit 2
   ;;
 esac

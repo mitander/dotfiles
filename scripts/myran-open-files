@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Called by the macOS document app, without a terminal's environment.
+set -euo pipefail
+export PATH="$HOME/.local/bin:$HOME/.nix-profile/bin:/opt/homebrew/bin:/usr/bin:/bin"
+unset TMUX TMUX_PANE
+
+location=''
+if [[ ${1:-} == --at ]]; then
+  if [[ $# != 4 || ${3:-} != -- || ! ${2:-} =~ ^[0-9]+(-[0-9]+)?$ ]]; then
+    echo 'Expected --at LINE[-END] -- /absolute/file.' >&2
+    exit 1
+  fi
+  location=$2
+  shift 3
+fi
+
+if [[ $# == 0 ]]; then
+  echo 'Open a text file with Myran Editor from Finder or a file:// link.' >&2
+  exit 1
+fi
+for path in "$@"; do
+  if [[ "$path" != /* || ! -f "$path" ]]; then
+    printf 'Not a local regular file: %s\n' "$path" >&2
+    exit 1
+  fi
+done
+
+# Pin one pane before further queries. A later focus change must not retarget the open.
+clients=$(tmux list-clients -F '#{client_activity} #{client_pid} #{pane_id} #{socket_path},#{pid},0')
+latest=$(printf '%s\n' "$clients" | sort -nr)
+latest=${latest%%$'\n'*}
+read -r activity client pane scope <<<"$latest"
+if [[ ! "$activity" =~ ^[0-9]+$ || ! "$client" =~ ^[0-9]+$ || ! "$pane" =~ ^%[0-9]+$ || ! "$scope" =~ ^/.*,[0-9]+,0$ ]]; then
+  echo 'Myran Editor needs an attached tmux client on the default server.' >&2
+  exit 1
+fi
+observed=$(tmux display-message -p -t "$pane" '#{socket_path},#{pid},0')
+if [[ "$observed" != "$scope" ]]; then
+  echo 'The tmux server changed while opening the file. Click the link again.' >&2
+  exit 1
+fi
+TMUX=$scope
+TMUX_PANE=$pane
+export TMUX TMUX_PANE
+root=$(tmux show-options -qv -t "$pane" @workspace_root)
+if [[ "$root" != /* || ! -d "$root" ]]; then
+  echo 'The active tmux client is not in a Myran workspace.' >&2
+  exit 1
+fi
+cd -- "$root"
+if [[ -n "$location" ]]; then
+  exec myran open-at "$location" -- "$@"
+fi
+exec myran open -- "$@"

@@ -123,6 +123,7 @@
               pkgs.neovim
               pkgs.ripgrep
               pkgs.tmux
+              pkgs.tree
             ];
           } ''
             export HOME="$TMPDIR/home"

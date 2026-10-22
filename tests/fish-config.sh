@@ -49,8 +49,9 @@ printf 'source\n' >"$TEST_ROOT/project/name with spaces.rs"
 printf 'hidden\n' >"$TEST_ROOT/project/.hidden"
 printf 'ignored\n' >"$TEST_ROOT/project/target/artifact"
 cd "$TEST_ROOT/project"
+# Keep filename display stable across tree versions while testing ignore behavior.
 for listing in tree lt; do
-  "$FISH" --no-config -c 'source "$DOTFILES_TEST_CONFIG"; $argv[1] --noreport' -- "$listing" >"$TEST_ROOT/tree"
+  "$FISH" --no-config -c 'source "$DOTFILES_TEST_CONFIG"; $argv[1] --noreport -N' -- "$listing" >"$TEST_ROOT/tree"
   grep -q 'name with spaces.rs' "$TEST_ROOT/tree"
   if grep -q 'target\|artifact' "$TEST_ROOT/tree"; then
     echo "FAIL: $listing included gitignored files" >&2
