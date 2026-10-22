@@ -44,7 +44,7 @@ mkdir -p "$HOME/Applications"
 build=$(mktemp -d "$HOME/Applications/.myran-editor.XXXXXX")
 trap 'rm -rf "$build"' EXIT
 mkdir -p "$build/Contents/MacOS"
-/usr/bin/swiftc -target "$(uname -m)-apple-macosx13.0" "$ROOT/extras/myran-editor/FileLinks.swift" "$ROOT/extras/myran-editor/main.swift" -o "$build/Contents/MacOS/myran-editor"
+/usr/bin/swiftc -target "$(uname -m)-apple-macosx13.0" "$ROOT/extras/myran-editor/FileLinks.swift" "$ROOT/extras/myran-editor/Launcher.swift" "$ROOT/extras/myran-editor/main.swift" -o "$build/Contents/MacOS/myran-editor"
 cp "$ROOT/extras/myran-editor/Info.plist" "$build/Contents/Info.plist"
 mkdir -p "$app/Contents/"{MacOS,Resources}
 mv -f "$build/Contents/MacOS/myran-editor" "$app/Contents/MacOS/myran-editor"

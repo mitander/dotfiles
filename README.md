@@ -35,7 +35,9 @@ The launcher opens files through `myran open` in the most recently active attach
 workspace on the default server. It pins that client's pane and server incarnation before forwarding
 paths. A server restart rejects the handoff instead of reusing an old pane ID. An attached client in
 a Myran workspace is required. Files outside the project, including handoffs, still open in that
-workspace's editor. Errors appear in a macOS dialog instead of starting another editor.
+workspace's editor. Errors appear in a macOS dialog instead of starting another editor. Helper
+execution has a 30-second deadline and a 16 KiB diagnostic limit. Completion, timeout and failure
+clean up the helper's private process group, not editors running under tmux.
 
 Ordinary `file://` links use macOS's selected document app. For a line or inclusive range, use:
 

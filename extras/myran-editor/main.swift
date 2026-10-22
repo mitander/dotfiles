@@ -10,18 +10,9 @@ final class EditorDelegate: NSObject, NSApplicationDelegate {
     func application(_ application: NSApplication, open urls: [URL]) {
         do {
             let request = try FileRequest(urls: urls)
-            let task = Process()
-            task.executableURL = Bundle.main.resourceURL!.appendingPathComponent("myran-open-files")
-            task.arguments = request.arguments
-            let errors = Pipe()
-            task.standardError = errors
-            try task.run()
-            // Drain before waiting, so a full error pipe cannot deadlock the launcher.
-            let data = errors.fileHandleForReading.readDataToEndOfFile()
-            task.waitUntilExit()
-            guard task.terminationStatus == 0 else {
-                throw FileLinkError(String(decoding: data, as: UTF8.self))
-            }
+            try EditorLauncher.run(
+                executable: Bundle.main.resourceURL!.appendingPathComponent("myran-open-files"),
+                arguments: request.arguments)
         } catch {
             NSApp.activate(ignoringOtherApps: true)
             NSAlert(error: error).runModal()
