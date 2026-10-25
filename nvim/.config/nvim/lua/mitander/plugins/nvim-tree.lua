@@ -33,23 +33,31 @@ local function on_attach(bufnr)
         }
     end
 
-    local function move_down()
-        local line = vim.api.nvim_win_get_cursor(0)[1]
-        local last_line = vim.api.nvim_buf_line_count(bufnr)
-        vim.api.nvim_win_set_cursor(0, { math.min(line + 1, last_line), 0 })
-    end
-
     local function enter_directory()
         local node = api.tree.get_node_under_cursor()
         if not node or node.type ~= "directory" or node.name == ".." then
             return
         end
 
+        local window = vim.api.nvim_get_current_win()
         if not node.open then
             api.node.open.edit(node)
         end
+
         if node.has_children then
-            vim.schedule(move_down)
+            vim.schedule(function()
+                -- Wait for the redraw, but don't move if focus has left the original tree.
+                if not vim.api.nvim_win_is_valid(window) or not vim.api.nvim_buf_is_valid(bufnr) then
+                    return
+                end
+                if vim.api.nvim_get_current_win() ~= window or vim.api.nvim_win_get_buf(window) ~= bufnr then
+                    return
+                end
+
+                local line = vim.api.nvim_win_get_cursor(window)[1]
+                local last_line = vim.api.nvim_buf_line_count(bufnr)
+                vim.api.nvim_win_set_cursor(window, { math.min(line + 1, last_line), 0 })
+            end)
         end
     end
 

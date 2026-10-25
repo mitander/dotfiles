@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Called by the macOS document app, without a terminal's environment.
 set -euo pipefail
+
+# Finder does not supply a terminal's PATH or a reliable tmux caller identity.
 export PATH="$HOME/.local/bin:$HOME/.nix-profile/bin:/opt/homebrew/bin:/usr/bin:/bin"
 unset TMUX TMUX_PANE
 
+# Validate location syntax and every document before choosing a workspace.
 location=''
 if [[ ${1:-} == --at ]]; then
   if [[ $# != 4 || ${3:-} != -- || ! ${2:-} =~ ^[0-9]+(-[0-9]+)?$ ]]; then
@@ -34,6 +37,8 @@ if [[ ! "$activity" =~ ^[0-9]+$ || ! "$client" =~ ^[0-9]+$ || ! "$pane" =~ ^%[0-
   echo 'Myran Editor needs an attached tmux client on the default server.' >&2
   exit 1
 fi
+
+# Reject a restarted server before exposing its pinned identity to Myran.
 observed=$(tmux display-message -p -t "$pane" '#{socket_path},#{pid},0')
 if [[ "$observed" != "$scope" ]]; then
   echo 'The tmux server changed while opening the file. Click the link again.' >&2
@@ -42,11 +47,14 @@ fi
 TMUX=$scope
 TMUX_PANE=$pane
 export TMUX TMUX_PANE
+
 root=$(tmux show-options -qv -t "$pane" @workspace_root)
 if [[ "$root" != /* || ! -d "$root" ]]; then
   echo 'The active tmux client is not in a Myran workspace.' >&2
   exit 1
 fi
+
+# Hand off in the selected workspace, preserving literal document arguments.
 cd -- "$root"
 if [[ -n "$location" ]]; then
   exec myran open-at "$location" -- "$@"

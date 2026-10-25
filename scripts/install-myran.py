@@ -6,25 +6,35 @@ import hashlib
 import json
 import os
 import pwd
+import shlex
 import stat
 import sys
 import tempfile
 from pathlib import Path
+from typing import NotRequired, TypedDict
 
 
-def digest(data):
+class InstallRecord(TypedDict):
+    destination: str
+    installed_sha256: str
+    previous_sha256: str | None
+    previous_mode: NotRequired[int]
+
+
+def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def private_group(gid):
+def private_group(gid: int) -> bool:
     if gid != os.getgid():
         return False
+
     members = set(grp.getgrgid(gid).gr_mem)
     members |= {entry.pw_name for entry in pwd.getpwall() if entry.pw_gid == gid}
     return members <= {pwd.getpwuid(os.getuid()).pw_name}
 
 
-def foreign_write(info):
+def foreign_write(info: os.stat_result) -> int:
     """Ignore group write only when the group belongs exclusively to this user."""
     bits = info.st_mode & 0o022
     if bits & 0o020 and private_group(info.st_gid):
@@ -32,12 +42,14 @@ def foreign_write(info):
     return bits
 
 
-def no_symlinks(path):
+def no_symlinks(path: Path) -> None:
     if not path.is_absolute() or ".." in path.parts:
         raise ValueError("use an absolute path without '..'")
+
     for part in [*reversed(path.parents), path]:
         if part.is_symlink():
             raise ValueError(f"refusing symlink: {part}")
+
         if part != path and part.exists():
             info = part.stat()
             trusted_sticky = info.st_uid == 0 and info.st_mode & stat.S_ISVTX
@@ -45,14 +57,14 @@ def no_symlinks(path):
                 raise ValueError(f"unsafe ancestor: {part}")
 
 
-def owned_directory(path):
+def owned_directory(path: Path) -> None:
     no_symlinks(path)
     info = path.stat()
     if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or foreign_write(info):
         raise ValueError(f"directory must be owned and not group/world writable: {path}")
 
 
-def read_binary(path):
+def read_binary(path: Path) -> tuple[bytes, int]:
     no_symlinks(path)
     with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb") as source:
         info = os.fstat(source.fileno())
@@ -62,12 +74,14 @@ def read_binary(path):
             raise ValueError(
                 f"binary must be executable, without special or writable group/world bits: {path}"
             )
+
         return source.read(), stat.S_IMODE(info.st_mode)
 
 
-def atomic_write(path, data, mode):
+def atomic_write(path: Path, data: bytes, mode: int) -> None:
     owned_directory(path.parent)
     no_symlinks(path)
+
     descriptor, temporary = tempfile.mkstemp(prefix=".myran-", dir=path.parent)
     try:
         with os.fdopen(descriptor, "wb") as output:
@@ -75,22 +89,25 @@ def atomic_write(path, data, mode):
             output.flush()
             os.fchmod(output.fileno(), mode)
             os.fsync(output.fileno())
+
         os.replace(temporary, path)
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
 
 
-def install(source, destination, state):
+def install(source: Path, destination: Path, state: Path) -> None:
     data, _ = read_binary(source)
     owned_directory(destination.parent)
     no_symlinks(destination)
     previous = read_binary(destination) if destination.exists() else None
+
     no_symlinks(state)
     state.mkdir(parents=True, exist_ok=True, mode=0o700)
     owned_directory(state)
     receipt = Path(tempfile.mkdtemp(prefix="install-", dir=state))
-    record = {
+
+    record: InstallRecord = {
         "destination": str(destination),
         "installed_sha256": digest(data),
         "previous_sha256": None,
@@ -100,29 +117,32 @@ def install(source, destination, state):
         # Keep the receipt filename compatible with pre-rename rollbacks.
         atomic_write(receipt / "myr.previous", old_data, old_mode)
         record.update(previous_sha256=digest(old_data), previous_mode=old_mode)
+
+    # Save the rollback receipt before replacing the destination.
     atomic_write(receipt / "receipt.json", (json.dumps(record, indent=2) + "\n").encode(), 0o600)
     atomic_write(destination, data, 0o755)
+
     print(f"Installed SHA-256: {digest(data)}")
     print(f"Receipt: {receipt}")
-    import shlex
-
     print(
         f"Rollback: python3 {shlex.quote(str(Path(__file__).absolute()))} rollback {shlex.quote(str(receipt))}"
     )
 
 
-def rollback(receipt):
+def rollback(receipt: Path) -> None:
     owned_directory(receipt)
     no_symlinks(receipt / "receipt.json")
     info = (receipt / "receipt.json").stat()
     if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or foreign_write(info):
         raise ValueError("unsafe receipt")
+
     record = json.loads((receipt / "receipt.json").read_text())
     destination = Path(record["destination"])
     owned_directory(destination.parent)
     current, _ = read_binary(destination)
     if digest(current) != record["installed_sha256"]:
         raise ValueError("destination changed since install, refusing rollback")
+
     if record["previous_sha256"] is None:
         destination.unlink()
     else:
@@ -130,10 +150,11 @@ def rollback(receipt):
         if digest(previous) != record["previous_sha256"] or mode != record["previous_mode"]:
             raise ValueError("backup checksum or mode changed, refusing rollback")
         atomic_write(destination, previous, mode)
+
     print(f"Rolled back exactly: {destination}")
 
 
-def main():
+def main() -> None:
     if len(sys.argv) in (3, 4) and sys.argv[1] == "install":
         destination = Path(sys.argv[3]) if len(sys.argv) == 4 else Path.home() / ".local/bin/myran"
         state = (

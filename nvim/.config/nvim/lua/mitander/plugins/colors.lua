@@ -1,6 +1,6 @@
 local dotfiles = vim.env.DOTFILES_DIR or vim.fn.expand("~/dotfiles")
 local flume = dotfiles .. "/themes/flume"
-local schema = "mesa" -- Fallback until the first :FlumeSync.
+local schema = "mesa" -- Until the first :FlumeSync.
 
 return {
     schema = schema,

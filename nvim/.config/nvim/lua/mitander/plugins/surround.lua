@@ -1,6 +1,6 @@
 return {
     "kylechui/nvim-surround",
-    version = "*", -- Use for stability
+    version = "*",
     event = { "BufReadPost", "BufNewFile" },
     config = function()
         require("nvim-surround").setup({

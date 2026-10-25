@@ -55,7 +55,7 @@
     }:
       home-manager.lib.homeManagerConfiguration {
         pkgs = pkgsFor system;
-        extraSpecialArgs = {inherit inputs username dotfilesDirectory;};
+        extraSpecialArgs = {inherit inputs dotfilesDirectory;};
         modules = [
           ./home/common.nix
           {
@@ -108,6 +108,7 @@
           pkgs.runCommand "dotfiles-check" {
             nativeBuildInputs = [
               formatPkgs.ruff
+              formatPkgs.pyright
               formatPkgs.shfmt
               formatPkgs.shellcheck
               formatPkgs.prettier
@@ -146,6 +147,8 @@
       in {
         default = pkgs.mkShellNoCC {
           packages = with pkgs; [
+            inputs.ruff-nixpkgs.legacyPackages.${system}.ruff
+            inputs.ruff-nixpkgs.legacyPackages.${system}.pyright
             alejandra
             deadnix
             statix

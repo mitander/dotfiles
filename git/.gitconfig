@@ -1,28 +1,36 @@
+# Identity and editor
 [user]
 	email = carlmitander@gmail.com
 	name = mitander
+
 [core]
 	editor = nvim
-[credential]
-	helper = store
+
+# Command defaults
+[diff]
+	renames = copies
+
+[fetch]
+	prune = true
+
+[push]
+	default = simple
+
+[init]
+	defaultBranch = master
+
+# Colors and diffs
 [color]
 	branch = auto
 	diff = auto
 	interactive = auto
 	status = auto
 	ui = auto
+
 [color "status"]
 	added = green
 	changed = red bold
 	untracked = magenta bold
-[diff]
-	renames = copies
-[fetch]
-	prune = true
-[push]
-	default = simple
-[init]
-	defaultBranch = master
 
 [pager]
 	diff = delta
@@ -44,18 +52,26 @@
 [include]
 	path = ~/dotfiles/themes/flume/extras/current/delta.gitconfig
 
-[coderabbit]
-	machineId = cli/1cb8ea8a75fb415690b82f20894d94d3
+# Credentials and integrations
+[credential]
+	helper = store
+
 [credential "https://github.com"]
 	helper =
 	helper = !gh auth git-credential
+
 [credential "https://gist.github.com"]
 	helper =
 	helper = !gh auth git-credential
 
+[coderabbit]
+	machineId = cli/1cb8ea8a75fb415690b82f20894d94d3
+
+# Directory identities and local overrides
 # Personal identity must follow work because ~/c/p is inside ~/c.
 [includeIf "gitdir:~/c/"]
 	path = ~/.config/git/work.gitconfig
+
 [includeIf "gitdir:~/c/p/"]
 	path = ~/.config/git/personal.gitconfig
 

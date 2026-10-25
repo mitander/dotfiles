@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Explicit host setup, not part of Home Manager activation or dotfiles reload.
 set -euo pipefail
+
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 register=true
+
+# Registration is optional. Neither mode requests document-default changes.
 case "${1:-}" in
 '') ;;
 --no-register) register=false ;;
@@ -19,6 +22,7 @@ if [[ $(uname -s) != Darwin || ${HOME:-} != /* ]]; then
   echo 'Myran Editor requires macOS, an absolute HOME, and the Xcode command line tools.' >&2
   exit 1
 fi
+
 app="$HOME/Applications/Myran Editor.app"
 # The resource launcher is intentionally a symlink. Installed directories and files are not.
 for path in "$HOME" "$HOME/Applications" "$app" "$app/Contents" \
@@ -39,17 +43,25 @@ for path in "$app/Contents/MacOS/myran-editor" "$app/Contents/Info.plist" "$app/
     exit 1
   fi
 done
+
 # Stage beside the app so replacing a running executable is an atomic rename, never a truncation.
 mkdir -p "$HOME/Applications"
 build=$(mktemp -d "$HOME/Applications/.myran-editor.XXXXXX")
 trap 'rm -rf "$build"' EXIT
 mkdir -p "$build/Contents/MacOS"
-/usr/bin/swiftc -target "$(uname -m)-apple-macosx13.0" "$ROOT/extras/myran-editor/FileLinks.swift" "$ROOT/extras/myran-editor/Launcher.swift" "$ROOT/extras/myran-editor/main.swift" -o "$build/Contents/MacOS/myran-editor"
+/usr/bin/swiftc -target "$(uname -m)-apple-macosx13.0" \
+  "$ROOT/extras/myran-editor/FileLinks.swift" \
+  "$ROOT/extras/myran-editor/Launcher.swift" \
+  "$ROOT/extras/myran-editor/main.swift" \
+  -o "$build/Contents/MacOS/myran-editor"
 cp "$ROOT/extras/myran-editor/Info.plist" "$build/Contents/Info.plist"
+
+# Replace installed files only after compilation succeeds.
 mkdir -p "$app/Contents/"{MacOS,Resources}
 mv -f "$build/Contents/MacOS/myran-editor" "$app/Contents/MacOS/myran-editor"
 mv -f "$build/Contents/Info.plist" "$app/Contents/Info.plist"
 ln -sfn "$ROOT/scripts/myran-open-files" "$app/Contents/Resources/myran-open-files"
+
 if "$register"; then
   "$app/Contents/MacOS/myran-editor" --register-app
 fi

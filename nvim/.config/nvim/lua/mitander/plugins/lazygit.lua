@@ -3,11 +3,14 @@ local function open_lazygit()
         vim.system({ "myran", "role", "open", "git", vim.fn.getcwd() }, { text = true }, function(result)
             if result.code ~= 0 then
                 vim.schedule(function()
-                    vim.notify(
-                        result.stderr ~= "" and result.stderr or result.stdout,
-                        vim.log.levels.ERROR,
-                        { title = "lazygit" }
-                    )
+                    local message = result.stderr
+                    if not message or message == "" then
+                        message = result.stdout
+                    end
+                    if not message or message == "" then
+                        message = "Myran Git role failed"
+                    end
+                    vim.notify(message, vim.log.levels.ERROR, { title = "lazygit" })
                 end)
             end
         end)

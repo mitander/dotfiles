@@ -13,14 +13,13 @@ git clone --branch flume-personal https://github.com/mitander/ltui.git ~/c/p/ltu
 ./scripts/setup-trackers
 ```
 
-Setup creates `~/c/p/ltui/.venv` and installs the adapter, ltui and jtui in editable mode.
-Dependencies are resolved only during explicit setup. Nothing installs packages when an application
-starts. Set `PYTHON=/path/to/python` to choose the setup interpreter.
+Setup creates `~/c/p/ltui/.venv` and installs the adapter and ltui in editable mode. Dependencies
+are resolved only during explicit setup. Nothing installs packages when an application starts. Set
+`PYTHON=/path/to/python` to choose the setup interpreter.
 
-Home Manager links `~/.local/bin/ltui` and `jtui` to the shared launcher. When migrating from the
-old Nix packages, run `dotfiles apply` once to remove those snapshots and install these links. After
-that, editing Python source requires only an application restart, not Nix activation, publishing or
-reinstalling. Re-run setup after dependency or package-metadata changes.
+Home Manager links `~/.local/bin/ltui` to the launcher. Run `dotfiles apply` after changing managed
+links. Editing Python source requires only an application restart. Re-run setup after dependency or
+package-metadata changes. Setup does not uninstall packages from an existing environment.
 
 `LTUI_CHECKOUT=/path/to/ltui` selects a different local checkout for both setup and launch. There is
 no remote-source fallback. A missing environment reports the setup command instead of silently

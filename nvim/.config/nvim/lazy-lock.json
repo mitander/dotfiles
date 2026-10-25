@@ -1,7 +1,6 @@
 {
   "blink.cmp": { "branch": "main", "commit": "485c03400608cb6534bbf84da8c1c471fc4808c0" },
   "conform.nvim": { "branch": "master", "commit": "619363c30309d29ffa631e67c8183f2a72caa373" },
-  "copilot.lua": { "branch": "master", "commit": "7df55b20b5b653941f0bcff87e559cabb6fafeb0" },
   "crates.nvim": { "branch": "main", "commit": "694357861ec9ebf12475ddcdd04ea45a0923c32d" },
   "diffbandit.nvim": { "branch": "main", "commit": "207ef5718edb74161897eafb1cbe6f7832cda28b" },
   "fidget.nvim": { "branch": "main", "commit": "6f793b2bcd2d35e201c09520f698bb763220908a" },

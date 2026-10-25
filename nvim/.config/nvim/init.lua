@@ -1,7 +1,28 @@
--- options
-vim.opt.mouse = "a"
+-- Files and undo
 vim.opt.backup = false
 vim.opt.swapfile = false
+vim.opt.undofile = true
+vim.opt.undodir = os.getenv("HOME") .. "/.vim/tmp/undodir"
+
+-- Editing and indentation
+vim.opt.mouse = "a"
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+vim.opt.smartindent = true
+vim.opt.formatoptions = "rqnlj"
+vim.opt.virtualedit = "block"
+vim.opt.jumpoptions = "stack"
+
+-- Search and substitution
+vim.opt.smartcase = true
+vim.opt.ignorecase = true
+vim.opt.hlsearch = true
+vim.opt.incsearch = true
+vim.opt.gdefault = true
+
+-- Display and windows
 vim.opt.splitbelow = true
 vim.opt.splitright = true
 vim.opt.number = true
@@ -10,35 +31,16 @@ vim.opt.termguicolors = true
 vim.opt.ruler = true
 vim.opt.signcolumn = "yes"
 vim.opt.cursorline = true
-vim.opt.errorbells = false
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
 vim.opt.scrolloff = 8
 vim.opt.cmdheight = 1
-vim.opt.expandtab = true
-vim.opt.smartindent = true
-vim.opt.smartcase = true
-vim.opt.ignorecase = true
-vim.opt.hlsearch = true
-vim.opt.incsearch = true
-vim.opt.showcmd = false
 vim.opt.wrap = true
 vim.opt.breakindent = true
 vim.opt.linebreak = true
-vim.opt.virtualedit = "block"
-vim.opt.synmaxcol = 300
-vim.opt.updatetime = 200
-vim.opt.timeoutlen = 300
-vim.opt.gdefault = true
-vim.opt.formatoptions = "rqnlj"
-vim.opt.jumpoptions = "stack"
-vim.opt.undofile = true
-vim.opt.undodir = os.getenv("HOME") .. "/.vim/tmp/undodir"
+vim.opt.errorbells = false
+vim.opt.showcmd = false
 vim.opt.showmode = false
 vim.opt.shortmess:append("casI")
 
--- window options
 vim.opt.fillchars = {
     fold = " ",
     vert = "┃",
@@ -50,7 +52,12 @@ vim.opt.fillchars = {
     verthoriz = "╋",
 }
 
--- disable built-in plugins
+-- Timing and performance
+vim.opt.synmaxcol = 300
+vim.opt.updatetime = 200
+vim.opt.timeoutlen = 300
+
+-- Built-in plugins
 vim.g.loaded_gzip = 1
 vim.g.loaded_zip = 1
 vim.g.loaded_zipPlugin = 1
@@ -66,24 +73,27 @@ vim.g.loaded_rrhelper = 1
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
--- leader
+-- Command shell
+-- fzf-lua builds POSIX command strings and spawns sh. Don't inherit Fish quoting.
+vim.opt.shell = "/bin/sh"
+
+-- Command-line shortcuts
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- disable ex mode
 vim.keymap.set("n", "q", "<nop>")
 
--- expand %% to cwd in command mode
+-- Expand %% to the current file's directory.
 vim.cmd.cabbr({ args = { "<expr>", "%%", "&filetype == 'oil' ? bufname('%')[6:] : expand('%:p:h')" } })
 
--- just exit pls
+-- Accept common write/quit capitalization mistakes.
 vim.cmd.abbr({ args = { "W", "w" } })
 vim.cmd.abbr({ args = { "Q", "q" } })
 vim.cmd.abbr({ args = { "Wq", "wq" } })
 vim.cmd.abbr({ args = { "wQ", "wq" } })
 vim.cmd.abbr({ args = { "WQ", "wq" } })
 
--- bash shortcuts in command line
+-- Use familiar shell navigation while editing commands.
 vim.keymap.set("c", "<c-a>", "<home>")
 vim.keymap.set("c", "<c-b>", "<left>")
 vim.keymap.set("c", "<c-f>", "<right>")
@@ -96,8 +106,8 @@ vim.keymap.set("c", "<esc>f", "<s-right>")
 vim.keymap.set("c", "<esc>d", "<s-right><delete>")
 vim.keymap.set("c", "<c-g>", "<c-c>")
 vim.keymap.set("c", "<enter>", function()
-    local cmdtype = vim.fn.getcmdtype()
-    if cmdtype ~= "/" and cmdtype ~= "?" then
+    local command_type = vim.fn.getcmdtype()
+    if command_type ~= "/" and command_type ~= "?" then
         return "<cr>"
     end
 
@@ -106,10 +116,10 @@ vim.keymap.set("c", "<enter>", function()
         return "<cr>"
     end
 
-    local flags = cmdtype == "?" and "bn" or "n"
+    local flags = command_type == "?" and "bn" or "n"
     local ok, line = pcall(vim.fn.search, pattern, flags)
     if ok and line == 0 then
-        pcall(vim.fn.histadd, cmdtype, pattern)
+        pcall(vim.fn.histadd, command_type, pattern)
         vim.fn.setreg("/", pattern)
         return "<c-c>"
     end
@@ -117,54 +127,56 @@ vim.keymap.set("c", "<enter>", function()
     return "<cr>"
 end, { expr = true, desc = "Cancel failed searches silently" })
 
--- better line navigation
+-- Editing keybindings
+-- Move by displayed lines when wrapping.
 vim.keymap.set("n", "j", "gj")
 vim.keymap.set("n", "k", "gk")
 
--- comment line / visual selection
+-- Comment the current line or selection.
 vim.keymap.set("n", "<leader>/", "gcc", { remap = true, silent = true })
 vim.keymap.set("v", "<leader>/", "gc", { remap = true, silent = true })
 
--- keep visual block on indentation
+-- Keep the selection while changing indentation.
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
 vim.keymap.set("v", "<tab>", ">gv")
 vim.keymap.set("v", "<s-tab>", "<gv")
 
--- clear highlight
+-- Clear search highlighting.
 vim.keymap.set("n", "<enter>", vim.cmd.noh)
 
--- tab navigation
+-- Tab navigation
 vim.keymap.set("n", "<s-h>", vim.cmd.tabp)
 vim.keymap.set("n", "<s-l>", vim.cmd.tabn)
 vim.keymap.set("n", "<s-q>", vim.cmd.tabc)
 vim.keymap.set("n", "<c-t>", vim.cmd.tabe)
 
--- compile
+-- Build and navigation
 vim.keymap.set("n", "<leader><enter>", vim.cmd.make)
 
--- keep centered on jumps
+-- Keep the cursor centered after jumps.
 vim.keymap.set("n", "J", "mzJ`z")
 vim.keymap.set("n", "<c-d>", "<c-d>zz")
 vim.keymap.set("n", "<c-u>", "<c-u>zz")
 vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 
--- toggle colorcolumn
+-- Toggle the 100-column guide.
 vim.keymap.set("n", "<leader>.", function()
-    local cc = vim.opt_local.colorcolumn:get()
-    if #cc > 0 and cc[1] == "100" then
+    -- Neovim's dynamic option accessor supports get(), but its metadata misses this field.
+    ---@diagnostic disable-next-line: undefined-field
+    local columns = vim.opt_local.colorcolumn:get()
+    if #columns > 0 and columns[1] == "100" then
         vim.opt_local.colorcolumn = ""
     else
         vim.opt_local.colorcolumn = "100"
     end
 end, { desc = "Toggle colorcolumn" })
 
--- replace word globally
+-- Start a substitution for the word under the cursor.
 vim.keymap.set("n", "<leader>rw", [[*N:s//<c-r>=expand("<cword>")<enter>]])
 
--- Restart Neovim after configuration changes. Plugin setup is not safely reloadable.
-
+-- Startup and welcome
 local group = vim.api.nvim_create_augroup("mitander", { clear = true })
 
 -- Show a calm welcome without changing the editing buffer or its window options.
@@ -201,6 +213,7 @@ local function show_welcome()
     math.randomseed(vim.uv.hrtime())
     local message = welcome_messages[math.random(#welcome_messages)]
     local width = vim.fn.strdisplaywidth(message)
+
     local welcome_buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(welcome_buf, 0, -1, false, { message })
     vim.bo[welcome_buf].modifiable = false
@@ -251,7 +264,8 @@ vim.api.nvim_create_autocmd("VimEnter", {
     callback = show_welcome,
 })
 
--- nopaste on insert leave
+-- Buffer and window behavior
+-- Reset paste mode after leaving insert mode.
 vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     group = group,
     pattern = "*",
@@ -260,7 +274,7 @@ vim.api.nvim_create_autocmd({ "InsertLeave" }, {
     end,
 })
 
--- 4 space indentation
+-- Keep four-space indentation for these filetypes.
 vim.api.nvim_create_autocmd({ "FileType" }, {
     group = group,
     pattern = { "zig", "go", "rust", "c", "cpp" },
@@ -270,7 +284,7 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     end,
 })
 
--- no line numbers in terminal
+-- Hide line numbers in terminal buffers.
 vim.api.nvim_create_autocmd({ "TermOpen" }, {
     group = group,
     pattern = "*",
@@ -280,7 +294,7 @@ vim.api.nvim_create_autocmd({ "TermOpen" }, {
     end,
 })
 
--- quickfix binds
+-- Close quickfix after selecting a result.
 vim.api.nvim_create_autocmd("FileType", {
     group = group,
     pattern = "qf",
@@ -291,7 +305,7 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
--- better cursorline
+-- Show the cursor line only in the focused window.
 vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
     group = group,
     callback = function()
@@ -306,7 +320,8 @@ vim.api.nvim_create_autocmd("WinLeave", {
     end,
 })
 
--- auto chdir to root
+-- Project directory
+-- Cache root discovery for each file.
 local root_cache = {}
 vim.api.nvim_create_autocmd("BufEnter", {
     group = group,
@@ -319,15 +334,18 @@ vim.api.nvim_create_autocmd("BufEnter", {
         if path == "" or vim.bo.buftype ~= "" or path:match("^%w+://") then
             return
         end
+
         if root_cache[path] == nil then
             root_cache[path] = vim.fs.root(path, { ".git", "Makefile" }) or false
         end
+
         if root_cache[path] then
             vim.api.nvim_set_current_dir(root_cache[path])
         end
     end,
 })
 
+-- Tmux navigation
 -- Claim pane navigation for nested editors such as `git commit`. Dedicated edit
 -- panes are already identified by their workspace role; this covers editors
 -- launched from ordinary shell panes without adding work to the keypress path.
@@ -335,12 +353,14 @@ local function set_tmux_navigation(owned)
     if not vim.env.TMUX_PANE or vim.fn.executable("tmux") ~= 1 then
         return
     end
+
     local command
     if owned then
         command = { "tmux", "set-option", "-pq", "-t", vim.env.TMUX_PANE, "@workspace_navigation", "application" }
     else
         command = { "tmux", "set-option", "-pu", "-t", vim.env.TMUX_PANE, "@workspace_navigation" }
     end
+
     vim.fn.system(command)
 end
 
@@ -358,26 +378,26 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
     end,
 })
 
--- bootstrap lazy if needed
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-local lazy_init = lazypath .. "/lua/lazy/init.lua"
+-- Plugin loading
+-- Restart Neovim after configuration changes. Plugin setup is not safely reloadable.
+local lazy_path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+local lazy_init = lazy_path .. "/lua/lazy/init.lua"
 if not vim.uv.fs_stat(lazy_init) then
-    vim.fn.delete(lazypath, "rf")
-    local out = vim.fn.system({
+    vim.fn.delete(lazy_path, "rf")
+    local clone_output = vim.fn.system({
         "git",
         "clone",
         "--filter=blob:none",
         "https://github.com/folke/lazy.nvim.git",
         "--branch=stable",
-        lazypath,
+        lazy_path,
     })
     if vim.v.shell_error ~= 0 then
-        error("Failed to clone lazy.nvim:\n" .. out)
+        error("Failed to clone lazy.nvim:\n" .. clone_output)
     end
 end
-vim.opt.rtp:prepend(lazypath)
+vim.opt.rtp:prepend(lazy_path)
 
--- initiate lazy
 require("lazy").setup({
     install = { colorscheme = {} },
     spec = "mitander.plugins",

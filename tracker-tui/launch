@@ -1,23 +1,18 @@
 #!/usr/bin/env bash
-# Home Manager links this file as both ltui and jtui.
+# Home Manager links this file as ltui.
 set -euo pipefail
-app="$(basename "$0")"
-case "$app" in
-ltui | jtui) ;;
-*)
-  printf 'Invoke this launcher as ltui or jtui.\n' >&2
-  exit 2
-  ;;
-esac
+
+# Launch only an existing environment. Dependency setup is explicit.
 checkout="${LTUI_CHECKOUT:-$HOME/c/p/ltui}"
-if [[ ! -x "$checkout/.venv/bin/$app" ]]; then
-  printf 'Run ~/dotfiles/scripts/setup-trackers before starting %s.\n' "$app" >&2
+if [[ ! -x "$checkout/.venv/bin/ltui" ]]; then
+  printf 'Run ~/dotfiles/scripts/setup-trackers before starting ltui.\n' >&2
   exit 1
 fi
+
+# Use linked theme exports while preserving explicit caller overrides.
 flume="${DOTFILES_DIR:-$HOME/dotfiles}/themes/flume"
 export FLUME_TRACKER_THEME_DIR="${FLUME_TRACKER_THEME_DIR:-$flume/extras/palette}"
 export FLUME_SCHEMA_FILE="${FLUME_SCHEMA_FILE:-$flume/extras/current/schema}"
-if [[ "$app" == ltui ]]; then
-  export TRACKER_SCOPE="${TRACKER_SCOPE:-dev}"
-fi
-exec "$checkout/.venv/bin/$app" "$@"
+export TRACKER_SCOPE="${TRACKER_SCOPE:-dev}"
+
+exec "$checkout/.venv/bin/ltui" "$@"

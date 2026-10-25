@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="${DOTFILES_DIR:-$HOME/dotfiles}"
-NIX_SCRIPT="$ROOT/scripts/dotfiles-nix.sh"
+FLAKE="path:$ROOT"
 
 usage() {
   cat <<'EOF'
@@ -12,55 +12,115 @@ With no command, reload live configuration without building or activating Nix.
 
 Commands:
   reload       Reload tmux and the calling Fish shell
-  apply        Activate the Home Manager profile, then reload
-  check        Run formatting and isolated behavior checks
-  doctor       Evaluate the selected Home Manager profile
+  build        Build the Home Manager generation without activating it
+  apply        Activate Home Manager, then reload
+  doctor       Evaluate the selected profile and check its live-link location
+  eval         Evaluate every supported system without building
   generations  List Home Manager generations
+  check        Run formatting and isolated behavior checks
   help         Show this help
 EOF
 }
 
-if [[ ! -x "$NIX_SCRIPT" ]]; then
-  printf 'Dotfiles checkout not found: %s\n' "$ROOT" >&2
-  printf 'Set DOTFILES_DIR to the checkout path and try again.\n' >&2
-  exit 1
-fi
+profile() {
+  case "$(uname -s):$(uname -m)" in
+  Darwin:arm64 | Darwin:aarch64) printf '%s\n' 'mitander@darwin' ;;
+  Linux:x86_64 | Linux:amd64) printf '%s\n' 'mitander@linux-x86_64' ;;
+  Linux:arm64 | Linux:aarch64) printf '%s\n' 'mitander@linux-aarch64' ;;
+  *)
+    printf 'Unsupported host: %s %s\n' "$(uname -s)" "$(uname -m)" >&2
+    return 1
+    ;;
+  esac
+}
 
-command_name="${1:-reload}"
-case "$command_name" in
-reload | apply)
-  if [[ "$command_name" == apply ]]; then
-    DOTFILES_ALLOW_ACTIVATE=1 "$NIX_SCRIPT" switch
+run_nix() {
+  nix --extra-experimental-features 'nix-command flakes' "$@" --no-write-lock-file
+}
+
+verify_checkout() {
+  local home_directory expected
+  home_directory=$(run_nix eval "$FLAKE#homeConfigurations.\"$selected\".config.home.homeDirectory" --raw)
+  expected="$home_directory/dotfiles"
+  if [[ ! -f "$expected/flake.nix" || ! "$ROOT/flake.nix" -ef "$expected/flake.nix" ]]; then
+    printf 'This profile live-links %s, but the command is running from %s.\n' "$expected" "$ROOT" >&2
+    printf 'Use the expected checkout before activating.\n' >&2
+    return 1
   fi
+}
 
+reload() {
   if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
     tmux source-file "$HOME/.tmux.conf"
-    printf 'Reloaded tmux.\n'
   fi
+  printf 'Reloaded live configuration. Restart Neovim to load Lua changes.\n'
+}
 
-  cat <<'EOF'
-Reloaded live configuration.
-
-Fish reloads in the calling shell. Ghostty watches its linked config. Neovim
-configuration is intentionally restarted rather than hot-reloaded. Use :restart
-inside Neovim when changing its Lua configuration.
-EOF
-  ;;
-check)
-  "$ROOT/scripts/check"
-  ;;
-doctor)
-  "$NIX_SCRIPT" doctor
-  ;;
-generations)
-  "$NIX_SCRIPT" generations
-  ;;
+command_name="${1:-reload}"
+if [[ $# -gt 1 ]]; then
+  usage >&2
+  exit 2
+fi
+case "$command_name" in
 help | -h | --help)
   usage
+  exit 0
   ;;
+reload | build | apply | doctor | eval | generations | check) ;;
 *)
   printf 'Unknown command: %s\n\n' "$command_name" >&2
   usage >&2
   exit 2
+  ;;
+esac
+
+if [[ ! -f "$ROOT/flake.nix" ]]; then
+  printf 'Dotfiles checkout not found: %s\nSet DOTFILES_DIR to the checkout path.\n' "$ROOT" >&2
+  exit 1
+fi
+
+case "$command_name" in
+reload)
+  reload
+  exit 0
+  ;;
+check)
+  exec "$ROOT/scripts/check"
+  ;;
+esac
+
+# Reuse Nix, but never install it as a side effect of an environment command.
+if ! command -v nix >/dev/null 2>&1 && [[ -x /nix/var/nix/profiles/default/bin/nix ]]; then
+  export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+fi
+if ! command -v nix >/dev/null 2>&1; then
+  printf 'Install Nix, open a fresh terminal, and rerun this command.\n' >&2
+  exit 1
+fi
+selected=$(profile)
+
+case "$command_name" in
+build)
+  run_nix build "$FLAKE#homeConfigurations.\"$selected\".activationPackage" --no-link
+  ;;
+apply)
+  # Only this explicit command activates. Failed activation must not reload tmux or Fish.
+  verify_checkout
+  backup_extension="pre-nix-$(date +%Y%m%d-%H%M%S)"
+  nix --extra-experimental-features 'nix-command flakes' run "$FLAKE#home-manager" \
+    --no-write-lock-file -- switch --flake "$FLAKE#$selected" -b "$backup_extension" --no-write-lock-file
+  reload
+  ;;
+doctor)
+  verify_checkout
+  run_nix eval "$FLAKE#homeConfigurations.\"$selected\".activationPackage.drvPath" --raw >/dev/null
+  printf 'Profile %s evaluates successfully and live-links %s.\n' "$selected" "$ROOT"
+  ;;
+eval)
+  run_nix flake check "$FLAKE" --all-systems --no-build
+  ;;
+generations)
+  nix --extra-experimental-features 'nix-command flakes' run "$FLAKE#home-manager" \
+    --no-write-lock-file -- generations
   ;;
 esac

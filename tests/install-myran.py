@@ -16,73 +16,86 @@ INSTALLER = Path(__file__).resolve().parents[1] / "scripts/install-myran.py"
 
 
 class InstallTest(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory(prefix="install-myran-test-")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
+
         self.home = self.root / "home"
         self.destination = self.home / ".local/bin/myran"
         self.destination.parent.mkdir(parents=True)
+
         self.source = self.root / "candidate"
         self.source.write_bytes(b"#!/bin/sh\nexit 0\n")
         self.source.chmod(0o700)
+
         self.env = dict(
             os.environ,
             HOME=str(self.home),
             XDG_STATE_HOME=str(self.home / ".local/state"),
         )
 
-    def run_installer(self, *args, success=True):
+    def run_installer(
+        self, *args: str | Path, success: bool = True
+    ) -> subprocess.CompletedProcess[str]:
         result = subprocess.run(
             [sys.executable, str(Path(__file__).resolve()), "--run-installer", *map(str, args)],
             env=self.env,
             text=True,
             capture_output=True,
         )
+
         self.assertEqual(result.returncode == 0, success, result.stdout + result.stderr)
         return result
 
-    def receipt(self):
+    def receipt(self) -> Path:
         return next((self.home / ".local/state/myran/cutover").glob("install-*"))
 
-    def test_replace_and_exact_rollback(self):
+    def test_replace_and_exact_rollback(self) -> None:
         self.destination.write_bytes(b"old binary")
         self.destination.chmod(0o700)
+
         self.run_installer("install", self.source)
         receipt = self.receipt()
         record = json.loads((receipt / "receipt.json").read_text())
         self.assertEqual(record["previous_sha256"], hashlib.sha256(b"old binary").hexdigest())
         self.assertEqual(self.destination.read_bytes(), self.source.read_bytes())
         self.assertEqual(receipt.stat().st_mode & 0o777, 0o700)
+
         self.run_installer("rollback", receipt)
         self.assertEqual(self.destination.read_bytes(), b"old binary")
         self.assertEqual(self.destination.stat().st_mode & 0o777, 0o700)
 
-    def test_new_install_and_changed_destination_guard(self):
+    def test_new_install_and_changed_destination_guard(self) -> None:
         self.run_installer("install", self.source, self.destination)
         self.destination.write_bytes(b"unrelated update")
         self.run_installer("rollback", self.receipt(), success=False)
         self.assertEqual(self.destination.read_bytes(), b"unrelated update")
+
+        # Restoring the installed bytes makes the same receipt usable again.
         self.destination.write_bytes(self.source.read_bytes())
         self.run_installer("rollback", self.receipt())
         self.assertFalse(self.destination.exists())
 
-    def test_symlinks_and_special_files_refused(self):
+    def test_symlinks_and_special_files_refused(self) -> None:
         linked_source = self.root / "link"
         linked_source.symlink_to(self.source)
         self.run_installer("install", linked_source, success=False)
+
         self.destination.symlink_to(self.source)
         self.run_installer("install", self.source, success=False)
         self.destination.unlink()
+
         os.mkfifo(self.destination)
         self.run_installer("install", self.source, success=False)
         self.destination.unlink()
+
         parent_link = self.root / "bin-link"
         parent_link.symlink_to(self.destination.parent)
         self.run_installer("install", self.source, parent_link / "myran", success=False)
         self.assertFalse(self.destination.exists())
 
-    def test_writable_ancestor_refused(self):
+    def test_writable_ancestor_refused(self) -> None:
         unsafe = self.root / "unsafe"
         protected = unsafe / "protected"
         protected.mkdir(parents=True)
@@ -90,12 +103,14 @@ class InstallTest(unittest.TestCase):
         result = self.run_installer("install", self.source, protected / "myran", success=False)
         self.assertIn(f"unsafe ancestor: {unsafe}", result.stderr)
         self.assertFalse((protected / "myran").exists())
+
+        # The state directory must not be created under this unsafe ancestor either.
         self.env["XDG_STATE_HOME"] = str(protected / "state")
         self.run_installer("install", self.source, success=False)
         self.assertFalse(self.destination.exists())
         self.assertFalse((protected / "state").exists())
 
-    def test_foreign_owned_or_world_writable_root_refused(self):
+    def test_foreign_owned_or_world_writable_root_refused(self) -> None:
         installer = runpy.run_path(str(INSTALLER))
         original_stat = Path.stat
         root_info = original_stat(Path("/"))
@@ -103,26 +118,34 @@ class InstallTest(unittest.TestCase):
 
         for owner, mode in ((foreign_uid, 0o755), (0, 0o757)):
             with self.subTest(owner=owner, mode=oct(mode)):
+                # Change only the root's permissions and owner in the stat fixture.
                 fields = list(root_info)
-                fields[0] = (fields[0] & ~0o777) | mode
+                fields[0] = (root_info.st_mode & ~0o777) | mode
                 fields[4] = owner
 
-                def stat_with_unsafe_root(path, *args, root_fields=fields, **kwargs):
+                def stat_with_unsafe_root(
+                    path: Path,
+                    *,
+                    follow_symlinks: bool = True,
+                    root_fields: list[int | float] = fields,
+                ) -> os.stat_result:
                     if path == Path("/"):
                         return os.stat_result(root_fields)
-                    return original_stat(path, *args, **kwargs)
+                    return original_stat(path, follow_symlinks=follow_symlinks)
 
                 with patch.object(Path, "stat", stat_with_unsafe_root):
                     with self.assertRaisesRegex(ValueError, "^unsafe ancestor: /$"):
                         installer["no_symlinks"](self.source)
 
-    def test_permissions_and_corrupted_backup_refused(self):
+    def test_permissions_and_corrupted_backup_refused(self) -> None:
         self.source.chmod(0o777)
         self.run_installer("install", self.source, success=False)
         self.source.chmod(0o700)
+
         self.destination.parent.chmod(0o777)
         self.run_installer("install", self.source, success=False)
         self.destination.parent.chmod(0o700)
+
         self.destination.write_bytes(b"old binary")
         self.destination.chmod(0o700)
         self.run_installer("install", self.source)
@@ -131,11 +154,11 @@ class InstallTest(unittest.TestCase):
         self.assertEqual(self.destination.read_bytes(), self.source.read_bytes())
 
 
-def run_installer_with_trusted_root():
+def run_installer_with_trusted_root() -> None:
     original_stat = Path.stat
 
-    def stat_with_trusted_root(path, *args, **kwargs):
-        info = original_stat(path, *args, **kwargs)
+    def stat_with_trusted_root(path: Path, *, follow_symlinks: bool = True) -> os.stat_result:
+        info = original_stat(path, follow_symlinks=follow_symlinks)
         if path == Path("/"):
             # Linux Nix sandboxes leave the host-owned root UID unmapped. Model
             # a root-owned /, but keep its real permissions and all other metadata.

@@ -6,10 +6,11 @@ local function project_zig_root(root)
         if name == "zig" then
             local local_zig = path .. "/zig/zig"
             local local_zig_lib = path .. "/zig/lib"
-            return uv.fs_stat(local_zig) and uv.fs_stat(local_zig_lib)
+            return uv.fs_stat(local_zig) ~= nil and uv.fs_stat(local_zig_lib) ~= nil
         end
         return false
     end)
+
     if project_root then
         return project_root, project_root .. "/zig/zig", project_root .. "/zig/lib"
     end
@@ -87,15 +88,12 @@ return {
             lua_ls = {
                 settings = {
                     Lua = {
-                        diagnostics = {
-                            globals = { "vim", "augroup" },
-                        },
                         workspace = {
                             checkThirdParty = false,
+                            -- Workspace source is not a library: it must still receive diagnostics.
                             library = {
-                                [vim.fn.expand("$VIMRUNTIME/lua")] = true,
-                                [vim.fn.stdpath("config") .. "/lua"] = true,
-                                [vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua/lazy"] = true,
+                                vim.env.VIMRUNTIME .. "/lua",
+                                vim.fn.stdpath("data") .. "/lazy/lazy.nvim/lua",
                             },
                         },
                     },
@@ -125,12 +123,15 @@ return {
             group = group,
             callback = function(args)
                 local map_opts = { buffer = args.buf, remap = false }
+
                 local function qf_references()
                     vim.lsp.buf.references(nil, { loclist = false })
                 end
+
                 local function qf_implementations()
                     vim.lsp.buf.implementation({ loclist = false })
                 end
+
                 local function fzf_lsp(method, fallback)
                     return function()
                         local ok, fzf_lua = pcall(require, "fzf-lua")

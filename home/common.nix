@@ -3,10 +3,11 @@
   inputs,
   lib,
   pkgs,
-  username,
   dotfilesDirectory,
   ...
 }: let
+  toolingPkgs = inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+
   live = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/${path}";
 
   # Private agent configuration lives in ~/.agents.
@@ -17,35 +18,43 @@ in {
     stateVersion = "26.05";
 
     packages = with pkgs; [
+      # Shell and navigation
       inputs.atuin-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.atuin
       bat
-      alejandra
-      curl
-      delta
       fd
       fish
       fzf
+      lsd
+      ripgrep
+      tmux
+      tree
+      zoxide
+
+      # Development tools
+      curl
+      delta
       git
       jq
       lazygit
-      lsd
       neovim
-      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.prettier
-      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.taplo
-      ripgrep
-      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.ruff
-      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.shfmt
-      inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.shellcheck
-      stylua
-      tmux
-      tree
       unzip
-      zoxide
+
+      # Formatters and diagnostics
+      alejandra
+      toolingPkgs.prettier
+      toolingPkgs.pyright
+      toolingPkgs.ruff
+      toolingPkgs.shellcheck
+      toolingPkgs.shfmt
+      toolingPkgs.taplo
+      stylua
     ];
   };
 
+  # Platform integration
   programs.home-manager.enable = true;
 
+  # Checkout validation
   home.activation.checkAgentConfigCheckout = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     agents_expected_checkout="$HOME/.agents"
     if [[ ! -d "$agents_expected_checkout/skills" || ! -d "$agents_expected_checkout/.git" ]]; then
@@ -65,6 +74,7 @@ in {
     unset dotfiles_expected_checkout
   '';
 
+  # Live configuration links
   xdg.configFile = {
     ".lldbinit".source = live "lldb/.config/.lldbinit";
     "bronson/flume".source = live "themes/flume/extras";
@@ -76,10 +86,10 @@ in {
     "nvim".source = live "nvim/.config/nvim";
     "git/work.gitconfig".source = live "git/work.gitconfig";
     "git/personal.gitconfig".source = live "git/personal.gitconfig";
-    "stylua/.luarc.json".source = live "stylua/.config/stylua/.luarc.json";
     "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
   };
 
+  # Agent, command and tmux links
   home.file = {
     ".gitconfig".source = live "git/.gitconfig";
     ".pi/agent/AGENTS.md".source = agentLive "pi/AGENTS.md";
@@ -95,7 +105,6 @@ in {
     ".local/bin/dotfiles".source = live "scripts/dotfiles";
     ".local/bin/dotfiles-format".source = live "scripts/format.sh";
     ".local/bin/ltui".source = live "tracker-tui/launch";
-    ".local/bin/jtui".source = live "tracker-tui/launch";
     ".tmux.conf".source = live "tmux/.tmux.conf";
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
   };
@@ -105,11 +114,4 @@ in {
 
   # Keep activation builds focused on the environment.
   manual.manpages.enable = false;
-
-  assertions = [
-    {
-      assertion = username == "mitander";
-      message = "This initial migration scaffold only defines the mitander account.";
-    }
-  ];
 }

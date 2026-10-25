@@ -6,36 +6,49 @@ export PYTHONDONTWRITEBYTECODE=1
 
 case "${1:-}" in
 '')
+  # Check source style and both Python platforms before behavior tests.
   sh scripts/format.sh check
-  python3 tests/python-format.py
+  pyright --project pyrightconfig.json --pythonplatform Darwin
+  pyright --project pyrightconfig.json --pythonplatform Linux
+
+  # Exercise installation, command routing and editor behavior in isolated fixtures.
   python3 tests/install-myran.py
-  for test in dotfiles-command nix-command tracker-local fish-config fish-nvim myran-open-files tmux-run-borders; do
+  for test in dotfiles-command tracker-local fish-config fish-nvim myran-open-files tmux-run-borders; do
     bash "tests/$test.sh"
   done
-  for test in nvim-config nvim-formatters nvim-clipboard; do
+  for test in nvim-config nvim-formatters nvim-clipboard nvim-tree; do
     nvim --clean --headless -l "tests/$test.lua"
   done
   ;;
 myran)
-  # Installed-binary qualification runs only against private tmux servers.
+  # Test installed Myran against private tmux servers only.
   bash tests/tmux-config.sh
   ;;
 myran-editor)
+  # Use disposable apps and HOME without selecting host document defaults.
   bash tests/myran-editor-macos.sh
   bash tests/myran-editor-install-macos.sh
   ;;
+fzf)
+  nvim --clean --headless -l tests/nvim-fzf.lua
+  ;;
+luals)
+  # Check the real language server and prove undefined-name diagnostics stay enabled.
+  nvim --clean --headless -l tests/nvim-luals.lua
+  ;;
 formatters)
-  # Uses the installed Conform plugin and real formatting tools.
+  # Test installed Conform with real formatting tools.
   nvim --clean --headless -l tests/nvim-dprint.lua
   ;;
 trackers)
+  # Run the editable checkout's checks in its own Python environment.
   checkout="${LTUI_CHECKOUT:-$HOME/c/p/ltui}"
   "$checkout/.venv/bin/python" tests/tracker-editable.py "$checkout"
   FLUME_RUNTIME="${DOTFILES_DIR:-$HOME/dotfiles}/themes/flume" \
     PYTHON="$checkout/.venv/bin/python" "$checkout/scripts/check"
   ;;
 *)
-  printf 'Usage: scripts/check [myran|myran-editor|formatters|trackers]\n' >&2
+  printf 'Usage: scripts/check [myran|myran-editor|fzf|luals|formatters|trackers]\n' >&2
   exit 2
   ;;
 esac

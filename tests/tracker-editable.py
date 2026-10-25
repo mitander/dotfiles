@@ -10,9 +10,9 @@ from urllib.parse import unquote, urlparse
 
 def main() -> None:
     checkout = Path(sys.argv[1]).resolve()
+
     for package, module, directory in (
         ("ltui-linear", "ltui", "ltui"),
-        ("jtui", "jtui", "jtui"),
         ("flume-tracker-theme", "flume_tracker_theme", "flume-theme"),
     ):
         distribution = importlib.metadata.distribution(package)

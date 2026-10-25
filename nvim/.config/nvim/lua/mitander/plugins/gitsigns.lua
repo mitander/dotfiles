@@ -65,8 +65,8 @@ return {
         vim.keymap.set("n", "]g", function()
             jump_change("next")
         end, { desc = "Next Git change" })
-        vim.keymap.set("n", "g,", require("gitsigns").toggle_current_line_blame)
-        vim.keymap.set("n", "gl", require("gitsigns").blame_line)
-        vim.keymap.set("n", "<leader><bs>", require("gitsigns").reset_hunk)
+        vim.keymap.set("n", "g,", gitsigns.toggle_current_line_blame)
+        vim.keymap.set("n", "gl", gitsigns.blame_line)
+        vim.keymap.set("n", "<leader><bs>", gitsigns.reset_hunk)
     end,
 }

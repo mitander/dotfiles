@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Link every personal skill from ~/.agents/skills into the skill directories of
-# the other agent harnesses (Claude Code, Codex, Copilot). Real directories that
-# other tools manage (for example installed marketplace skills) are never
-# touched; existing correct symlinks are left alone; stale symlinks are repaired.
+# Share personal skills with Claude Code, Codex and Copilot without replacing
+# files or directories managed by those harnesses.
 set -euo pipefail
 
+# Require the source checkout before creating any target directories.
 src="${HOME}/.agents/skills"
 if [[ ! -d "${src}" ]]; then
   echo "Missing skill source checkout: ${src}" >&2
@@ -26,6 +25,8 @@ for target in "${targets[@]}"; do
     [[ -f "${skill_dir}/SKILL.md" ]] || continue
     name="$(basename "${skill_dir}")"
     link="${target}/${name}"
+
+    # Keep correct links and real paths. Only missing or stale links need repair.
     if [[ -L "${link}" && "$(readlink "${link}")" == "${skill_dir}" ]]; then
       continue
     fi
@@ -33,6 +34,7 @@ for target in "${targets[@]}"; do
       echo "skip ${link} (real directory managed by another tool)" >&2
       continue
     fi
+
     ln -sfn "${skill_dir}" "${link}"
     linked=$((linked + 1))
     echo "linked ${link}"

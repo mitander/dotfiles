@@ -124,7 +124,7 @@ return {
         completion = {
             list = {
                 selection = {
-                    -- Start unselected; preview only after explicit menu navigation.
+                    -- Start unselected. Preview only after explicit menu navigation.
                     preselect = false,
                     auto_insert = true,
                 },
