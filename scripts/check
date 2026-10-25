@@ -18,7 +18,7 @@ case "${1:-}" in
   for test in dotfiles-command tracker-local fish-config fish-nvim myran-open-files tmux-run-borders; do
     bash "tests/$test.sh"
   done
-  for test in nvim-config nvim-formatters nvim-clipboard nvim-files nvim-preview; do
+  for test in nvim-config nvim-performance nvim-formatters nvim-clipboard nvim-files nvim-preview; do
     nvim --clean --headless -l "tests/$test.lua"
   done
   ;;
@@ -36,6 +36,10 @@ myran-editor)
   ;;
 fzf)
   nvim --clean --headless -l tests/nvim-fzf.lua
+  ;;
+nvim-startup)
+  # Exercise installed plugins with isolated config/state and no language-server processes.
+  nvim --clean --headless -l tests/nvim-startup.lua
   ;;
 luals)
   # Check the real language server and prove undefined-name diagnostics stay enabled.
@@ -64,7 +68,7 @@ trackers)
     PYTHON="$checkout/.venv/bin/python" "$checkout/scripts/check"
   ;;
 *)
-  printf 'Usage: scripts/check [myran|myran-editor|pi|fzf|luals|files|preview|formatters|trackers]\n' >&2
+  printf 'Usage: scripts/check [myran|myran-editor|pi|fzf|nvim-startup|luals|files|preview|formatters|trackers]\n' >&2
   exit 2
   ;;
 esac

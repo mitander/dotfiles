@@ -44,6 +44,22 @@ default. Keep effects and cleanup visible. The installed-Pi check also runs stri
 checks, including unchecked index access and exact optional properties. JavaScript fixtures are
 exercised at runtime, not statically checked.
 
+## Neovim performance
+
+Run `:TSInstallConfigured` in Neovim after initial plugin installation or when adding configured
+parser languages. Normal startup does not install parsers. Plugin updates still run `:TSUpdate`.
+
+Treesitter startup and Markdown rendering skip buffers above 100 KiB. Buffer-word completion uses at
+most 100 KiB of visible normal buffers, preferring the current buffer. Loaded-buffer checks use
+current text, including unsaved edits, without copying the buffer into Lua.
+
+Inside tmux, the Fish `nvim` function uses `myran open` to reuse the project's running editor.
+Ctrl-Q in an Edit pane returns to the previously selected tmux window without closing the editor.
+Other panes receive Ctrl-Q unchanged. This is native tmux navigation, not a Myran action. Switching
+back preserves the editor's language-server processes and their in-memory caches. Quitting Neovim or
+restarting a server loses that analysis state. Session/layout restoration does not restore it.
+Rust-analyzer cache priming is already enabled by default.
+
 ## Skim file sizes by code lines
 
 Use `lt` for a Git-aware tree with an aligned LOC column. Counts come from tokei and exclude
@@ -149,6 +165,7 @@ Checks that need installed applications run separately:
 ./scripts/check myran-editor  # macOS file-opening app
 ./scripts/check pi            # strict TS, footer and file links against installed Pi
 ./scripts/check fzf           # installed picker filtering and shell arguments
+./scripts/check nvim-startup  # installed plugin activation and large-buffer limits
 ./scripts/check luals         # Neovim configuration diagnostics
 ./scripts/check files         # installed Oil and NvimTree navigation
 ./scripts/check preview       # installed live-preview.nvim lifecycle

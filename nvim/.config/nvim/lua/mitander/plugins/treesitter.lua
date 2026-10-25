@@ -57,17 +57,12 @@ local textobjects = {
     },
 }
 
-local function is_large_file(buf)
-    local ok, stats = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(buf))
-    return ok and stats and stats.size > 100 * 1024
-end
-
 return {
     "nvim-treesitter/nvim-treesitter",
     branch = "main",
     lazy = false,
     build = ":TSUpdate",
-    cmd = { "TSUpdate", "TSInstall" },
+    cmd = { "TSUpdate", "TSInstall", "TSInstallConfigured" },
     dependencies = {
         "nvim-treesitter/nvim-treesitter-textobjects",
     },
@@ -77,17 +72,20 @@ return {
     config = function()
         local treesitter = require("nvim-treesitter")
         treesitter.setup({})
-        treesitter.install(languages)
+        vim.api.nvim_create_user_command("TSInstallConfigured", function()
+            treesitter.install(languages, { summary = true })
+        end, { desc = "Install configured Treesitter parsers" })
 
         local group = vim.api.nvim_create_augroup("TreesitterStart", { clear = true })
         vim.api.nvim_create_autocmd("FileType", {
             group = group,
             callback = function(args)
-                if is_large_file(args.buf) then
+                if require("mitander.buffer_limits").is_large(args.buf) then
                     return
                 end
 
-                local started = pcall(vim.treesitter.start, args.buf)
+                local started = vim.treesitter.highlighter.active[args.buf] ~= nil
+                    or pcall(vim.treesitter.start, args.buf)
                 if started and vim.bo[args.buf].filetype ~= "python" then
                     vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
                 end

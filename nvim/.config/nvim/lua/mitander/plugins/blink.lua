@@ -90,6 +90,11 @@ return {
                     name = "Buffer",
                     module = "blink.cmp.sources.buffer",
                     max_items = 5,
+                    opts = {
+                        get_bufnrs = function()
+                            return require("mitander.buffer_limits").completion_buffers()
+                        end,
+                    },
                 },
                 snippets = {
                     name = "Snippets",

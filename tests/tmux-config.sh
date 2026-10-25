@@ -105,11 +105,6 @@ for key in Enter q Escape; do
   [[ -z "$(printf '%s\n' "$root_bindings" | awk -v key="$key" '$4 == key')" ]] ||
     fail "plain $key still intercepts command input"
 done
-ctrl_q="$(printf '%s\n' "$root_bindings" | grep -E 'bind-key +(-r )?-T root +C-q ' || true)"
-prefix_q="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +q ' || true)"
-for close in "$ctrl_q" "$prefix_q"; do
-  [[ "$close" == *'TMUX_PANE=#{q:pane_id}'*'__tmux-action close-run'* ]] || fail 'Run close loses invoking pane'
-done
 mouse="$(printf '%s\n' "$root_bindings" | grep -F MouseDown1StatusLeft || true)"
 [[ "$mouse" == *'__tmux-action workspace'* ]] || fail 'status picker bypasses Myran'
 style="$(tmux -L "$SOCKET" show-option -gv status-style)"
@@ -151,6 +146,48 @@ invoke_binding prefix z
 zoom_state="$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id} #{window_zoomed_flag}')"
 [[ "$zoom_state" == "$right 0" ]] || fail "last-pane should focus $right and unzoom: $zoom_state"
 
+# Leaving Edit returns to the previous window without closing Neovim or changing its text.
+editor="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t smoke: -n editor nvim -u NONE -i NONE -n --noplugin)"
+editor_pid="$(tmux -L "$SOCKET" display-message -p -t "$editor" '#{pane_pid}')"
+tmux -L "$SOCKET" set-option -p -t "$editor" @workspace_pane_role vim
+tmux -L "$SOCKET" select-window -t "$editor"
+for _attempt in {1..100}; do
+  [[ "$(tmux -L "$SOCKET" display-message -p -t "$editor" '#{pane_current_command}')" == nvim ]] && break
+  sleep 0.02
+done
+tmux -L "$SOCKET" send-keys -t "$editor" -l 'ikeep this editor warm'
+for _attempt in {1..100}; do
+  [[ "$(tmux -L "$SOCKET" capture-pane -p -t "$editor")" == *'keep this editor warm'* ]] && break
+  sleep 0.02
+done
+invoke_binding root C-q
+[[ "$(tmux -L "$SOCKET" display-message -p '#{window_id}')" == "$window" ]] || fail 'Ctrl-Q did not return to the previous window'
+[[ "$(tmux -L "$SOCKET" display-message -p -t "$editor" '#{pane_pid}')" == "$editor_pid" ]] || fail 'Ctrl-Q replaced the editor process'
+[[ "$(tmux -L "$SOCKET" capture-pane -p -t "$editor")" == *'keep this editor warm'* ]] || fail 'Ctrl-Q changed editor text'
+
+# Outside Edit, observe the original Ctrl-Q byte reaching an application.
+ready="$TEST_ROOT/receiver-ready"
+received="$TEST_ROOT/received"
+# Expand $byte in the receiving pane, not in this test driver.
+# shellcheck disable=SC2016
+printf -v receiver 'stty raw -echo; touch %q; IFS= read -r -n 1 byte; printf "%%s" "$byte" > %q; exec sleep 300' "$ready" "$received"
+receiver_pane="$(tmux -L "$SOCKET" new-window -P -F '#{pane_id}' -t smoke: -n receiver bash --noprofile --norc -c "$receiver")"
+for _attempt in {1..100}; do
+  [[ -f "$ready" ]] && break
+  sleep 0.02
+done
+[[ -f "$ready" ]] || fail 'Ctrl-Q receiver did not start'
+invoke_binding root C-q
+for _attempt in {1..100}; do
+  [[ -s "$received" ]] && break
+  sleep 0.02
+done
+[[ -s "$received" ]] || fail 'Ctrl-Q was swallowed outside Edit'
+IFS= read -r -n 1 received_byte <"$received"
+[[ "$received_byte" == $'\x11' ]] || fail 'Ctrl-Q was changed outside Edit'
+tmux -L "$SOCKET" kill-window -t "$receiver_pane"
+tmux -L "$SOCKET" kill-window -t "$editor"
+
 # Reload restores managed shell defaults without duplicating the autosave hook.
 tmux -L "$SOCKET" set-option -gw copy-mode-line-numbers relative
 tmux -L "$SOCKET" set-option -g default-shell /bin/sh
@@ -167,4 +204,4 @@ HOME="$TEST_ROOT/home" tmux -L "$SOCKET" source-file "$TEST_ROOT/home/dotfiles/t
   fail 'reload did not clear the stale shell environment'
 status_right="$(tmux -L "$SOCKET" show-option -gqv status-right)"
 [[ "$status_right" == *'#(true)'* && "$status_right" != *'#(true)'*'#(true)'* ]] || fail 'autosave hook changed'
-printf 'PASS: Myran callers, native navigation/splits/zoom, application claims, restore disabled, safe reload\n'
+printf 'PASS: Myran callers, native navigation/splits/zoom, warm editor, Ctrl-Q forwarding, safe reload\n'

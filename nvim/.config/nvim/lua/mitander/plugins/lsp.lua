@@ -46,7 +46,35 @@ end
 
 return {
     "neovim/nvim-lspconfig",
-    event = { "BufReadPre", "BufNewFile" },
+
+    -- Match the pinned server filetypes without loading LSP/completion for plain text or Markdown.
+    ft = {
+        "astro",
+        "c",
+        "cpp",
+        "cuda",
+        "gleam",
+        "go",
+        "gomod",
+        "gotmpl",
+        "gowork",
+        "htmlangular",
+        "javascript",
+        "javascriptreact",
+        "json",
+        "jsonc",
+        "lua",
+        "objc",
+        "objcpp",
+        "python",
+        "rust",
+        "svelte",
+        "typescript",
+        "typescriptreact",
+        "vue",
+        "zig",
+        "zir",
+    },
     opts = {
         capabilities = vim.lsp.protocol.make_client_capabilities(),
         flags = {

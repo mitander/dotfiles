@@ -7,6 +7,9 @@ return {
             { "<leader>vm", "<cmd>RenderMarkdown buf_toggle<cr>", desc = "Toggle Markdown rendering" },
         },
         opts = {
+            ignore = function(bufnr)
+                return require("mitander.buffer_limits").is_large(bufnr)
+            end,
             render_modes = { "n", "c" },
             sign = { enabled = false },
             heading = { width = "block" },

@@ -56,6 +56,7 @@ vim.opt.fillchars = {
 vim.opt.synmaxcol = 300
 vim.opt.updatetime = 200
 vim.opt.timeoutlen = 300
+require("mitander.buffer_limits").setup_treesitter()
 
 -- Built-in plugins
 vim.g.loaded_gzip = 1
