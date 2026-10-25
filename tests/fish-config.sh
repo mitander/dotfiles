@@ -24,6 +24,7 @@ export FZF_CTRL_T_OPTS=' --preview "echo --read0 preview"'
 export HOMEBREW_PREFIX=/opt/homebrew
 export PATH="$PATH:/opt/homebrew/bin"
 
+# Repeated sourcing must keep PATH stable without initializing interactive tools.
 "$FISH" --no-config -c 'source "$DOTFILES_TEST_CONFIG"; source "$DOTFILES_TEST_CONFIG";
     set -l nix_index (contains -i -- "$HOME/.nix-profile/bin" $PATH)
     set -l brew_index (contains -i -- /opt/homebrew/bin $PATH)
@@ -31,6 +32,7 @@ export PATH="$PATH:/opt/homebrew/bin"
     test (count (string match -- "$HOME/.nix-profile/bin" $PATH)) -eq 1; or exit 1
     test (count (string match -- "$HOME/.dprint/bin" $PATH)) -eq 1; or exit 1
     command -q dprint; or exit 1
+    test "$LG_CONFIG_FILE" = "$DOTFILES_DIR/lazygit/.config/lazygit/config.yml,$HOME/.config/lazygit/flume.yml"; or exit 1
     set -l dprint_index (contains -i -- "$HOME/.dprint/bin" $PATH)
     test $nix_index -lt $dprint_index; or exit 1
     not functions -q fzf; or exit 1'
@@ -38,11 +40,14 @@ export PATH="$PATH:/opt/homebrew/bin"
   echo 'FAIL: noninteractive shell initialized UI tools' >&2
   exit 1
 }
+
+# Interactive shells initialize each UI integration once.
 "$FISH" --no-config -i -c 'source "$DOTFILES_TEST_CONFIG"; functions -q fzf' >"$TEST_ROOT/output" 2>"$TEST_ROOT/error"
 for tool in fzf atuin zoxide; do
   [[ "$(grep -cx "$tool" "$DOTFILES_TEST_CALLS")" == 1 ]]
 done
 
+# File discovery must respect Git ignores, including through shell aliases.
 git -C "$TEST_ROOT/project" init -q
 printf 'target/\n' >"$TEST_ROOT/project/.gitignore"
 printf 'source\n' >"$TEST_ROOT/project/name with spaces.rs"
@@ -65,6 +70,8 @@ if grep -q 'target/artifact\|^\.git/' "$TEST_ROOT/files"; then
   echo 'FAIL: default discovery included ignored files' >&2
   exit 1
 fi
+
+# Ctrl-T must preserve literal roots and NUL-delimited filenames.
 prefix='source dir;$(touch BAD)'
 mkdir -p "$prefix/target"
 printf 'source\n' >"$prefix/inner.rs"
