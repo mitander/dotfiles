@@ -1,12 +1,31 @@
+local function browser_extension(filetype, label, directory)
+    local function title()
+        local path = directory()
+        if not path then
+            return label
+        end
+        local name = vim.fn.fnamemodify(path:gsub("/+$", ""), ":t")
+        local text = label .. " · " .. (name == "" and "/" or name .. "/")
+        return (text:gsub("%%", "%%%%"))
+    end
+    local sections = { lualine_c = { title } }
+    return { filetypes = { filetype }, sections = sections, inactive_sections = sections }
+end
+
 local function make_opts()
     return {
         options = {
             component_separators = { left = "", right = "" },
             section_separators = { left = "", right = "" },
             theme = "flume",
-            disabled_filetypes = {
-                statusline = { "NvimTree" },
-            },
+        },
+        extensions = {
+            browser_extension("oil", "Oil", function()
+                return require("oil").get_current_dir()
+            end),
+            browser_extension("NvimTree", "Tree", function()
+                return require("nvim-tree.core").get_cwd()
+            end),
         },
         sections = {
             lualine_a = {},

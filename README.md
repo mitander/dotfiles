@@ -61,6 +61,24 @@ lt -a              # include hidden files
 Run `lt --help` for supported options. Output is uncolored when piped or when `NO_COLOR` is set. Use
 `--color always` to force color. Python, tree and tokei are included in the Home Manager profile.
 
+## Neovim file browsing
+
+Use `Ctrl-n` to toggle a 34-column Oil sidebar on the left. Enter opens directories inside the
+sidebar and files in the editing window beside it. Use `-` or Backspace to go up, and `q` to close
+the sidebar. Closing it does not quit Neovim.
+
+Use `<leader>n` (Space, then n) to toggle a project tree and reveal the current file when sharing
+the project layout. The tree loads only when requested, without Git scanning, filesystem watchers or
+automatic file tracking. Use its default navigation and `q` to close it. Opening either sidebar
+closes the other. Press `R` in the tree to refresh after external changes.
+
+Browser statuslines show only the browser and directory, such as `Oil · plugins/` or
+`Tree · dotfiles/`, whether focused or not.
+
+Outside the sidebar, `-` opens Oil in the current window. `nvim .` and `:edit directory/` also use
+Oil without forcing a sidebar. Edit filenames and use `:w` to apply changes. Deleted files go to the
+trash. Hidden files are visible, and directory watching stays off.
+
 ## Neovim search
 
 Use `<C-f>` for live grep. Search text is a ripgrep regex, with optional file globs after ` --`:
@@ -132,6 +150,7 @@ Checks that need installed applications run separately:
 ./scripts/check pi            # strict TS, footer and file links against installed Pi
 ./scripts/check fzf           # installed picker filtering and shell arguments
 ./scripts/check luals         # Neovim configuration diagnostics
+./scripts/check files         # installed Oil and NvimTree navigation
 ./scripts/check preview       # installed live-preview.nvim lifecycle
 ```
 
