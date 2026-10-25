@@ -23,7 +23,9 @@ dotfiles check        # formatting and isolated behavior checks
 Use `apply` after changing packages or Home Manager links, not after every configuration edit. It
 keeps conflicting files as timestamped `.pre-nix-*` backups. A failed activation stops before
 reloading. Ghostty watches its configuration. Restart Neovim after changing its Lua configuration.
-Other applications may also need a restart. Reloading tmux requires the installed Myran binary.
+Other applications may also need a restart. Reloading tmux requires the installed Myran binary. Old
+tmux servers carrying retired workspace hooks need a restart to discard them. Reload no longer
+removes those hooks. Save work first, since restarting a server ends its sessions.
 
 ## Configuration layout
 

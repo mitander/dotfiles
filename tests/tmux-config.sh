@@ -14,6 +14,16 @@ fail() {
   exit 1
 }
 
+# Execute the registered command list without attaching a client or sending keys
+# to a real terminal. Keep tmux's quoting and brace syntax intact.
+invoke_binding() {
+  local table="$1" key="$2" binding
+  binding="$(tmux -L "$SOCKET" list-keys -T "$table" "$key")"
+  binding="${binding#* "$key" }"
+  # list-keys escapes command separators for bind-key's outer parser.
+  printf '%s\n' "${binding//\\;/;}" | tmux -L "$SOCKET" source-file -
+}
+
 # Stage production config with stubbed plugins on a private server.
 MYRAN_BINARY="${MYRAN_TEST_BINARY:-$(command -v myran)}"
 mkdir -p "$TEST_ROOT/bin" "$TEST_ROOT/home/.nix-profile/bin"
@@ -72,31 +82,18 @@ IFS= read -r pane_shell <"$TEST_ROOT/shell-env"
   fail 'default pane inherited a stale shell path'
 tmux -L "$SOCKET" kill-window -t "$shell_pane"
 
-# Check retired integrations alongside the current prefix bindings.
-hooks="$(tmux -L "$SOCKET" show-hooks -g)"
-[[ "$hooks" != *request-reconcile* ]] || fail 'cooling hook remains'
-[[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_residency_mode)" ]] || fail 'cooling option remains'
+# Myran configures the workspace bindings. Keep one delegation smoke check here.
 [[ "$(tmux -L "$SOCKET" show-option -gqv @continuum-restore)" == off ]] || fail 'continuum restore must not replay old processes'
 [[ "$(tmux -L "$SOCKET" show-option -gwv copy-mode-line-numbers)" == off ]] ||
   fail 'copy-mode line numbers reintroduce the hidden-pane redraw loop'
 binding="$(tmux -L "$SOCKET" list-keys -T prefix)"
-[[ -z "$(printf '%s\n' "$binding" | awk '$4 == "I"')" ]] || fail 'retired cooling chord rebound by TPM'
-[[ "$binding" != *workspace_residency_script*sleep* ]] || fail 'Workspace sleep binding remains'
+[[ -z "$(printf '%s\n' "$binding" | awk '$4 == "I"')" ]] || fail 'TPM install chord should remain disabled'
 reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix ,' || true)"
 [[ "$reload_binding" == *source-file*'.tmux.conf'* ]] || fail 'reload is not prefix ,'
 run_focus="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
 [[ "$run_focus" == *'__tmux-action focus-run >/dev/null'* && "$run_focus" != *source-file* ]] ||
   fail 'prefix r no longer delegates Run focus to Myran'
-[[ "$binding" == *'__tmux-action run >/dev/null'* && "$binding" == *'__tmux-action pick-run >/dev/null'* ]] ||
-  fail 'Myran-owned Run bindings missing'
-for role in term edit agent git tracker actions; do
-  [[ "$binding" == *"__tmux-action $role"* ]] || fail "missing role: $role"
-done
-[[ "$binding" != *tuxedo* && "$binding" != *toggle-workspace-pin* ]] || fail 'obsolete binding remains'
 [[ "$binding" == *'#{q:pane_current_path}'* ]] || fail 'caller paths are not quoted'
-agent="$(printf '%s\n' "$binding" | awk '$4 == "A"')"
-[[ "$agent" == *'__tmux-action new-agent'* ]] || fail 'Agent popup is not Myran-owned'
-[[ "$agent" != *command-prompt* ]] || fail 'Agent name interpolates through a prompt template'
 for raw in s v S '|' '-'; do
   [[ "$(printf '%s\n' "$binding" | awk -v key="$raw" '$4 == key')" == *split-window* ]] ||
     fail "native split changed: $raw"
@@ -104,9 +101,6 @@ done
 
 # Root-table navigation and close bindings must preserve the invoking pane.
 root_bindings="$(tmux -L "$SOCKET" list-keys -T root)"
-[[ "$root_bindings" != *tuxedo* ]] || fail 'obsolete root binding remains'
-[[ "$root_bindings" == *'@workspace_navigation'* && "$root_bindings" != *'ps -o state='* ]] ||
-  fail 'navigation no longer uses metadata'
 for key in Enter q Escape; do
   [[ -z "$(printf '%s\n' "$root_bindings" | awk -v key="$key" '$4 == key')" ]] ||
     fail "plain $key still intercepts command input"
@@ -118,45 +112,46 @@ for close in "$ctrl_q" "$prefix_q"; do
 done
 mouse="$(printf '%s\n' "$root_bindings" | grep -F MouseDown1StatusLeft || true)"
 [[ "$mouse" == *'__tmux-action workspace'* ]] || fail 'status picker bypasses Myran'
-[[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_residency_script)" ]] || fail 'callback helper remains'
 style="$(tmux -L "$SOCKET" show-option -gv status-style)"
 [[ "$style" == *'bg=#232136'* && "$style" == *'fg=#c9c5d9'* ]] || fail 'fallback theme changed'
 status_right="$(tmux -L "$SOCKET" show-option -gqv status-right)"
 [[ "$status_right" == *'#(true)'* && "$status_right" == *zoom* ]] || fail 'autosave/status styling lost'
 
-# Run focus follows role metadata even after renaming, not an unrelated window named run.
-origin="$(tmux -L "$SOCKET" display-message -p -t smoke '#{pane_id}')"
-origin_window="$(tmux -L "$SOCKET" display-message -p -t "$origin" '#{window_id}')"
-caller="$(tmux -L "$SOCKET" display-message -p -t "$origin" '#{socket_path},#{pid},#{s/^.//:session_id}')"
-run_window="$(tmux -L "$SOCKET" new-window -d -P -F '#{window_id}' -t smoke: -n renamed-run 'sleep 300')"
-tmux -L "$SOCKET" new-window -d -t smoke: -n run 'sleep 300'
-tmux -L "$SOCKET" set-option -w -t "$run_window" @myran.run.window 1
-focus_run() {
-  HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" TMUX="$caller" TMUX_PANE="$origin" \
-    "$MYRAN_BINARY" __tmux-action focus-run
-}
-focus_run
-[[ "$(tmux -L "$SOCKET" display-message -p -t smoke '#{window_id}')" == "$run_window" ]] ||
-  fail 'Run focus followed the display name instead of role metadata'
-tmux -L "$SOCKET" set-option -wu -t "$run_window" @myran.run.window
-tmux -L "$SOCKET" select-window -t "$origin_window"
-
 # Native pane navigation must target the origin and stop at the window boundary.
 left="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t smoke: -n navigation 'sleep 300')"
 window="$(tmux -L "$SOCKET" display-message -p -t "$left" '#{window_id}')"
 right="$(tmux -L "$SOCKET" split-window -h -P -F '#{pane_id}' -t "$left" 'sleep 300')"
-tmux -L "$SOCKET" if-shell -F -t "$right" '#{pane_at_left}' '' "select-pane -t $right -L"
+tmux -L "$SOCKET" select-window -t "$window"
+tmux -L "$SOCKET" select-pane -t "$right"
+invoke_binding root C-h
 [[ "$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id}')" == "$left" ]] || fail 'left navigation'
-tmux -L "$SOCKET" if-shell -F -t "$left" '#{pane_at_left}' '' "select-pane -t $left -L"
+invoke_binding root C-h
 [[ "$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id}')" == "$left" ]] || fail 'navigation wrapped'
-tmux -L "$SOCKET" if-shell -F -t "$left" '#{pane_at_right}' '' "select-pane -t $left -R"
+invoke_binding root C-l
 [[ "$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id}')" == "$right" ]] || fail 'right navigation'
 
-# Reload neither adopts roots nor schedules cooling. It clears obsolete helper options.
-tmux -L "$SOCKET" new-session -d -s unclassified -c "$TEST_ROOT" 'sleep 300'
-unclassified="$(tmux -L "$SOCKET" display-message -p -t unclassified '#{session_id}')"
-tmux -L "$SOCKET" set-option -g @workspace_project_script /obsolete/project
-tmux -L "$SOCKET" set-option -g @workspace_session_script /obsolete/session
+# Explicit application claims and editor roles keep navigation inside the pane.
+for option in @workspace_navigation @workspace_pane_role; do
+  case "$option" in
+  @workspace_navigation) value=application ;;
+  @workspace_pane_role) value=vim ;;
+  esac
+  tmux -L "$SOCKET" set-option -p -t "$right" "$option" "$value"
+  invoke_binding root C-h
+  [[ "$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id}')" == "$right" ]] ||
+    fail "navigation ignored $option"
+  tmux -L "$SOCKET" set-option -pu -t "$right" "$option"
+done
+
+# Last-pane zoom toggles layout and focus without a shell or shared environment.
+invoke_binding prefix z
+zoom_state="$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id} #{window_zoomed_flag}')"
+[[ "$zoom_state" == "$left 1" ]] || fail "last-pane should focus $left and zoom: $zoom_state"
+invoke_binding prefix z
+zoom_state="$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id} #{window_zoomed_flag}')"
+[[ "$zoom_state" == "$right 0" ]] || fail "last-pane should focus $right and unzoom: $zoom_state"
+
+# Reload restores managed shell defaults without duplicating the autosave hook.
 tmux -L "$SOCKET" set-option -gw copy-mode-line-numbers relative
 tmux -L "$SOCKET" set-option -g default-shell /bin/sh
 tmux -L "$SOCKET" set-option -g default-command fish
@@ -170,10 +165,6 @@ HOME="$TEST_ROOT/home" tmux -L "$SOCKET" source-file "$TEST_ROOT/home/dotfiles/t
   fail 'reload did not clear the legacy shell command'
 [[ "$(tmux -L "$SOCKET" show-environment -g SHELL)" == "SHELL=$TEST_ROOT/home/.nix-profile/bin/fish" ]] ||
   fail 'reload did not clear the stale shell environment'
-[[ -z "$(tmux -L "$SOCKET" show-option -qv -t "$unclassified" @workspace_root)" ]] || fail 'reload adopted root'
-[[ -z "$(tmux -L "$SOCKET" show-option -qv -t "$unclassified" @workspace_residency_deadline)" ]] || fail 'reload scheduled cooling'
-[[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_project_script)" ]] || fail 'obsolete project option'
-[[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_session_script)" ]] || fail 'obsolete session option'
 status_right="$(tmux -L "$SOCKET" show-option -gqv status-right)"
 [[ "$status_right" == *'#(true)'* && "$status_right" != *'#(true)'*'#(true)'* ]] || fail 'autosave hook changed'
-printf 'PASS: Myran callers, native navigation/splits, restore disabled, safe reload\n'
+printf 'PASS: Myran callers, native navigation/splits/zoom, application claims, restore disabled, safe reload\n'
