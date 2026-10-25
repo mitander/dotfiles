@@ -16,7 +16,7 @@ case "${1:-}" in
   for test in dotfiles-command tracker-local fish-config fish-nvim myran-open-files tmux-run-borders; do
     bash "tests/$test.sh"
   done
-  for test in nvim-config nvim-formatters nvim-clipboard nvim-tree; do
+  for test in nvim-config nvim-formatters nvim-clipboard nvim-tree nvim-preview; do
     nvim --clean --headless -l "tests/$test.lua"
   done
   ;;
@@ -36,6 +36,11 @@ luals)
   # Check the real language server and prove undefined-name diagnostics stay enabled.
   nvim --clean --headless -l tests/nvim-luals.lua
   ;;
+preview)
+  # Exercise the pinned preview plugin with disposable loopback connections.
+  plugin="${NVIM_LIVE_PREVIEW_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nvim/lazy/live-preview.nvim}"
+  nvim --clean --headless -l tests/nvim-preview.lua "$plugin"
+  ;;
 formatters)
   # Test installed Conform with real formatting tools.
   nvim --clean --headless -l tests/nvim-dprint.lua
@@ -48,7 +53,7 @@ trackers)
     PYTHON="$checkout/.venv/bin/python" "$checkout/scripts/check"
   ;;
 *)
-  printf 'Usage: scripts/check [myran|myran-editor|fzf|luals|formatters|trackers]\n' >&2
+  printf 'Usage: scripts/check [myran|myran-editor|fzf|luals|preview|formatters|trackers]\n' >&2
   exit 2
   ;;
 esac

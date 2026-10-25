@@ -48,6 +48,17 @@ quoting matches its command runner. Interactive tmux panes still use Fish.
 
 Use `<leader>gl` for repository commits and `<leader>gc` for the current file's commits.
 
+## Browser previews in Neovim
+
+Use `<leader>vp` to open a preview and `<leader>vs` to stop it immediately. Each preview gets an
+OS-assigned loopback port, so separate Neovim instances do not compete for port 5500. The server
+stops after 30 seconds without a connected preview page, including when the browser never connects.
+Refreshing during that grace period keeps it alive. After it stops, use `<leader>vp` again rather
+than refreshing the old URL.
+
+The lifecycle adapter in `nvim/.config/nvim/lua/mitander/preview.lua` depends on the pinned
+live-preview.nvim server API. Run the installed-plugin preview check when updating that pin.
+
 ## On a new machine
 
 With Nix and Git installed, open a fresh terminal:
@@ -92,6 +103,7 @@ Checks that need installed applications run separately:
 ./scripts/check myran-editor  # macOS file-opening app
 ./scripts/check fzf           # installed picker filtering and shell arguments
 ./scripts/check luals         # Neovim configuration diagnostics
+./scripts/check preview       # installed live-preview.nvim lifecycle
 ```
 
 These checks use disposable fixtures, not live workspaces. Tracker setup and application checks are
