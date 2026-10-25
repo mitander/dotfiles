@@ -41,6 +41,7 @@ return {
             zig = { "zigfmt" },
             rust = native_or_pinned({ "rustfmt" }),
             go = { "gofmt", "goimports" },
+            gleam = { "gleam" },
             javascript = { "dprint" },
             typescript = { "dprint" },
             javascriptreact = { "dprint" },

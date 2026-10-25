@@ -54,6 +54,7 @@ return {
         },
         servers = {
             gopls = {},
+            gleam = {},
             jsonls = {},
             clangd = {},
             rust_analyzer = {},

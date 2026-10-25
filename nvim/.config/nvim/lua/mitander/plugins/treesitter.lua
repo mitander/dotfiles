@@ -1,5 +1,7 @@
 local languages = {
     "go",
+    "gleam",
+    "erlang",
     "zig",
     "rust",
     "lua",
