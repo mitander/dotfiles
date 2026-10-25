@@ -14,8 +14,10 @@ fail() {
   exit 1
 }
 
+# Stage production config with stubbed plugins on a private server.
 MYRAN_BINARY="${MYRAN_TEST_BINARY:-$(command -v myran)}"
-mkdir -p "$TEST_ROOT/bin"
+mkdir -p "$TEST_ROOT/bin" "$TEST_ROOT/home/.nix-profile/bin"
+ln -s "$(command -v fish)" "$TEST_ROOT/home/.nix-profile/bin/fish"
 ln -s "$MYRAN_BINARY" "$TEST_ROOT/bin/myran"
 export PATH="$TEST_ROOT/bin:$PATH"
 export XDG_CONFIG_HOME="$TEST_ROOT/home/.config"
@@ -30,9 +32,10 @@ cp "$SOURCE_ROOT/extras/tmux/colors.conf" "$TEST_ROOT/home/dotfiles/extras/tmux/
 printf '#!/bin/sh\ntmux set-option -ag status-right "#(true)"\ntmux bind-key I display-message install\n' \
   >"$TEST_ROOT/home/.tmux/plugins/tpm/tpm"
 chmod +x "$TEST_ROOT/home/.tmux/plugins/tpm/tpm"
-HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" \
+HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" SHELL=/obsolete/homebrew/bin/fish \
   tmux -L "$SOCKET" -f "$TEST_ROOT/home/dotfiles/tmux/.tmux.conf" new-session -d -s smoke 'sleep 300'
 
+# Wait for asynchronous Myran setup before inspecting bindings.
 for _attempt in {1..100}; do
   [[ -n "$(tmux -L "$SOCKET" show-option -gqv @myran.integration.bindings)" ]] && break
   sleep 0.05
@@ -40,6 +43,36 @@ done
 [[ -n "$(tmux -L "$SOCKET" show-option -gqv @myran.integration.bindings)" ]] ||
   fail "Myran setup failed: $(tmux -L "$SOCKET" show-messages)"
 
+# Shell launches must not depend on the login shell or inherited PATH.
+[[ "$(tmux -L "$SOCKET" show-option -gqv default-shell)" == "$TEST_ROOT/home/.nix-profile/bin/fish" ]] ||
+  fail 'default shell bypasses the Nix profile'
+[[ -z "$(tmux -L "$SOCKET" show-option -gqv default-command)" ]] ||
+  fail 'default command overrides the managed shell'
+[[ "$(tmux -L "$SOCKET" show-environment -g SHELL)" == "SHELL=$TEST_ROOT/home/.nix-profile/bin/fish" ]] ||
+  fail 'shell environment bypasses the Nix profile'
+tmux -L "$SOCKET" set-environment -g DOTFILES_TEST_SHELL_ENV "$TEST_ROOT/shell-env"
+shell_pane="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t smoke: -n shell)"
+for _attempt in {1..100}; do
+  [[ "$(tmux -L "$SOCKET" display-message -p -t "$shell_pane" '#{pane_current_command}')" == fish ]] && break
+  sleep 0.05
+done
+[[ "$(tmux -L "$SOCKET" display-message -p -t "$shell_pane" '#{pane_current_command}')" == fish ]] ||
+  fail 'default pane did not launch Fish'
+# Expand these variables inside Fish, not in the test's Bash process.
+# shellcheck disable=SC2016
+tmux -L "$SOCKET" send-keys -t "$shell_pane" -l 'printf "%s\n" "$SHELL" > "$DOTFILES_TEST_SHELL_ENV"'
+tmux -L "$SOCKET" send-keys -t "$shell_pane" Enter
+for _attempt in {1..100}; do
+  [[ -s "$TEST_ROOT/shell-env" ]] && break
+  sleep 0.05
+done
+[[ -s "$TEST_ROOT/shell-env" ]] || fail 'default pane did not report its shell environment'
+IFS= read -r pane_shell <"$TEST_ROOT/shell-env"
+[[ "$pane_shell" == "$TEST_ROOT/home/.nix-profile/bin/fish" ]] ||
+  fail 'default pane inherited a stale shell path'
+tmux -L "$SOCKET" kill-window -t "$shell_pane"
+
+# Check retired integrations alongside the current prefix bindings.
 hooks="$(tmux -L "$SOCKET" show-hooks -g)"
 [[ "$hooks" != *request-reconcile* ]] || fail 'cooling hook remains'
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_residency_mode)" ]] || fail 'cooling option remains'
@@ -69,6 +102,7 @@ for raw in s v S '|' '-'; do
     fail "native split changed: $raw"
 done
 
+# Root-table navigation and close bindings must preserve the invoking pane.
 root_bindings="$(tmux -L "$SOCKET" list-keys -T root)"
 [[ "$root_bindings" != *tuxedo* ]] || fail 'obsolete root binding remains'
 [[ "$root_bindings" == *'@workspace_navigation'* && "$root_bindings" != *'ps -o state='* ]] ||
@@ -124,9 +158,18 @@ unclassified="$(tmux -L "$SOCKET" display-message -p -t unclassified '#{session_
 tmux -L "$SOCKET" set-option -g @workspace_project_script /obsolete/project
 tmux -L "$SOCKET" set-option -g @workspace_session_script /obsolete/session
 tmux -L "$SOCKET" set-option -gw copy-mode-line-numbers relative
+tmux -L "$SOCKET" set-option -g default-shell /bin/sh
+tmux -L "$SOCKET" set-option -g default-command fish
+tmux -L "$SOCKET" set-environment -g SHELL /obsolete/homebrew/bin/fish
 HOME="$TEST_ROOT/home" tmux -L "$SOCKET" source-file "$TEST_ROOT/home/dotfiles/tmux/.tmux.conf"
 [[ "$(tmux -L "$SOCKET" show-option -gwv copy-mode-line-numbers)" == off ]] ||
   fail 'reload did not disable copy-mode line numbers'
+[[ "$(tmux -L "$SOCKET" show-option -gqv default-shell)" == "$TEST_ROOT/home/.nix-profile/bin/fish" ]] ||
+  fail 'reload did not restore the managed shell'
+[[ -z "$(tmux -L "$SOCKET" show-option -gqv default-command)" ]] ||
+  fail 'reload did not clear the legacy shell command'
+[[ "$(tmux -L "$SOCKET" show-environment -g SHELL)" == "SHELL=$TEST_ROOT/home/.nix-profile/bin/fish" ]] ||
+  fail 'reload did not clear the stale shell environment'
 [[ -z "$(tmux -L "$SOCKET" show-option -qv -t "$unclassified" @workspace_root)" ]] || fail 'reload adopted root'
 [[ -z "$(tmux -L "$SOCKET" show-option -qv -t "$unclassified" @workspace_residency_deadline)" ]] || fail 'reload scheduled cooling'
 [[ -z "$(tmux -L "$SOCKET" show-option -gqv @workspace_project_script)" ]] || fail 'obsolete project option'

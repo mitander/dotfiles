@@ -8,6 +8,20 @@
 }: let
   toolingPkgs = inputs.ruff-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
 
+  # Keep one format per face so macOS does not register duplicate font identities.
+  jetbrainsMono =
+    pkgs.runCommand "jetbrains-mono-static-${pkgs.jetbrains-mono.version}" {
+      inherit (pkgs.jetbrains-mono) pname version;
+    } ''
+      mkdir -p "$out/share/fonts/truetype"
+      for font in ${pkgs.jetbrains-mono}/share/fonts/truetype/*.ttf; do
+        case "$font" in
+          *'['*) continue ;;
+        esac
+        ln -s "$font" "$out/share/fonts/truetype/"
+      done
+    '';
+
   live = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/${path}";
 
   # Private agent configuration lives in ~/.agents.
@@ -21,6 +35,7 @@ in {
       # Shell and navigation
       inputs.atuin-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.atuin
       bat
+      direnv
       fd
       fish
       fzf
@@ -31,13 +46,17 @@ in {
       zoxide
 
       # Development tools
+      clang-tools
       curl
       delta
+      gh
       git
       jq
       lazygit
       neovim
       unzip
+      uv
+      zig
 
       # Formatters and diagnostics
       alejandra
@@ -48,10 +67,16 @@ in {
       toolingPkgs.shfmt
       toolingPkgs.taplo
       stylua
+
+      # Fonts
+      jetbrainsMono
+      maple-mono.truetype
     ];
   };
 
   # Platform integration
+  fonts.fontconfig.enable = pkgs.stdenv.hostPlatform.isLinux;
+
   programs.home-manager.enable = true;
 
   # Checkout validation

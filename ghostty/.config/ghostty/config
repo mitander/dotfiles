@@ -1,56 +1,52 @@
-# Window Aesthetics
+# Window
 title = " "
 macos-window-shadow = true
 macos-titlebar-proxy-icon = hidden
 window-save-state = never
-
 window-padding-x = 3
 window-padding-y = 3
 window-padding-balance = true
 
-# Behavior & Shell
+# Shell and input
 shell-integration = detect
 confirm-close-surface = false
 macos-option-as-alt = left
+right-click-action = ignore
 
 # Clipboard
 clipboard-read = allow
 clipboard-write = allow
 copy-on-select = clipboard
 
-right-click-action = ignore
-
-# Typography
+# Font and theme
 font-size = 16
-font-family = "Maple Mono NF"
-# font-family = "Nordwand Mono"
+font-family = "JetBrains Mono"
 font-style = "Medium"
 font-style-bold = "Bold"
 font-style-italic = "Medium Italic"
 font-style-bold-italic = "Bold Italic"
 adjust-cell-height = 14%
 adjust-cell-width = 4%
+font-thicken = true
 alpha-blending = linear-corrected
 theme = flume
 window-theme = auto
-font-thicken = true
 
 # Cursor
 cursor-style = block
 cursor-opacity = 0.96
 
+# Notifications
 notify-on-command-finish = unfocused
 notify-on-command-finish-action = no-bell,notify
 notify-on-command-finish-after = 30s
 
-# Tmux keybindings (\x01 = ctrl-a)
-# Let tmux receive Ctrl+Enter.
+# Tmux keybindings
+# The tmux prefix is Ctrl-A (\x01). Pass Ctrl+Enter through unchanged.
 keybind = ctrl+enter=unbind
-
-# Search in pane
 keybind = cmd+/=text:\x01\x06
 
-# Windows navigation
+# Select tmux windows 1 through 9.
 keybind = cmd+physical:one=text:\x01\x31
 keybind = cmd+physical:two=text:\x01\x32
 keybind = cmd+physical:three=text:\x01\x33
@@ -62,5 +58,5 @@ keybind = cmd+physical:eight=text:\x01\x38
 keybind = cmd+physical:nine=text:\x01\x39
 
 # Vim keybindings
-# Select all (ggVG)
+# Select the entire buffer with ggVG.
 keybind = cmd+a=text:\x1bggVG
