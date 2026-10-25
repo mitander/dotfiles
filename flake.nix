@@ -122,6 +122,7 @@
               pkgs.fd
               pkgs.fzf
               pkgs.neovim
+              pkgs.nodejs
               pkgs.ripgrep
               pkgs.tmux
               pkgs.tree

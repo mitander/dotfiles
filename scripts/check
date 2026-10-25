@@ -13,6 +13,7 @@ case "${1:-}" in
 
   # Exercise installation, command routing and editor behavior in isolated fixtures.
   python3 tests/install-myran.py
+  node --experimental-strip-types --test tests/pi-shell-file-links.ts
   for test in dotfiles-command tracker-local fish-config fish-nvim myran-open-files tmux-run-borders; do
     bash "tests/$test.sh"
   done
@@ -23,6 +24,9 @@ case "${1:-}" in
 myran)
   # Test installed Myran against private tmux servers only.
   bash tests/tmux-config.sh
+  ;;
+pi)
+  node tests/pi-native.mjs
   ;;
 myran-editor)
   # Use disposable apps and HOME without selecting host document defaults.
@@ -53,7 +57,7 @@ trackers)
     PYTHON="$checkout/.venv/bin/python" "$checkout/scripts/check"
   ;;
 *)
-  printf 'Usage: scripts/check [myran|myran-editor|fzf|luals|preview|formatters|trackers]\n' >&2
+  printf 'Usage: scripts/check [myran|myran-editor|pi|fzf|luals|preview|formatters|trackers]\n' >&2
   exit 2
   ;;
 esac

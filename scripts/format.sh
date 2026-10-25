@@ -35,7 +35,7 @@ else
   ruff format --no-cache --config ruff.toml .
 fi
 
-prettier "$mode" --ignore-path .gitignore --ignore-path .prettierignore '**/*.{md,json,jsonc,yaml,yml,ts}'
+prettier "$mode" --ignore-path .gitignore --ignore-path .prettierignore '**/*.{md,json,jsonc,yaml,yml,ts,mjs}'
 shfmt -i 2 "$shell_mode" .
 "$fish_indent" "$mode" fish/.config/fish/config.fish
 

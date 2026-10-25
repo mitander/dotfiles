@@ -39,6 +39,11 @@ one owner, but keep small, readable settings inline. Run `./scripts/format.sh` f
 formatter. Tmux, Ghostty, Git and LLDB configuration use their native syntax and manual grouping.
 Theme symlinks point into the Flume checkout and are maintained there.
 
+JavaScript and TypeScript use ES modules, four-space indentation, `camelCase` names and `const` by
+default. Keep effects and cleanup visible. The installed-Pi check also runs strict TypeScript
+checks, including unchecked index access and exact optional properties. JavaScript fixtures are
+exercised at runtime, not statically checked.
+
 ## Neovim search
 
 Use `<C-f>` for live grep. Search text is a ripgrep regex, with optional file globs after ` --`:
@@ -47,6 +52,11 @@ syntax or implicit extension detection. Neovim uses `/bin/sh` for subprocess com
 quoting matches its command runner. Interactive tmux panes still use Fish.
 
 Use `<leader>gl` for repository commits and `<leader>gc` for the current file's commits.
+
+## Pi footer
+
+The footer has one fixed layout: state indicator, location, context usage, model and token/cost
+summary, with a blank line below it. It updates on events, without animation or settings commands.
 
 ## Browser previews in Neovim
 
@@ -88,9 +98,10 @@ activation, use `./scripts/dotfiles` in place of `dotfiles`.
 
 ## Checks
 
-With Python 3.11+ on `PATH`, run `dotfiles check` when changing scripts or integrations. It checks
-formatting, Python types and isolated behavior without activating Home Manager or touching your live
-sessions. Nix supplies the formatting tools. Run `./scripts/format.sh` to format the checkout.
+With Python 3.11+ and Node.js 22.6+ on `PATH`, run `dotfiles check` when changing scripts or
+integrations. It checks formatting, Python types and isolated behavior without activating Home
+Manager or touching your live sessions. Nix supplies the formatting tools. Run `./scripts/format.sh`
+to format the checkout.
 
 The tests cover custom glue: file-opening arguments, activation boundaries and editor/tmux
 integration. Ordinary settings don't need a matching test.
@@ -101,10 +112,12 @@ Checks that need installed applications run separately:
 ./scripts/check formatters    # Conform with real formatters
 ./scripts/check myran         # Myran's tmux integration
 ./scripts/check myran-editor  # macOS file-opening app
+./scripts/check pi            # strict TS, footer and file links against installed Pi
 ./scripts/check fzf           # installed picker filtering and shell arguments
 ./scripts/check luals         # Neovim configuration diagnostics
 ./scripts/check preview       # installed live-preview.nvim lifecycle
 ```
 
-These checks use disposable fixtures, not live workspaces. Tracker setup and application checks are
-in [tracker-tui](tracker-tui/README.md).
+The Pi check needs the installed host and `tsc` on `PATH` (provided by Home Manager). It does not
+install dependencies. These checks use disposable fixtures, not live workspaces. Tracker setup and
+application checks are in [tracker-tui](tracker-tui/README.md).
