@@ -44,6 +44,23 @@ default. Keep effects and cleanup visible. The installed-Pi check also runs stri
 checks, including unchecked index access and exact optional properties. JavaScript fixtures are
 exercised at runtime, not statically checked.
 
+## Skim file sizes by code lines
+
+Use `lt` for a Git-aware tree with an aligned LOC column. Counts come from tokei and exclude
+comments and blank lines. Counts are gray below 200, yellow from 200 to 499, and red from 500.
+Unrecognized file types show `—` instead of a misleading zero. Symlinks are displayed without
+following or counting their targets. Plain `tree` is unchanged.
+
+```fish
+lt                 # current directory
+lt -L 2 src        # limit displayed depth
+lt -I 'vendor|dist' # exclude matching names
+lt -a              # include hidden files
+```
+
+Run `lt --help` for supported options. Output is uncolored when piped or when `NO_COLOR` is set. Use
+`--color always` to force color. Python, tree and tokei are included in the Home Manager profile.
+
 ## Neovim search
 
 Use `<C-f>` for live grep. Search text is a ripgrep regex, with optional file globs after ` --`:

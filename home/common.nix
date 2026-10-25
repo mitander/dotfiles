@@ -43,6 +43,8 @@ in {
       ripgrep
       tmux
       tree
+      tokei
+      python3
       zoxide
 
       # Development tools

@@ -66,7 +66,10 @@ end
 alias :q exit
 if command -q tree
     alias tree "tree --gitignore"
-    alias lt tree
+end
+
+function lt --description 'Tree with aligned per-file lines of code'
+    python3 "$DOTFILES_DIR/scripts/loc-tree.py" $argv
 end
 
 test -x ./zig/zig; and alias zig "./zig/zig"

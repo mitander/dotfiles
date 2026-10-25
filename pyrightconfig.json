@@ -1,5 +1,11 @@
 {
-  "include": ["scripts/install-myran.py", "tests/install-myran.py", "tests/tracker-editable.py"],
+  "include": [
+    "scripts/install-myran.py",
+    "scripts/loc-tree.py",
+    "tests/loc-tree.py",
+    "tests/install-myran.py",
+    "tests/tracker-editable.py"
+  ],
   "pythonVersion": "3.11",
   "typeCheckingMode": "standard"
 }

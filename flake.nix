@@ -126,6 +126,7 @@
               pkgs.ripgrep
               pkgs.tmux
               pkgs.tree
+              pkgs.tokei
             ];
           } ''
             export HOME="$TMPDIR/home"

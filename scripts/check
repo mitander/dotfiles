@@ -13,6 +13,7 @@ case "${1:-}" in
 
   # Exercise installation, command routing and editor behavior in isolated fixtures.
   python3 tests/install-myran.py
+  python3 tests/loc-tree.py
   node --experimental-strip-types --test tests/pi-shell-file-links.ts
   for test in dotfiles-command tracker-local fish-config fish-nvim myran-open-files tmux-run-borders; do
     bash "tests/$test.sh"
