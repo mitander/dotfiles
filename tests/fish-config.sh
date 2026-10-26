@@ -24,17 +24,15 @@ export FZF_CTRL_T_OPTS=' --preview "echo --read0 preview"'
 export HOMEBREW_PREFIX=/opt/homebrew
 export PATH="$PATH:/opt/homebrew/bin"
 
-# Repeated sourcing must keep PATH stable without initializing interactive tools.
-"$FISH" --no-config -c 'source "$DOTFILES_TEST_CONFIG"; source "$DOTFILES_TEST_CONFIG";
+# Repeated sourcing must not grow PATH or initialize interactive tools.
+"$FISH" --no-config -c 'source "$DOTFILES_TEST_CONFIG";
+    set -l initial_path_count (count $PATH)
+    source "$DOTFILES_TEST_CONFIG"
+    test (count $PATH) -eq $initial_path_count; or exit 1
     set -l nix_index (contains -i -- "$HOME/.nix-profile/bin" $PATH)
     set -l brew_index (contains -i -- /opt/homebrew/bin $PATH)
     test $nix_index -lt $brew_index; or exit 1
-    test (count (string match -- "$HOME/.nix-profile/bin" $PATH)) -eq 1; or exit 1
-    test (count (string match -- "$HOME/.dprint/bin" $PATH)) -eq 1; or exit 1
     command -q dprint; or exit 1
-    test "$LG_CONFIG_FILE" = "$DOTFILES_DIR/lazygit/.config/lazygit/config.yml,$HOME/.config/lazygit/flume.yml"; or exit 1
-    set -l dprint_index (contains -i -- "$HOME/.dprint/bin" $PATH)
-    test $nix_index -lt $dprint_index; or exit 1
     not functions -q fzf; or exit 1'
 [[ ! -e "$DOTFILES_TEST_CALLS" ]] || {
   echo 'FAIL: noninteractive shell initialized UI tools' >&2

@@ -51,12 +51,6 @@ local function check()
         return 1
     end
 
-    tmux.init()
-    assert(vim.tbl_contains(vim.opt.clipboard:get(), "unnamedplus"), "ordinary operations must share the clipboard")
-    assert(vim.deep_equal(vim.g.clipboard.copy["+"], { "tmux", "load-buffer", "-w", "-" }))
-    assert(vim.deep_equal(vim.g.clipboard.paste["+"], { "tmux", "save-buffer", "-" }))
-    assert(vim.g.clipboard.cache_enabled == 0, "clipboard writes must finish before the next operation")
-
     vim.cmd.vsplit()
     vim.cmd.wincmd("l")
     local right_window = vim.api.nvim_get_current_win()

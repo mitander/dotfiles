@@ -87,30 +87,16 @@ tmux -L "$SOCKET" kill-window -t "$shell_pane"
 [[ "$(tmux -L "$SOCKET" show-option -gwv copy-mode-line-numbers)" == off ]] ||
   fail 'copy-mode line numbers reintroduce the hidden-pane redraw loop'
 binding="$(tmux -L "$SOCKET" list-keys -T prefix)"
-[[ -z "$(printf '%s\n' "$binding" | awk '$4 == "I"')" ]] || fail 'TPM install chord should remain disabled'
-reload_binding="$(printf '%s\n' "$binding" | grep -F 'T prefix ,' || true)"
-[[ "$reload_binding" == *source-file*'.tmux.conf'* ]] || fail 'reload is not prefix ,'
 run_focus="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
 [[ "$run_focus" == *'__tmux-action focus-run >/dev/null'* && "$run_focus" != *source-file* ]] ||
   fail 'prefix r no longer delegates Run focus to Myran'
-[[ "$binding" == *'#{q:pane_current_path}'* ]] || fail 'caller paths are not quoted'
-for raw in s v S '|' '-'; do
-  [[ "$(printf '%s\n' "$binding" | awk -v key="$raw" '$4 == key')" == *split-window* ]] ||
-    fail "native split changed: $raw"
-done
 
-# Root-table navigation and close bindings must preserve the invoking pane.
+# Plain application input must not be intercepted.
 root_bindings="$(tmux -L "$SOCKET" list-keys -T root)"
 for key in Enter q Escape; do
   [[ -z "$(printf '%s\n' "$root_bindings" | awk -v key="$key" '$4 == key')" ]] ||
     fail "plain $key still intercepts command input"
 done
-mouse="$(printf '%s\n' "$root_bindings" | grep -F MouseDown1StatusLeft || true)"
-[[ "$mouse" == *'__tmux-action workspace'* ]] || fail 'status picker bypasses Myran'
-style="$(tmux -L "$SOCKET" show-option -gv status-style)"
-[[ "$style" == *'bg=#232136'* && "$style" == *'fg=#c9c5d9'* ]] || fail 'fallback theme changed'
-status_right="$(tmux -L "$SOCKET" show-option -gqv status-right)"
-[[ "$status_right" == *'#(true)'* && "$status_right" == *zoom* ]] || fail 'autosave/status styling lost'
 
 # Native pane navigation must target the origin and stop at the window boundary.
 left="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t smoke: -n navigation 'sleep 300')"

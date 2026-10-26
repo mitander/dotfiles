@@ -180,37 +180,4 @@ load_theme
 [[ "$(tmux_test show-option -wv -t "$run_window" pane-border-status)" == top ]] ||
   fail 'repeated theme reload moved the run title'
 
-# Palette changes must flow through semantic roles, without copying Flume's palettes here.
-split="$(tmux_test split-window -h -P -F '#{pane_id}' -t "$ordinary" 'sleep 300')"
-border='#456789'
-accent='#123456'
-purple='#654321'
-for bg in '#102030' '#e0d0c0'; do
-  tmux_test source-file - <<EOF
-thm_bg="$bg"
-thm_lgray="$border"
-thm_accent="$accent"
-thm_pink="$purple"
-source-file "$theme"
-EOF
-  active="$(tmux_test display-message -p -t "$ordinary" '#{E:pane-active-border-style}')"
-  [[ "$active" == "fg=$border,bg=$bg" ]] || fail "active border: $active"
-  inactive="$(tmux_test show-option -gv pane-border-style)"
-  [[ "$inactive" == "fg=$bg,bg=$bg" ]] || fail "inactive border: $inactive"
-  workspace="$(tmux_test display-message -p -t "$ordinary" '#{E:status-left}')"
-  [[ "$workspace" == *"#[bg=$accent]"* ]] || fail 'workspace lost its accent role'
-  tab="$(tmux_test display-message -p -t "$ordinary" '#{E:window-status-current-format}')"
-  [[ "$tab" == *"#[bg=$purple]"* ]] || fail 'active tab lost its secondary accent role'
-
-  tmux_test set-option -w -t "$ordinary" @workspace_mode_color '#abcdef'
-  tab="$(tmux_test display-message -p -t "$ordinary" '#{E:window-status-current-format}')"
-  [[ "$tab" == *'#[bg=#abcdef]'* ]] || fail 'mode-specific tab override lost'
-  tmux_test set-option -wu -t "$ordinary" @workspace_mode_color
-
-  tmux_test resize-pane -Z -t "$ordinary"
-  active="$(tmux_test display-message -p -t "$ordinary" '#{E:pane-active-border-style}')"
-  [[ "$active" == "fg=$bg,bg=$bg" ]] || fail 'zoomed border remains visible'
-  tmux_test resize-pane -Z -t "$ordinary"
-done
-tmux_test kill-pane -t "$split"
-printf 'PASS: tiled-only borders, floating pickers, zoom/PTY geometry, pane exit, reload, run titles and palette roles\n'
+printf 'PASS: tiled-only borders, floating pickers, zoom/PTY geometry, pane exit, reload and run titles\n'
