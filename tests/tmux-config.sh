@@ -132,47 +132,109 @@ invoke_binding prefix z
 zoom_state="$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id} #{window_zoomed_flag}')"
 [[ "$zoom_state" == "$right 0" ]] || fail "last-pane should focus $right and unzoom: $zoom_state"
 
-# Leaving Edit returns to the previous window without closing Neovim or changing its text.
-editor="$(tmux -L "$SOCKET" new-window -d -P -F '#{pane_id}' -t smoke: -n editor nvim -u NONE -i NONE -n --noplugin)"
-editor_pid="$(tmux -L "$SOCKET" display-message -p -t "$editor" '#{pane_pid}')"
-tmux -L "$SOCKET" set-option -p -t "$editor" @workspace_pane_role vim
-tmux -L "$SOCKET" select-window -t "$editor"
-for _attempt in {1..100}; do
-  [[ "$(tmux -L "$SOCKET" display-message -p -t "$editor" '#{pane_current_command}')" == nvim ]] && break
-  sleep 0.02
-done
-tmux -L "$SOCKET" send-keys -t "$editor" -l 'ikeep this editor warm'
-for _attempt in {1..100}; do
-  [[ "$(tmux -L "$SOCKET" capture-pane -p -t "$editor")" == *'keep this editor warm'* ]] && break
-  sleep 0.02
-done
-invoke_binding root C-q
-[[ "$(tmux -L "$SOCKET" display-message -p '#{window_id}')" == "$window" ]] || fail 'Ctrl-Q did not return to the previous window'
-[[ "$(tmux -L "$SOCKET" display-message -p -t "$editor" '#{pane_pid}')" == "$editor_pid" ]] || fail 'Ctrl-Q replaced the editor process'
-[[ "$(tmux -L "$SOCKET" capture-pane -p -t "$editor")" == *'keep this editor warm'* ]] || fail 'Ctrl-Q changed editor text'
+# Closing tests exercise our routing, not Neovim's native split/tab semantics.
+tmux_test() { command tmux -L "$SOCKET" "$@"; }
+wait_until() {
+  local message="$1" _attempt
+  shift
+  for _attempt in {1..100}; do
+    if "$@"; then return; fi
+    sleep 0.05
+  done
+  fail "$message"
+}
+pane_is_gone() { ! tmux_test list-panes -a -F '#{pane_id}' | grep -Fxq "$1"; }
+process_is_gone() { ! kill -0 "$1" 2>/dev/null; }
+pane_contains() { [[ "$(tmux_test capture-pane -p -t "$1")" == *"$2"* ]]; }
+editor_expr() { nvim --server "$TEST_ROOT/nvim.sock" --remote-expr "$1"; }
+run_myran() {
+  HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" \
+    TMUX="$run_scope" TMUX_PANE="$run_origin" MYRAN_TMUX_SERVER_ID="$run_identity" myran "$@"
+}
 
-# Outside Edit, observe the original Ctrl-Q byte reaching an application.
-ready="$TEST_ROOT/receiver-ready"
-received="$TEST_ROOT/received"
-# Expand $byte in the receiving pane, not in this test driver.
+# Load the production mapping without plugins or a real user configuration.
+printf '%s\n' \
+  "local spec = dofile([[$SOURCE_ROOT/nvim/.config/nvim/lua/mitander/plugins/tmux.lua]])" \
+  'for _, mapping in ipairs(spec.keys) do' \
+  '  vim.keymap.set(mapping.mode or "n", mapping[1], mapping[2])' \
+  'end' >"$TEST_ROOT/editor.lua"
+run_origin="$(tmux_test display-message -p -t smoke: '#{pane_id}')"
+run_scope="$(tmux_test display-message -p -t "$run_origin" '#{socket_path},#{pid},#{s/^.//:session_id}')"
+run_identity="$(tmux_test show-environment -g MYRAN_TMUX_SERVER_ID)"
+run_identity="${run_identity#MYRAN_TMUX_SERVER_ID=}"
+tmux_test set-option -t smoke @workspace_root "$TEST_ROOT"
+# Expand the PID and output path in the supervised process, not the driver.
 # shellcheck disable=SC2016
-printf -v receiver 'stty raw -echo; touch %q; IFS= read -r -n 1 byte; printf "%%s" "$byte" > %q; exec sleep 300' "$ready" "$received"
-receiver_pane="$(tmux -L "$SOCKET" new-window -P -F '#{pane_id}' -t smoke: -n receiver bash --noprofile --norc -c "$receiver")"
-for _attempt in {1..100}; do
-  [[ -f "$ready" ]] && break
-  sleep 0.02
+printf '%s\n' 'printf "%s\n" "$$" >"$1"' 'exec sleep 300' >"$TEST_ROOT/run.sh"
+for table in root prefix; do
+  if [[ "$table" == root ]]; then
+    key=C-q
+    role=shell
+  else
+    key=q
+    role=pi
+  fi
+  editor="$(tmux_test new-window -P -F '#{pane_id}' -t smoke: -n editor \
+    nvim -u "$TEST_ROOT/editor.lua" -i NONE -n --noplugin --listen "$TEST_ROOT/nvim.sock")"
+  editor_pid="$(tmux_test display-message -p -t "$editor" '#{pane_pid}')"
+  tmux_test set-option -p -t "$editor" @workspace_pane_role vim
+  wait_until 'editor did not start' test -S "$TEST_ROOT/nvim.sock"
+  editor_expr "setline(1, 'unsaved text')" >/dev/null
+  invoke_binding "$table" "$key"
+  wait_until 'close did not protect unsaved text' pane_contains "$editor" E37
+  tmux_test send-keys -t "$editor" Enter
+  [[ "$(editor_expr 'getline(1)')" == 'unsaved text' ]] || fail 'close changed unsaved text'
+  [[ "$(tmux_test display-message -p '#{pane_id}')" == "$editor" ]] || fail 'close left the editor hidden'
+  editor_expr "execute('set nomodified')" >/dev/null
+  invoke_binding "$table" "$key"
+  wait_until 'editor pane did not close' pane_is_gone "$editor"
+  wait_until 'editor process survived closure' process_is_gone "$editor_pid"
+  wait_until 'editor socket did not close' test ! -S "$TEST_ROOT/nvim.sock"
+
+  # Ordinary terminals close only the focused pane, leaving its sibling alive.
+  closing="$(tmux_test split-window -h -P -F '#{pane_id}' -t "$right" 'sleep 300')"
+  tmux_test set-option -p -t "$closing" @workspace_pane_role "$role"
+  tmux_test select-window -t "$closing"
+  invoke_binding "$table" "$key"
+  wait_until 'ordinary pane did not close' pane_is_gone "$closing"
+  [[ "$(tmux_test list-panes -t "$right" -F '#{pane_id}' | wc -l)" -eq 2 ]] || fail 'close removed a sibling'
+
+  # Keep Run cleanup delegated to its owner, with the invoking pane's scope.
+  binding="$(tmux_test list-keys -T "$table" "$key")"
+  [[ "$binding" == *'TMUX=#{q:socket_path}'*'TMUX_PANE=#{q:pane_id} myran close-run'* ]] ||
+    fail 'Run closure bypasses scoped Myran cleanup'
+  marker="$TEST_ROOT/run-$table.pid"
+  run_myran set-default "exec bash '$TEST_ROOT/run.sh' '$marker'" >/dev/null
+  run_myran run >/dev/null
+  run_pane="$(tmux_test display-message -p -t smoke: '#{pane_id}')"
+  wait_until 'Run did not start' test -s "$marker"
+  IFS= read -r run_pid <"$marker"
+  invoke_binding "$table" "$key"
+  wait_until 'Run pane did not close' pane_is_gone "$run_pane"
+  wait_until 'Run process survived closure' process_is_gone "$run_pid"
 done
-[[ -f "$ready" ]] || fail 'Ctrl-Q receiver did not start'
-invoke_binding root C-q
-for _attempt in {1..100}; do
-  [[ -s "$received" ]] && break
-  sleep 0.02
-done
-[[ -s "$received" ]] || fail 'Ctrl-Q was swallowed outside Edit'
-IFS= read -r -n 1 received_byte <"$received"
-[[ "$received_byte" == $'\x11' ]] || fail 'Ctrl-Q was changed outside Edit'
-tmux -L "$SOCKET" kill-window -t "$receiver_pane"
-tmux -L "$SOCKET" kill-window -t "$editor"
+
+# Our session-switch fallback must work before the client has any history.
+client_session_is() { [[ "$(tmux_test list-clients -F '#{session_name}')" == "$1" ]]; }
+tmux_test new-session -d -s alternate 'sleep 300'
+mkfifo "$TEST_ROOT/client-input"
+exec 9<>"$TEST_ROOT/client-input"
+tmux_test -C attach-session -t smoke <"$TEST_ROOT/client-input" >"$TEST_ROOT/client-output" 2>&1 &
+client_job=$!
+wait_until 'test client did not attach' client_session_is smoke
+invoke_binding prefix Space
+wait_until 'session switch without history failed' client_session_is alternate
+invoke_binding prefix Space
+wait_until 'session switch did not return' client_session_is smoke
+# A previous session named "0" is not missing history.
+for session in 0 1 2; do tmux_test new-session -d -s "$session" 'sleep 300'; done
+tmux_test switch-client -t '=0'
+tmux_test switch-client -t '=1'
+invoke_binding prefix Space
+wait_until 'session 0 was treated as missing history' client_session_is 0
+tmux_test detach-client -t "$(tmux_test list-clients -F '#{client_name}')"
+wait "$client_job"
+exec 9>&-
 
 # Reload restores managed shell defaults without duplicating the autosave hook.
 tmux -L "$SOCKET" set-option -gw copy-mode-line-numbers relative
@@ -190,4 +252,4 @@ HOME="$TEST_ROOT/home" tmux -L "$SOCKET" source-file "$TEST_ROOT/home/dotfiles/t
   fail 'reload did not clear the stale shell environment'
 status_right="$(tmux -L "$SOCKET" show-option -gqv status-right)"
 [[ "$status_right" == *'#(true)'* && "$status_right" != *'#(true)'*'#(true)'* ]] || fail 'autosave hook changed'
-printf 'PASS: Myran callers, native navigation/splits/zoom, warm editor, Ctrl-Q forwarding, safe reload\n'
+printf 'PASS: Myran callers, navigation, editor/terminal/Run closing, session switching, safe reload\n'

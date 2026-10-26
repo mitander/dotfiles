@@ -110,6 +110,14 @@ return {
         vim.opt.clipboard:append("unnamedplus")
     end,
     keys = {
+        {
+            "<C-q>",
+            function()
+                vim.cmd.quit()
+            end,
+            mode = { "n", "i", "x" },
+            desc = "Close window",
+        },
         { "<leader>Te", open_project_role("edit"), desc = "Tmux project nvim window" },
         { "<leader>Ts", open_project_role("term"), desc = "Tmux project shell window" },
         { "<leader>Ta", open_project_role("agent"), desc = "Tmux project pi window" },
