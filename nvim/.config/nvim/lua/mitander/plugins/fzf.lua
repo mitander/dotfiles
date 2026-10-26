@@ -11,14 +11,18 @@ local function project_files()
     end
 
     -- Let Git resolve worktrees and environment overrides without blocking the editor.
-    vim.system({ "git", "-C", cwd, "rev-parse", "--show-toplevel" }, { text = true }, function(result)
-        vim.schedule(function()
-            if result.code == 0 then
-                opts.cwd = vim.trim(result.stdout)
-            end
-            picker().files(opts)
-        end)
-    end)
+    vim.system(
+        { "git", "-C", cwd, "rev-parse", "--show-toplevel" },
+        { text = true },
+        function(result)
+            vim.schedule(function()
+                if result.code == 0 then
+                    opts.cwd = vim.trim(result.stdout)
+                end
+                picker().files(opts)
+            end)
+        end
+    )
 end
 
 local fd_exists = vim.fn.executable("fd") == 1
@@ -27,7 +31,8 @@ local function all_files()
     picker().files({
         no_resume = true,
         previewer = false,
-        cmd = fd_exists and "fd --no-ignore --color=never --type f --hidden --follow --exclude .git"
+        cmd = fd_exists
+                and "fd --no-ignore --color=never --type f --hidden --follow --exclude .git"
             or "rg --files --no-ignore --hidden -g '!.git'",
         file_ignore_patterns = { ".git/" },
     })

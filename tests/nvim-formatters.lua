@@ -61,7 +61,10 @@ local function check()
 
     -- Config discovery uses the buffer directory, not the editor's cwd.
     local outside = { dirname = project .. "-outside" }
-    assert(formatter.cwd(nil, outside) == outside.dirname, "outside config must not inherit a project root")
+    assert(
+        formatter.cwd(nil, outside) == outside.dirname,
+        "outside config must not inherit a project root"
+    )
 end
 
 local ok, failure = xpcall(check, debug.traceback)

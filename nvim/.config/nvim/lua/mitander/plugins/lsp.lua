@@ -133,8 +133,11 @@ return {
     config = function(_, opts)
         local ok, blink = pcall(require, "blink.cmp")
         if ok then
-            opts.capabilities =
-                vim.tbl_deep_extend("force", vim.lsp.protocol.make_client_capabilities(), blink.get_lsp_capabilities())
+            opts.capabilities = vim.tbl_deep_extend(
+                "force",
+                vim.lsp.protocol.make_client_capabilities(),
+                blink.get_lsp_capabilities()
+            )
         end
 
         vim.diagnostic.config({
@@ -178,7 +181,12 @@ return {
                 vim.keymap.set("n", "gr", fzf_lsp("lsp_references", qf_references), map_opts)
                 vim.keymap.set("n", "gR", qf_references, map_opts)
                 vim.keymap.set("n", "gd", vim.lsp.buf.definition, map_opts)
-                vim.keymap.set("n", "gi", fzf_lsp("lsp_implementations", qf_implementations), map_opts)
+                vim.keymap.set(
+                    "n",
+                    "gi",
+                    fzf_lsp("lsp_implementations", qf_implementations),
+                    map_opts
+                )
                 vim.keymap.set("n", "gI", qf_implementations, map_opts)
                 vim.keymap.set("n", "go", vim.diagnostic.open_float, map_opts)
                 vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, map_opts)

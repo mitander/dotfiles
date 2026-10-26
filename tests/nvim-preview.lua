@@ -207,7 +207,10 @@ local function check()
         end
         vim.cmd("LivePreview start " .. vim.fn.fnameescape(file))
         utils.open_browser = open_browser
-        assert(url == ("http://127.0.0.1:%d/preview.md"):format(config.port), "browser URL must use the bound port")
+        assert(
+            url == ("http://127.0.0.1:%d/preview.md"):format(config.port),
+            "browser URL must use the bound port"
+        )
         vim.cmd("LivePreview close")
     else
         for _, failure in ipairs({
@@ -223,7 +226,10 @@ local function check()
             local result = preview.start(file)
             vim.notify = notify
             assert(result == false and message:find(failure.message, 1, true))
-            assert(preview.serverObj == nil and failed_socket:is_closing(), "failed startup must release its listener")
+            assert(
+                preview.serverObj == nil and failed_socket:is_closing(),
+                "failed startup must release its listener"
+            )
             fail_start = false
             assert(preview.start(file), "a startup failure must not prevent retry")
             preview.close()

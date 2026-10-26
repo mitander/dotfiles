@@ -2,7 +2,11 @@ local function run_command(command)
     vim.system(command, { text = true }, function(result)
         if result.code ~= 0 then
             vim.schedule(function()
-                vim.notify(result.stderr or "tmux command failed", vim.log.levels.ERROR, { title = "tmux" })
+                vim.notify(
+                    result.stderr or "tmux command failed",
+                    vim.log.levels.ERROR,
+                    { title = "tmux" }
+                )
             end)
         end
     end)

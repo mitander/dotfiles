@@ -10,6 +10,11 @@ return {
     priority = 1000,
     config = function()
         pcall(vim.api.nvim_del_augroup_by_name, "mitander_highlight_overrides")
-        require("flume").setup({ schema = schema, follow_sync = true, dev = true, transparent = false })
+        require("flume").setup({
+            schema = schema,
+            follow_sync = true,
+            dev = true,
+            transparent = false,
+        })
     end,
 }

@@ -82,12 +82,21 @@ local ok, failure = xpcall(function()
 
         local formatted = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
         assert(formatted ~= source, extension .. " should be formatted")
-        assert(vim.deep_equal(vim.fn.readfile(filename), lines), "formatting must not rewrite the source file")
+        assert(
+            vim.deep_equal(vim.fn.readfile(filename), lines),
+            "formatting must not rewrite the source file"
+        )
         if extension == "py" then
-            assert(formatted:find("import os\nimport sys", 1, true), "organize imports without removing unused imports")
+            assert(
+                formatted:find("import os\nimport sys", 1, true),
+                "organize imports without removing unused imports"
+            )
         end
         if extension == "bash" or extension == "zsh" then
-            assert(formatted:find("\n  echo hi\n", 1, true), "shell indentation must use two spaces")
+            assert(
+                formatted:find("\n  echo hi\n", 1, true),
+                "shell indentation must use two spaces"
+            )
         end
         print("PASS: Conform formats " .. extension .. " without writing the source file")
     end
@@ -95,15 +104,19 @@ local ok, failure = xpcall(function()
     -- A project config replaces the global preset, without changing editor setup.
     local project = temporary .. "/project"
     vim.fn.mkdir(project)
-    local project_config =
-        vim.json.decode(table.concat(vim.fn.readfile(vim.env.DPRINT_CONFIG_DIR .. "/dprint.json"), "\n"))
+    local project_config = vim.json.decode(
+        table.concat(vim.fn.readfile(vim.env.DPRINT_CONFIG_DIR .. "/dprint.json"), "\n")
+    )
     project_config.indentWidth = 4
     vim.fn.writefile({ vim.json.encode(project_config) }, project .. "/dprint.json")
 
     new_buffer(project .. "/example.json", "json", { "{", '"x":1', "}" })
     assert(not format_buffer())
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    assert(lines[2] == '    "x": 1', "project indentation must override the global preset: " .. vim.inspect(lines))
+    assert(
+        lines[2] == '    "x": 1',
+        "project indentation must override the global preset: " .. vim.inspect(lines)
+    )
     print("PASS: project config overrides the global preset")
 
     -- A failing native formatter must not replace the buffer.

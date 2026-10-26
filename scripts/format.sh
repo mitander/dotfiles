@@ -42,11 +42,11 @@ shfmt -i 2 "$shell_mode" .
 # Run shell diagnostics only in check mode.
 if [ "$mode" = --check ]; then
   shfmt -f=0 . | xargs -0 shellcheck -x
-  stylua --check nvim tests
+  stylua --allow-hidden --check nvim tests
   alejandra --check flake.nix home
   git ls-files -z --cached --others --exclude-standard '*.toml' | xargs -0 taplo fmt --check
 else
-  stylua nvim tests
+  stylua --allow-hidden --verify nvim tests
   alejandra flake.nix home
   git ls-files -z --cached --others --exclude-standard '*.toml' | xargs -0 taplo fmt
 fi

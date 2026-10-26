@@ -26,7 +26,11 @@ function M.completion_buffers()
     local buffers, seen = {}, {}
     local total_bytes = 0
     for _, bufnr in ipairs(candidates) do
-        if not seen[bufnr] and vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].buftype == "" then
+        if
+            not seen[bufnr]
+            and vim.api.nvim_buf_is_loaded(bufnr)
+            and vim.bo[bufnr].buftype == ""
+        then
             seen[bufnr] = true
             local bytes = size_bytes(bufnr)
 

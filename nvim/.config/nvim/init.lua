@@ -85,7 +85,9 @@ vim.g.maplocalleader = " "
 vim.keymap.set("n", "q", "<nop>")
 
 -- Expand %% to the current file's directory.
-vim.cmd.cabbr({ args = { "<expr>", "%%", "&filetype == 'oil' ? bufname('%')[6:] : expand('%:p:h')" } })
+vim.cmd.cabbr({
+    args = { "<expr>", "%%", "&filetype == 'oil' ? bufname('%')[6:] : expand('%:p:h')" },
+})
 
 -- Accept common write/quit capitalization mistakes.
 vim.cmd.abbr({ args = { "W", "w" } })
@@ -203,7 +205,11 @@ local welcome_messages = {
 }
 
 local function show_welcome()
-    if vim.fn.argc() > 0 or vim.api.nvim_buf_get_name(0) ~= "" or vim.api.nvim_buf_line_count(0) ~= 1 then
+    if
+        vim.fn.argc() > 0
+        or vim.api.nvim_buf_get_name(0) ~= ""
+        or vim.api.nvim_buf_line_count(0) ~= 1
+    then
         return
     end
     if vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] ~= "" then
@@ -238,12 +244,15 @@ local function show_welcome()
         end
     end
 
-    vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter", "BufLeave", "WinLeave", "BufWipeout" }, {
-        group = group,
-        buffer = source_buf,
-        once = true,
-        callback = dismiss_welcome,
-    })
+    vim.api.nvim_create_autocmd(
+        { "InsertEnter", "CmdlineEnter", "BufLeave", "WinLeave", "BufWipeout" },
+        {
+            group = group,
+            buffer = source_buf,
+            once = true,
+            callback = dismiss_welcome,
+        }
+    )
     vim.api.nvim_create_autocmd("VimLeavePre", {
         group = group,
         once = true,
@@ -357,7 +366,15 @@ local function set_tmux_navigation(owned)
 
     local command
     if owned then
-        command = { "tmux", "set-option", "-pq", "-t", vim.env.TMUX_PANE, "@workspace_navigation", "application" }
+        command = {
+            "tmux",
+            "set-option",
+            "-pq",
+            "-t",
+            vim.env.TMUX_PANE,
+            "@workspace_navigation",
+            "application",
+        }
     else
         command = { "tmux", "set-option", "-pu", "-t", vim.env.TMUX_PANE, "@workspace_navigation" }
     end

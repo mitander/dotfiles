@@ -102,9 +102,24 @@ vim.api.nvim_create_autocmd('VimEnter', {
     for _, case in ipairs({
         { name = "plain.txt", text = "plain text", lsp = false, treesitter = false },
         { name = "small.md", text = "# Heading\n\nSome text", lsp = false, treesitter = true },
-        { name = "large.md", text = string.rep("# Heading\n\nSome text\n", 6000), lsp = false, treesitter = false },
-        { name = "small.lua", text = "local alpha = 42\nreturn alpha", lsp = true, treesitter = true },
-        { name = "large.lua", text = string.rep("local alpha = 42\n", 7000), lsp = true, treesitter = false },
+        {
+            name = "large.md",
+            text = string.rep("# Heading\n\nSome text\n", 6000),
+            lsp = false,
+            treesitter = false,
+        },
+        {
+            name = "small.lua",
+            text = "local alpha = 42\nreturn alpha",
+            lsp = true,
+            treesitter = true,
+        },
+        {
+            name = "large.lua",
+            text = string.rep("local alpha = 42\n", 7000),
+            lsp = true,
+            treesitter = false,
+        },
     }) do
         local file = temporary .. "/files/" .. case.name
         vim.fn.writefile(vim.split(case.text, "\n"), file)
@@ -118,7 +133,9 @@ vim.api.nvim_create_autocmd('VimEnter', {
             "--cmd",
             "lua dofile(" .. vim.inspect(driver) .. ")",
             file,
-        }, { env = env, clear_env = true, cwd = temporary .. "/files", text = true }):wait(10000)
+        }, { env = env, clear_env = true, cwd = temporary .. "/files", text = true }):wait(
+            10000
+        )
         assert(process.code == 0, case.name .. ": " .. vim.inspect(process))
         local result = vim.json.decode(table.concat(vim.fn.readfile(env.TEST_RESULT), "\n"))
         assert(not result.error, (result.error or "") .. "\n" .. (process.stderr or ""))

@@ -7,14 +7,19 @@ local server = vim.env.LUA_LANGUAGE_SERVER or vim.fn.exepath("lua-language-serve
 if server == "" then
     server = vim.fn.stdpath("data") .. "/mason/bin/lua-language-server"
 end
-assert(vim.fn.executable(server) == 1, "install LuaLS separately or set LUA_LANGUAGE_SERVER to its executable")
+assert(
+    vim.fn.executable(server) == 1,
+    "install LuaLS separately or set LUA_LANGUAGE_SERVER to its executable"
+)
 
 local function check()
     vim.fn.mkdir(temporary, "p")
 
     -- Check with the editor's libraries and the workspace's runtime settings.
-    local settings = dofile(config_dir .. "/lua/mitander/plugins/lsp.lua").opts.servers.lua_ls.settings.Lua
-    local workspace_settings = vim.json.decode(table.concat(vim.fn.readfile(config_dir .. "/.luarc.json"), "\n"))
+    local settings =
+        dofile(config_dir .. "/lua/mitander/plugins/lsp.lua").opts.servers.lua_ls.settings.Lua
+    local workspace_settings =
+        vim.json.decode(table.concat(vim.fn.readfile(config_dir .. "/.luarc.json"), "\n"))
     settings = vim.tbl_deep_extend("force", settings, workspace_settings)
     local config_path = temporary .. "/settings.json"
     vim.fn.writefile({ vim.json.encode(settings) }, config_path)
@@ -32,7 +37,10 @@ local function check()
         }, { text = true }):wait(60000)
 
         local report = log .. "/check.json"
-        assert(vim.fn.filereadable(report) == 1, "LuaLS produced no report: " .. vim.inspect(result))
+        assert(
+            vim.fn.filereadable(report) == 1,
+            "LuaLS produced no report: " .. vim.inspect(result)
+        )
         local diagnostics = vim.json.decode(table.concat(vim.fn.readfile(report), "\n"))
         return result, diagnostics
     end

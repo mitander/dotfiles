@@ -28,8 +28,10 @@ return {
         init = function()
             -- Prefer Mason tools over system versions.
             local is_windows = vim.uv.os_uname().sysname == "Windows_NT"
-            vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin" .. (is_windows and ";" or ":") .. vim.env.PATH
+            vim.env.PATH = vim.fn.stdpath("data")
+                .. "/mason/bin"
+                .. (is_windows and ";" or ":")
+                .. vim.env.PATH
         end,
     },
 }
-

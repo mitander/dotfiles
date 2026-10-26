@@ -39,7 +39,10 @@ if arg[1] then
         for _, focused in ipairs({ true, false }) do
             vim.g.actual_curwin = focused and vim.api.nvim_get_current_win() or -1
             local rendered = vim.api.nvim_eval_statusline(lualine.statusline(focused), {}).str
-            assert(rendered:find(expected, 1, true), "browser statusline lost its directory: " .. rendered)
+            assert(
+                rendered:find(expected, 1, true),
+                "browser statusline lost its directory: " .. rendered
+            )
         end
     end
     local directory = vim.fn.tempname()
@@ -87,9 +90,15 @@ if arg[1] then
         wait_for_entry(".hidden")
         assert(#vim.api.nvim_list_wins() == 2 and sidebar ~= target)
         assert(vim.wo.winfixwidth, "sidebar width must stay fixed while navigating")
-        assert(vim.fn.win_screenpos(sidebar)[2] < vim.fn.win_screenpos(target)[2], "sidebar must be on the left")
+        assert(
+            vim.fn.win_screenpos(sidebar)[2] < vim.fn.win_screenpos(target)[2],
+            "sidebar must be on the left"
+        )
         status_title(vim.fn.fnamemodify(directory, ":t") .. "/")
-        assert(vim.api.nvim_win_get_buf(target) == file_buffer, "opening sidebar replaced the editing buffer")
+        assert(
+            vim.api.nvim_win_get_buf(target) == file_buffer,
+            "opening sidebar replaced the editing buffer"
+        )
 
         -- Directories, including symlinks, stay in the sidebar. Files open beside it.
         for _, name in ipairs({ "child", "linked-child" }) do
@@ -97,7 +106,8 @@ if arg[1] then
             assert(
                 vim.wait(3000, function()
                     local dir = oil.get_current_dir()
-                    return dir and vim.uv.fs_realpath(dir) == vim.uv.fs_realpath(directory .. "/child")
+                    return dir
+                        and vim.uv.fs_realpath(dir) == vim.uv.fs_realpath(directory .. "/child")
                 end),
                 "directory did not open"
             )
@@ -108,7 +118,8 @@ if arg[1] then
         select("file.txt")
         assert(
             vim.wait(3000, function()
-                return vim.api.nvim_get_current_win() == target and vim.api.nvim_get_current_buf() == file_buffer
+                return vim.api.nvim_get_current_win() == target
+                    and vim.api.nvim_get_current_buf() == file_buffer
             end),
             "file must open in the original editing window"
         )
@@ -165,7 +176,10 @@ if arg[1] then
         assert(#vim.api.nvim_tabpage_list_wins(0) == 1)
         vim.cmd.tabclose()
         mappings["<C-n>"]()
-        assert(#vim.api.nvim_tabpage_list_wins(0) == 1, "toggle from editing window must close sidebar")
+        assert(
+            #vim.api.nvim_tabpage_list_wins(0) == 1,
+            "toggle from editing window must close sidebar"
+        )
 
         -- Oil use alone must not load the optional tree.
         assert(not package.loaded["nvim-tree"] and not package.loaded["nvim-tree.api"])
@@ -211,7 +225,8 @@ if arg[1] then
         end
         assert(
             vim.wait(3000, function()
-                local lines = table.concat(vim.api.nvim_buf_get_lines(tree_buffer, 0, -1, false), "\n")
+                local lines =
+                    table.concat(vim.api.nvim_buf_get_lines(tree_buffer, 0, -1, false), "\n")
                 return lines:find("nested.txt", 1, true) ~= nil
             end),
             "tree folder did not expand inline"
@@ -250,5 +265,8 @@ if arg[1] then
     assert(ok, err)
 end
 
-print("PASS: file browser configuration" .. (arg[1] and " and installed-plugin sidebar navigation" or ""))
+print(
+    "PASS: file browser configuration"
+        .. (arg[1] and " and installed-plugin sidebar navigation" or "")
+)
 vim.cmd("qa!")

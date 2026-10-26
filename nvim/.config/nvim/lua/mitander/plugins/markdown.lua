@@ -4,7 +4,11 @@ return {
         ft = "markdown",
         dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
         keys = {
-            { "<leader>vm", "<cmd>RenderMarkdown buf_toggle<cr>", desc = "Toggle Markdown rendering" },
+            {
+                "<leader>vm",
+                "<cmd>RenderMarkdown buf_toggle<cr>",
+                desc = "Toggle Markdown rendering",
+            },
         },
         opts = {
             ignore = function(bufnr)

@@ -2,7 +2,10 @@
 -- Load the real configuration and installed picker without installing other plugins.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 local plugins = vim.fn.stdpath("data") .. "/lazy"
-assert(vim.fn.filereadable(plugins .. "/lazy.nvim/lua/lazy/init.lua") == 1, "install Lazy separately")
+assert(
+    vim.fn.filereadable(plugins .. "/lazy.nvim/lua/lazy/init.lua") == 1,
+    "install Lazy separately"
+)
 package.loaded.lazy = { setup = function() end }
 vim.env.TMUX, vim.env.TMUX_PANE = nil, nil
 dofile(root .. "/nvim/.config/nvim/init.lua")

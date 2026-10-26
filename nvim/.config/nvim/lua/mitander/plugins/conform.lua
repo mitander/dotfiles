@@ -81,7 +81,8 @@ return {
             },
             dprint = {
                 command = function(self, ctx)
-                    return pinned_dprint(ctx.dirname) or require("conform.util").from_node_modules("dprint")(self, ctx)
+                    return pinned_dprint(ctx.dirname)
+                        or require("conform.util").from_node_modules("dprint")(self, ctx)
                 end,
                 -- Let dprint resolve project config first, then its global fallback.
                 cwd = function(_, ctx)

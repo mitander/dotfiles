@@ -62,7 +62,10 @@ function M.setup(opts)
         assert(self.server:is_active(), "Preview listener is not listening")
         local bound = assert(self.server:getsockname(), "Preview listener did not bind")
         assert(bound.port ~= 0, "Preview listener has no allocated port")
-        assert(bound.ip == "127.0.0.1" or bound.ip == "::1", "Preview listener must stay on loopback")
+        assert(
+            bound.ip == "127.0.0.1" or bound.ip == "::1",
+            "Preview listener must stay on loopback"
+        )
         -- Both :LivePreview start and the picker build their URL after start().
         config.config.port = bound.port
 

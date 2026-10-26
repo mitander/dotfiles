@@ -87,10 +87,14 @@ local function check()
         ["<leader>Tt"] = "tracker",
     }) do
         key(tmux, lhs)()
-        assert(vim.deep_equal(requests[#requests], { "myran", "role", "open", role, vim.fn.getcwd() }))
+        assert(
+            vim.deep_equal(requests[#requests], { "myran", "role", "open", role, vim.fn.getcwd() })
+        )
     end
     key(tmux, "<leader>TA")()
-    assert(vim.deep_equal(requests[#requests], { "myran", "role", "split", "agent", vim.fn.getcwd() }))
+    assert(
+        vim.deep_equal(requests[#requests], { "myran", "role", "split", "agent", vim.fn.getcwd() })
+    )
 
     local lazygit = spec("lazygit")
     local git_requests = #requests
@@ -106,7 +110,10 @@ local function check()
         notifications[#notifications + 1] = { message = message, level = level, title = opts.title }
     end
     for index, case in ipairs({
-        { result = { code = 1, stderr = "stderr detail", stdout = "stdout detail" }, message = "stderr detail" },
+        {
+            result = { code = 1, stderr = "stderr detail", stdout = "stdout detail" },
+            message = "stderr detail",
+        },
         { result = { code = 1, stderr = "", stdout = "stdout detail" }, message = "stdout detail" },
         { result = { code = 1 }, message = "Myran Git role failed" },
         { result = { code = 1, stderr = "", stdout = "" }, message = "Myran Git role failed" },
@@ -142,7 +149,10 @@ local function check()
 
     local live_layout = fzf.opts.live_grep.winopts.preview.horizontal
     fzf.opts.grep.winopts.preview.horizontal = "changed"
-    assert(fzf.opts.live_grep.winopts.preview.horizontal == live_layout, "picker options must not alias")
+    assert(
+        fzf.opts.live_grep.winopts.preview.horizontal == live_layout,
+        "picker options must not alias"
+    )
     fzf.opts.grep.no_esc = true
     assert(fzf.opts.live_grep.no_esc == nil, "query state must stay local to each picker")
 
@@ -159,7 +169,12 @@ local function check()
 
     key(fzf, "<c-p>")()
     assert(files == nil, "project picker must not wait for Git")
-    assert(vim.deep_equal(requests[#requests], { "git", "-C", project .. "/src", "rev-parse", "--show-toplevel" }))
+    assert(
+        vim.deep_equal(
+            requests[#requests],
+            { "git", "-C", project .. "/src", "rev-parse", "--show-toplevel" }
+        )
+    )
     completions[#requests]({ code = 0, stdout = project .. "\n" })
     assert(vim.wait(100, function()
         return files ~= nil
@@ -194,5 +209,7 @@ vim.api.nvim_set_current_dir(root)
 vim.fn.delete(project, "rf")
 
 assert(ok, failure)
-print("PASS: Neovim clipboard setup, asynchronous navigation, role routing and project picker behavior")
+print(
+    "PASS: Neovim clipboard setup, asynchronous navigation, role routing and project picker behavior"
+)
 vim.cmd("qa!")
