@@ -94,6 +94,64 @@ assert_picker_border() {
   assert_ordinary_border "$expected"
 }
 
+# Scroll positions belong to a pane border only while that row is visible.
+assert_format() {
+  local pane="$1" option="$2" expected="$3" actual
+  actual="$(tmux_test display-message -p -t "$pane" "#{E:$option}")"
+  if [[ -z "$expected" ]]; then
+    [[ -z "$actual" ]] || fail "$option should be empty, got '$actual'"
+  else
+    [[ "$actual" == *"$expected"* ]] || fail "$option should contain '$expected', got '$actual'"
+  fi
+}
+
+test_copy_positions() {
+  local direction pane sibling attempt
+  for direction in -h -v; do
+    pane="$(tmux_test new-window -P -F '#{pane_id}' -t proof: -n copy-position 'sleep 300')"
+    assert_format "$pane" status-right ''
+    tmux_test copy-mode -t "$pane"
+    assert_format "$pane" status-right '≡ 0/0'
+
+    sibling="$(tmux_test split-window "$direction" -P -F '#{pane_id}' -t "$pane" 'sleep 300')"
+    assert_format "$pane" status-right ''
+    assert_format "$pane" pane-border-format '≡ '
+    assert_format "$sibling" pane-border-format ''
+    load_theme
+    assert_format "$pane" status-right ''
+    assert_format "$pane" pane-border-format '≡ '
+
+    # Give only the first pane scrollback, then focus its scrolling sibling.
+    tmux_test send-keys -X -t "$pane" cancel
+    tmux_test respawn-pane -k -t "$pane" 'seq 1 100; printf "position-ready\n"; sleep 300'
+    for ((attempt = 0; attempt < 100; attempt++)); do
+      [[ "$(tmux_test capture-pane -p -t "$pane")" == *position-ready* ]] && break
+      sleep 0.02
+    done
+    [[ "$(tmux_test capture-pane -p -t "$pane")" == *position-ready* ]] || fail 'scroll history did not arrive'
+    tmux_test copy-mode -t "$pane"
+    tmux_test copy-mode -t "$sibling"
+    tmux_test send-keys -X -N 1 -t "$pane" scroll-up
+    assert_format "$pane" pane-border-format '≡ 1/'
+    assert_format "$sibling" pane-border-format '≡ 0/0'
+    tmux_test send-keys -X -t "$sibling" cancel
+    assert_format "$sibling" pane-border-format ''
+
+    # Resizing can change the offset. The location must follow visibility.
+    tmux_test resize-pane -Z -t "$pane"
+    assert_format "$pane" status-right '≡ '
+    tmux_test resize-pane -Z -t "$pane"
+    assert_format "$pane" status-right ''
+    assert_format "$pane" pane-border-format '≡ '
+    tmux_test kill-pane -t "$sibling"
+    assert_format "$pane" status-right '≡ '
+    tmux_test send-keys -X -t "$pane" cancel
+    assert_format "$pane" status-right ''
+    assert_format "$pane" pane-border-format ''
+    tmux_test kill-window -t "$pane"
+  done
+}
+
 # Run-window reload
 # Use a shell that can report its PTY size in the later zoom checks.
 tmux_test -f /dev/null new-session -d -x 160 -y 50 -s proof 'bash --noprofile --norc'
@@ -180,4 +238,5 @@ load_theme
 [[ "$(tmux_test show-option -wv -t "$run_window" pane-border-status)" == top ]] ||
   fail 'repeated theme reload moved the run title'
 
-printf 'PASS: tiled-only borders, floating pickers, zoom/PTY geometry, pane exit, reload and run titles\n'
+test_copy_positions
+printf 'PASS: tiled-only borders, pane-local scroll positions, floating pickers, zoom/PTY geometry, pane exit, reload and run titles\n'
