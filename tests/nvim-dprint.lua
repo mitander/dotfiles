@@ -1,5 +1,5 @@
 -- Run with: nvim --clean --headless -l tests/nvim-dprint.lua
--- Requires installed Conform, dprint and the configured native formatters.
+-- Requires installed Conform, dprint, prettierd and the configured native formatters.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 local config_dir = root .. "/nvim/.config/nvim"
 local function new_buffer(filename, filetype, lines)
@@ -160,6 +160,22 @@ local ok, failure = xpcall(function()
     assert(cargo.code == 0, cargo.stderr)
     assert(vim.deep_equal(vim.fn.readfile(rust_path), rust_buffer))
     print("PASS: editor Rust formatting matches cargo fmt with project configuration")
+
+    -- A Prettier config takes precedence over the dprint defaults.
+    local prettier_project = temporary .. "/prettier"
+    vim.fn.mkdir(prettier_project)
+    vim.fn.writefile({ '{ "semi": false }' }, prettier_project .. "/.prettierrc")
+    vim.cmd.enew({ bang = true })
+    vim.api.nvim_buf_set_name(0, prettier_project .. "/example.ts")
+    vim.bo.filetype = "typescript"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { "const x:number=1;" })
+    assert(not format_buffer())
+    lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    assert(
+        vim.deep_equal(lines, { "const x: number = 1" }),
+        "project Prettier config must win: " .. vim.inspect(lines)
+    )
+    print("PASS: project Prettier config takes precedence over dprint")
 
     -- A failing native formatter must not replace the buffer.
     local bin = temporary .. "/bin"

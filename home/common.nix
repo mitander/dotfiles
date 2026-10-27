@@ -72,7 +72,9 @@ in {
 
       # Formatters and diagnostics
       alejandra
+      toolingPkgs.dprint
       toolingPkgs.prettier
+      toolingPkgs.prettierd
       toolingPkgs.pyright
       toolingPkgs.ruff
       toolingPkgs.shellcheck

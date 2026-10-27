@@ -17,8 +17,25 @@ local function check()
 
     expect_native_routes()
 
+    for _, filetype in ipairs({ "typescript", "json", "markdown" }) do
+        assert(
+            vim.deep_equal(
+                opts.formatters_by_ft[filetype],
+                { "prettierd", "dprint", stop_after_first = true }
+            )
+        )
+    end
+    assert(
+        opts.formatters.prettierd.require_cwd,
+        "Prettier runs only in repositories that configure it"
+    )
+
     local formatter = opts.formatters.dprint
     local context = { dirname = project .. "/docs" }
+    assert(
+        vim.deep_equal(formatter.args, { "fmt", "--stdin", "$RELATIVE_FILEPATH" }),
+        "pass the path relative to the config directory so unsaved files format"
+    )
     assert(formatter.cwd(nil, context) == context.dirname)
     for _, name in ipairs({ "dprint.json", ".dprint.json", "dprint.jsonc", ".dprint.jsonc" }) do
         vim.fn.writefile({ "{}" }, project .. "/" .. name)
