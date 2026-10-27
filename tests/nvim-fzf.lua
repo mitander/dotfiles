@@ -9,6 +9,7 @@ assert(
 package.loaded.lazy = { setup = function() end }
 vim.opt.runtimepath:prepend(root .. "/nvim/.config/nvim")
 vim.env.TMUX, vim.env.TMUX_PANE = nil, nil
+vim.opt.runtimepath:prepend(root .. "/nvim/.config/nvim")
 dofile(root .. "/nvim/.config/nvim/init.lua")
 vim.opt.runtimepath:append(plugins .. "/fzf-lua")
 local spec = dofile(root .. "/nvim/.config/nvim/lua/mitander/plugins/fzf.lua")

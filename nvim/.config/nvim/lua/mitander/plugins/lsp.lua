@@ -89,6 +89,7 @@ return {
             ruff = {},
             ts_ls = {},
             eslint = {},
+            oxlint = {},
             zls = {
                 cmd = { zls_bin },
                 root_dir = zls_root_dir,

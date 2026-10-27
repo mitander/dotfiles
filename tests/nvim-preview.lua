@@ -183,6 +183,10 @@ local function check()
         explicit:watch_dir()
     end
     local watcher = explicit._watcher
+    if plugin and uv.os_uname().sysname == "Linux" then
+        -- The Linux plugin wraps the native handle in its recursive watcher.
+        watcher = assert(watcher.watcher)
+    end
     preview.close()
     assert(timer:is_closing(), "explicit close must release the timer")
     if watcher then
