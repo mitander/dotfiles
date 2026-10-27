@@ -6,3 +6,16 @@ __pycache__/
 **/lazy-lock.json
 !nvim/.config/nvim/lazy-lock.json
 .pi-subagents/
+
+# Machine-local agent configuration and credentials.
+/.agents/
+/.claude/
+/.codex/
+/.copilot/
+/.pi/
+/.aws/
+
+# Git identity files belong in ~/.config/git, outside this checkout.
+/git/local.gitconfig
+/git/personal.gitconfig
+/git/work.gitconfig

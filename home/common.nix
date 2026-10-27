@@ -125,8 +125,6 @@ in {
     "yazi/yazi.toml".source = live "yazi/.config/yazi/yazi.toml";
     "yazi/keymap.toml".source = live "yazi/.config/yazi/keymap.toml";
     "yazi/theme.toml".source = live "yazi/.config/yazi/theme.toml";
-    "git/work.gitconfig".source = live "git/work.gitconfig";
-    "git/personal.gitconfig".source = live "git/personal.gitconfig";
     "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
   };
 
