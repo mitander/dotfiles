@@ -1,0 +1,5 @@
+# FreeType cannot thicken strokes, so step up one weight to match macOS.
+font-style = "SemiBold"
+font-style-bold = "ExtraBold"
+font-style-italic = "SemiBold Italic"
+font-style-bold-italic = "ExtraBold Italic"

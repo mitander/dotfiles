@@ -29,6 +29,7 @@ font-style-bold-italic = "Bold Italic"
 adjust-cell-height = 13%
 adjust-cell-width = 7%
 font-thicken = true
+config-file = ?linux
 alpha-blending = linear-corrected
 theme = flume
 window-theme = auto
@@ -61,3 +62,6 @@ keybind = cmd+physical:nine=text:\x01\x39
 # Vim keybindings
 # Select the entire buffer with ggVG.
 keybind = cmd+a=text:\x1bggVG
+
+# Scroll
+mouse-scroll-multiplier = precision:0.3,discrete:1

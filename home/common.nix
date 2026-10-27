@@ -115,20 +115,25 @@ in {
   '';
 
   # Live configuration links
-  xdg.configFile = {
-    ".lldbinit".source = live "lldb/.config/.lldbinit";
-    "bronson/flume".source = live "themes/flume/extras";
-    "dprint".source = live "dprint/.config/dprint";
-    "fish/config.fish".source = live "fish/.config/fish/config.fish";
-    "ghostty/config".source = live "ghostty/.config/ghostty/config";
-    "lazygit/config.yml".source = live "lazygit/.config/lazygit/config.yml";
-    "lsd/config.yaml".source = live "lsd/.config/lsd/config.yaml";
-    "nvim".source = live "nvim/.config/nvim";
-    "yazi/yazi.toml".source = live "yazi/.config/yazi/yazi.toml";
-    "yazi/keymap.toml".source = live "yazi/.config/yazi/keymap.toml";
-    "yazi/theme.toml".source = live "yazi/.config/yazi/theme.toml";
-    "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
-  };
+  xdg.configFile =
+    {
+      ".lldbinit".source = live "lldb/.config/.lldbinit";
+      "bronson/flume".source = live "themes/flume/extras";
+      "dprint".source = live "dprint/.config/dprint";
+      "fish/config.fish".source = live "fish/.config/fish/config.fish";
+      "ghostty/config".source = live "ghostty/.config/ghostty/config";
+      "lazygit/config.yml".source = live "lazygit/.config/lazygit/config.yml";
+      "lazygit/flume.yml".source = live "themes/flume/extras/current/lazygit.yml";
+      "lsd/config.yaml".source = live "lsd/.config/lsd/config.yaml";
+      "nvim".source = live "nvim/.config/nvim";
+      "yazi/yazi.toml".source = live "yazi/.config/yazi/yazi.toml";
+      "yazi/keymap.toml".source = live "yazi/.config/yazi/keymap.toml";
+      "yazi/theme.toml".source = live "yazi/.config/yazi/theme.toml";
+      "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
+    }
+    // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+      "ghostty/linux".source = live "ghostty/.config/ghostty/linux";
+    };
 
   # Agent, command and tmux links
   home.file = {
