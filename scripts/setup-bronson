@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Install the local checkout explicitly. Launching Bronson never installs packages.
+set -euo pipefail
+checkout="${BRONSON_CHECKOUT:-$HOME/c/p/bronson}"
+if [[ ! -f "$checkout/pyproject.toml" || ! -f "$checkout/bronson/cli.py" ]]; then
+  printf 'Missing Bronson checkout: %s\n' "$checkout" >&2
+  printf 'Clone Bronson there, or set BRONSON_CHECKOUT to its location.\n' >&2
+  exit 1
+fi
+
+if [[ ! -x "$checkout/.venv/bin/python" ]]; then
+  "${PYTHON:-python3}" -m venv "$checkout/.venv"
+fi
+"$checkout/.venv/bin/python" -m pip --disable-pip-version-check install --editable "$checkout"
+printf 'Bronson now runs from %s. Restart it after editing source.\n' "$checkout"

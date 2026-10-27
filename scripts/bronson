@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Run the editable local application without dependency setup or credential wiring.
+set -euo pipefail
+checkout="${BRONSON_CHECKOUT:-$HOME/c/p/bronson}"
+if [[ ! -x "$checkout/.venv/bin/bronson" ]]; then
+  printf 'Run ~/dotfiles/scripts/setup-bronson before starting Bronson.\n' >&2
+  exit 1
+fi
+exec "$checkout/.venv/bin/bronson" "$@"

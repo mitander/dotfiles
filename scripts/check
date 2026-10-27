@@ -14,7 +14,7 @@ case "${1:-}" in
   # Exercise installation, command routing and editor behavior in isolated fixtures.
   python3 tests/install-myran.py
   python3 tests/loc-tree.py
-  for test in dotfiles-command tracker-local fish-config fish-nvim myran-open-files myran-yazi tmux-run-borders; do
+  for test in bronson-local dotfiles-command tracker-local fish-config fish-nvim myran-open-files myran-yazi tmux-run-borders; do
     bash "tests/$test.sh"
   done
   for test in nvim-config nvim-lsp nvim-performance nvim-formatters nvim-clipboard nvim-files nvim-preview nvim-markdown; do

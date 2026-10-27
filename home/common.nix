@@ -153,6 +153,7 @@ in {
     ".local/bin/myran-yazi".source = live "scripts/myran-yazi";
     ".local/bin/dotfiles-format".source = live "scripts/format.sh";
     ".local/bin/ltui".source = live "tracker-tui/launch";
+    ".local/bin/bronson".source = live "scripts/bronson";
     ".tmux.conf".source = live "tmux/.tmux.conf";
     ".tmux/workspace-status.conf".source = live "tmux/.tmux/workspace-status.conf";
   };
