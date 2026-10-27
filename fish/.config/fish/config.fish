@@ -22,6 +22,36 @@ set -gx PATH $PATH
 # Editor routing
 function nvim
     if test -n "$TMUX"; and test -z "$NVIM"; and test -z "$TMUX_EDIT_BYPASS"
+        # Myran's project identity is the nearest .git ancestor, or the cwd.
+        set -l project_root (path resolve -- .)
+        set -l ancestor "$project_root"
+        while true
+            if test -e "$ancestor/.git"
+                set project_root "$ancestor"
+                break
+            end
+            test "$ancestor" = /; and break
+            set ancestor (path dirname -- "$ancestor")
+        end
+
+        # Read session options explicitly, never inherited pane/window metadata.
+        set -l target
+        if test -n "$TMUX_PANE"
+            set target -t "$TMUX_PANE"
+        end
+        set -l session (command tmux display-message -p $target '#{session_id}')
+        or return $status
+        set -l workspace_root (command tmux show-options -qv -t "$session" @workspace_root)
+        or return $status
+        if test -z "$workspace_root"
+            set workspace_root (command tmux show-options -qv -t "$session" @project_root)
+            or return $status
+        end
+        if test "$workspace_root" != "$project_root"
+            command nvim $argv
+            return $status
+        end
+
         set -l paths
         set -l literal 0
 
