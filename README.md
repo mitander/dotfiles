@@ -54,6 +54,17 @@ Other applications may also need a restart. Reloading tmux requires the installe
 tmux servers carrying retired workspace hooks need a restart to discard them. Reload no longer
 removes those hooks. Save work first, since restarting a server ends its sessions.
 
+## Open files in Myran
+
+The macOS desktop bridge lives in this checkout. Install or update it explicitly with
+`./scripts/install-myran-editor`. It registers the handler without selecting default applications.
+Its file-opening helper remains live-linked to `scripts/myran-open-files`.
+
+The bridge chooses the most recently active attached client on the default tmux server, not the
+terminal that supplied a click. It captures that pane and the existing hidden Myran server identity
+together, rejects identity changes, and forwards the retained capability to `myran open`. A missing
+identity is an error, not permission to initialize or adopt another server.
+
 ## Checks
 
 With Python 3.11+ and Node.js 22.6+ on `PATH`, run `dotfiles check` when changing scripts or

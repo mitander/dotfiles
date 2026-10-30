@@ -4,7 +4,8 @@ set -euo pipefail
 
 # Finder does not supply a terminal's PATH or a reliable tmux caller identity.
 export PATH="$HOME/.local/bin:$HOME/.nix-profile/bin:/opt/homebrew/bin:/usr/bin:/bin"
-unset TMUX TMUX_PANE
+unset TMUX TMUX_PANE MYRAN_TMUX_SERVER_ID MYRAN_TMUX_CLIENT \
+  MYRAN_TMUX_CLIENT_PID MYRAN_TMUX_PANE_PID MYRAN_TMUX_RUN_GENERATION
 
 # Validate location syntax and every document before choosing a workspace.
 location=''
@@ -28,27 +29,33 @@ for path in "$@"; do
   fi
 done
 
-# Pin one pane before further queries. A later focus change must not retarget the open.
-clients=$(tmux list-clients -F '#{client_activity} #{client_pid} #{pane_id} #{socket_path},#{pid},0')
+# Capture the hidden server capability with the pane, never a Session-shadowed variable.
+# This bridge reads existing authority. It must not initialize or renew a server identity.
+identity='#{V/g:#{?#{&&:#{==:#{environ_name},_MYRAN_SERVER_ID},#{==:#{environ_hidden},1}},#{environ_value},}}'
+scope_format="#{socket_path},#{pid},0@$identity"
+clients=$(tmux -N list-clients -F "#{client_activity} #{client_pid} #{pane_id} $scope_format")
 latest=$(printf '%s\n' "$clients" | sort -nr)
 latest=${latest%%$'\n'*}
-read -r activity client pane scope <<<"$latest"
-if [[ ! "$activity" =~ ^[0-9]+$ || ! "$client" =~ ^[0-9]+$ || ! "$pane" =~ ^%[0-9]+$ || ! "$scope" =~ ^/.*,[0-9]+,0$ ]]; then
-  echo 'Myran Editor needs an attached tmux client on the default server.' >&2
+read -r activity client pane captured <<<"$latest"
+scope=${captured%@*}
+token=${captured##*@}
+if [[ ! "$activity" =~ ^[0-9]+$ || ! "$client" =~ ^[0-9]+$ || ! "$pane" =~ ^%[0-9]+$ || ! "$scope" =~ ^/.*,[0-9]+,0$ || ! "$token" =~ ^v1-[0-9a-f]{32}$ ]]; then
+  echo 'Myran Editor needs an attached tmux client with a valid Myran server identity.' >&2
   exit 1
 fi
 
-# Reject a restarted server before exposing its pinned identity to Myran.
-observed=$(tmux display-message -p -t "$pane" '#{socket_path},#{pid},0')
-if [[ "$observed" != "$scope" ]]; then
+# Recheck the complete captured identity, including a changed token at the same socket/PID.
+observed=$(tmux -N display-message -p -t "$pane" "$scope_format")
+if [[ "$observed" != "$captured" ]]; then
   echo 'The tmux server changed while opening the file. Click the link again.' >&2
   exit 1
 fi
 TMUX=$scope
 TMUX_PANE=$pane
-export TMUX TMUX_PANE
+MYRAN_TMUX_SERVER_ID=$token
+export TMUX TMUX_PANE MYRAN_TMUX_SERVER_ID
 
-root=$(tmux show-options -qv -t "$pane" @workspace_root)
+root=$(tmux -N show-options -qv -t "$pane" @workspace_root)
 if [[ "$root" != /* || ! -d "$root" ]]; then
   echo 'The active tmux client is not in a Myran workspace.' >&2
   exit 1
