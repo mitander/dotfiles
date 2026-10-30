@@ -117,7 +117,7 @@ return {
         {
             "<C-q>",
             function()
-                vim.cmd.quit()
+                vim.cmd("confirm quit")
             end,
             mode = { "n", "i", "x" },
             desc = "Close window",

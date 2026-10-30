@@ -132,7 +132,7 @@ invoke_binding prefix z
 zoom_state="$(tmux -L "$SOCKET" display-message -p -t "$window" '#{pane_id} #{window_zoomed_flag}')"
 [[ "$zoom_state" == "$right 0" ]] || fail "last-pane should focus $right and unzoom: $zoom_state"
 
-# Closing tests exercise our routing, not Neovim's native split/tab semantics.
+# Closing tests exercise routing, confirmation and window-versus-editor scope.
 tmux_test() { command tmux -L "$SOCKET" "$@"; }
 wait_until() {
   local message="$1" _attempt
@@ -147,6 +147,7 @@ pane_is_gone() { ! tmux_test list-panes -a -F '#{pane_id}' | grep -Fxq "$1"; }
 process_is_gone() { ! kill -0 "$1" 2>/dev/null; }
 pane_contains() { [[ "$(tmux_test capture-pane -p -t "$1")" == *"$2"* ]]; }
 editor_expr() { nvim --server "$TEST_ROOT/nvim.sock" --remote-expr "$1"; }
+editor_has_one_window() { [[ "$(editor_expr 'winnr("$")')" == 1 ]]; }
 run_myran() {
   HOME="$TEST_ROOT/home" XDG_STATE_HOME="$TEST_ROOT/state" \
     TMUX="$run_scope" TMUX_PANE="$run_origin" MYRAN_TMUX_SERVER_ID="$run_identity" myran "$@"
@@ -179,15 +180,25 @@ for table in root prefix; do
   editor_pid="$(tmux_test display-message -p -t "$editor" '#{pane_pid}')"
   tmux_test set-option -p -t "$editor" @workspace_pane_role vim
   wait_until 'editor did not start' test -S "$TEST_ROOT/nvim.sock"
+  # A clean split closes only with Ctrl-Q. Prefix q quits the entire editor.
+  if [[ "$table" == root ]]; then
+    editor_expr "execute('split')" >/dev/null
+    invoke_binding "$table" "$key"
+    wait_until 'Ctrl-Q did not close just one split' editor_has_one_window
+  else
+    editor_expr "execute('split')" >/dev/null
+  fi
   editor_expr "setline(1, 'unsaved text')" >/dev/null
   invoke_binding "$table" "$key"
-  wait_until 'close did not protect unsaved text' pane_contains "$editor" E37
-  tmux_test send-keys -t "$editor" Enter
-  [[ "$(editor_expr 'getline(1)')" == 'unsaved text' ]] || fail 'close changed unsaved text'
+  wait_until 'close did not prompt about unsaved text' pane_contains "$editor" '(C)ancel'
+  tmux_test send-keys -t "$editor" c
+  [[ "$(editor_expr 'getline(1)')" == 'unsaved text' ]] || fail 'cancel changed unsaved text'
+  [[ "$(editor_expr '&modified')" == 1 ]] || fail 'cancel cleared unsaved changes'
   [[ "$(tmux_test display-message -p '#{pane_id}')" == "$editor" ]] || fail 'close left the editor hidden'
-  editor_expr "execute('set nomodified')" >/dev/null
   invoke_binding "$table" "$key"
-  wait_until 'editor pane did not close' pane_is_gone "$editor"
+  wait_until 'close did not prompt again' pane_contains "$editor" '(C)ancel'
+  tmux_test send-keys -t "$editor" n
+  wait_until 'discard did not close editor pane' pane_is_gone "$editor"
   wait_until 'editor process survived closure' process_is_gone "$editor_pid"
   wait_until 'editor socket did not close' test ! -S "$TEST_ROOT/nvim.sock"
 
