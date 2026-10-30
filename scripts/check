@@ -15,7 +15,7 @@ case "${1:-}" in
   python3 tests/install-myran.py
   python3 tests/loc-tree.py
   node --experimental-strip-types --test tests/pi-shell-file-links.ts
-  for test in dotfiles-command tracker-local fish-config fish-nvim myran-open-files tmux-run-borders; do
+  for test in dotfiles-command tracker-local fish-config fish-nvim myran-open-files myran-yazi tmux-run-borders; do
     bash "tests/$test.sh"
   done
   for test in nvim-config nvim-performance nvim-formatters nvim-clipboard nvim-files nvim-preview; do
@@ -33,6 +33,10 @@ myran-editor)
   # Use disposable apps and HOME without selecting host document defaults.
   bash tests/myran-editor-macos.sh
   bash tests/myran-editor-install-macos.sh
+  ;;
+yazi)
+  # Exercise pinned Yazi with private tmux, config and recording application openers.
+  bash tests/yazi-native.sh
   ;;
 fzf)
   nvim --clean --headless -l tests/nvim-fzf.lua
@@ -68,7 +72,7 @@ trackers)
     PYTHON="$checkout/.venv/bin/python" "$checkout/scripts/check"
   ;;
 *)
-  printf 'Usage: scripts/check [myran|myran-editor|pi|fzf|nvim-startup|luals|files|preview|formatters|trackers]\n' >&2
+  printf 'Usage: scripts/check [myran|myran-editor|yazi|pi|fzf|nvim-startup|luals|files|preview|formatters|trackers]\n' >&2
   exit 2
   ;;
 esac

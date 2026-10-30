@@ -54,6 +54,21 @@ if arg[1] then
     local ok, err = xpcall(function()
         local oil = require("oil")
         oil.setup(spec.opts)
+
+        -- Myran's ordinary directory delivery uses :edit, not an Oil-specific command.
+        vim.api.nvim_cmd(
+            { cmd = "edit", args = { directory }, magic = { file = false, bar = false } },
+            {}
+        )
+        assert(
+            vim.wait(3000, function()
+                return vim.bo.filetype == "oil"
+                    and vim.uv.fs_realpath(oil.get_current_dir() or "")
+                        == vim.uv.fs_realpath(directory)
+            end),
+            "literal directory edit must open Oil"
+        )
+
         vim.cmd.edit(vim.fn.fnameescape(directory .. "/file.txt"))
         local file_buffer = vim.api.nvim_get_current_buf()
         local target = vim.api.nvim_get_current_win()

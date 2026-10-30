@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Browse in an ordinary Workspace window. Only text edits return to Myran.
+set -euo pipefail
+
+fail() {
+  printf '%s\n' "$*" >&2
+  exit 1
+}
+
+[[ -n ${TMUX:-} && -n ${TMUX_PANE:-} && -n ${MYRAN_TMUX_SERVER_ID:-} ]] ||
+  fail 'Launch myran-yazi inside a Myran Workspace terminal.'
+
+if [[ ${1:-} == --open ]]; then
+  shift
+  [[ $# -gt 0 && ${MYRAN_YAZI_ROOT:-} == /* ]] || fail 'Missing Yazi selection or launching Workspace.'
+  paths=()
+  for path in "$@"; do
+    case "$path" in
+    /*) paths+=("$path") ;;
+    *) paths+=("$PWD/$path") ;;
+    esac
+  done
+  # Yazi changes cwd while browsing. Preserve literal paths before restoring Project context.
+  cd -- "$MYRAN_YAZI_ROOT"
+  exec myran open -- "${paths[@]}"
+fi
+
+[[ $# == 0 ]] || fail 'Usage: myran-yazi [--open FILE...]'
+# The sentinel preserves roots ending in newlines. Myran validates retained server authority
+# when opening a file. This read-only query never enrolls or repairs an identity.
+root=$(tmux show-options -qv -t "$TMUX_PANE" @workspace_root && printf '.')
+root=${root%.}
+root=${root%$'\n'}
+[[ $root == /* && -d $root ]] || fail 'The launching terminal is not in a managed Workspace.'
+export MYRAN_YAZI_ROOT="$root"
+cd -- "$root"
+exec yazi

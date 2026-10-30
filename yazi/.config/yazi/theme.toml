@@ -1,0 +1,85 @@
+# Use the terminal's active Flume palette, not a second set of fixed colors.
+# Flat separators match the tmux status line instead of Yazi's stock rounded pills.
+[mgr]
+cwd = { fg = "cyan" }
+border_style = { fg = "darkgray" }
+
+[tabs]
+active = { fg = "black", bg = "magenta", bold = false }
+inactive = { fg = "darkgray", bg = "reset" }
+sep_inner = { open = " ", close = " " }
+sep_outer = { open = " ", close = " " }
+
+[mode]
+normal_main = { fg = "cyan", bg = "reset", bold = false }
+normal_alt = { fg = "darkgray", bg = "reset" }
+select_main = { fg = "yellow", bg = "reset", bold = false }
+select_alt = { fg = "darkgray", bg = "reset" }
+unset_main = { fg = "red", bg = "reset", bold = false }
+unset_alt = { fg = "darkgray", bg = "reset" }
+
+[indicator]
+parent = { fg = "reset", bg = "black", reversed = false }
+current = { fg = "black", bg = "magenta", reversed = false }
+preview = { underline = false }
+padding = { open = " ", close = " " }
+
+[status]
+overall = { fg = "reset", bg = "reset" }
+sep_left = { open = " ", close = " " }
+sep_right = { open = " ", close = " " }
+perm_sep = { fg = "darkgray" }
+
+[which]
+mask = { bg = "black" }
+cand = { fg = "cyan" }
+rest = { fg = "darkgray" }
+desc = { fg = "reset" }
+separator = "  "
+separator_style = { fg = "darkgray" }
+
+[confirm]
+border = { fg = "darkgray" }
+title = { fg = "cyan" }
+
+[spot]
+border = { fg = "darkgray" }
+title = { fg = "cyan" }
+tbl_col = { fg = "cyan" }
+tbl_cell = { fg = "magenta", reversed = false }
+
+[pick]
+border = { fg = "darkgray" }
+active = { fg = "magenta", bold = false }
+inactive = { fg = "reset" }
+
+[input]
+border = { fg = "darkgray" }
+title = { fg = "cyan" }
+
+[cmp]
+border = { fg = "darkgray" }
+active = { fg = "black", bg = "magenta", reversed = false }
+
+[tasks]
+border = { fg = "darkgray" }
+title = { fg = "cyan" }
+hovered = { fg = "magenta", bold = false }
+
+[help]
+on = { fg = "cyan" }
+run = { fg = "magenta" }
+hovered = { fg = "black", bg = "magenta", bold = false, reversed = false }
+footer = { fg = "darkgray", bg = "reset" }
+
+[icon]
+prepend_globs = [{ url = "*/", text = "", fg = "cyan" }]
+
+[filetype]
+rules = [
+  { url = "*", is = "orphan", bg = "red" },
+  { url = "*", is = "exec", fg = "green" },
+  { url = "*", is = "dummy", bg = "red" },
+  { url = "*/", is = "dummy", bg = "red" },
+  { url = "*/", fg = "cyan" },
+]

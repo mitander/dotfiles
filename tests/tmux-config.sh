@@ -3,6 +3,7 @@ set -euo pipefail
 
 SOURCE_ROOT="${DOTFILES_TEST_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 TEST_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/tmux-config-test.XXXXXX")"
+TEST_ROOT=$(cd "$TEST_ROOT" && pwd)
 SOCKET="tmux-config-test-$$"
 cleanup() {
   tmux -L "$SOCKET" kill-server >/dev/null 2>&1 || true
@@ -29,6 +30,13 @@ MYRAN_BINARY="${MYRAN_TEST_BINARY:-$(command -v myran)}"
 mkdir -p "$TEST_ROOT/bin" "$TEST_ROOT/home/.nix-profile/bin"
 ln -s "$(command -v fish)" "$TEST_ROOT/home/.nix-profile/bin/fish"
 ln -s "$MYRAN_BINARY" "$TEST_ROOT/bin/myran"
+ln -s "$SOURCE_ROOT/scripts/myran-yazi" "$TEST_ROOT/bin/myran-yazi"
+# Expand these variables in Yazi's process, not in the fixture driver.
+# shellcheck disable=SC2016
+printf '#!/bin/sh\nprintf "%%s\\0" "$PWD" "$MYRAN_YAZI_ROOT" "$MYRAN_TMUX_SERVER_ID" > "$DOTFILES_YAZI_RECORD"\nexec sleep 300\n' \
+  >"$TEST_ROOT/bin/yazi"
+chmod +x "$TEST_ROOT/bin/yazi"
+export DOTFILES_YAZI_RECORD="$TEST_ROOT/yazi-launch"
 export PATH="$TEST_ROOT/bin:$PATH"
 export XDG_CONFIG_HOME="$TEST_ROOT/home/.config"
 export MYRAN_CONFIG_FILE="$XDG_CONFIG_HOME/myran/config.toml"
@@ -90,6 +98,24 @@ binding="$(tmux -L "$SOCKET" list-keys -T prefix)"
 run_focus="$(printf '%s\n' "$binding" | grep -E 'bind-key +(-r )?-T prefix +r ' || true)"
 [[ "$run_focus" == *'__tmux-action focus-run >/dev/null'* && "$run_focus" != *source-file* ]] ||
   fail 'prefix r no longer delegates Run focus to Myran'
+
+# The browser must not replace Myran's editor binding.
+edit_binding="$(tmux -L "$SOCKET" list-keys -T prefix e)"
+[[ "$edit_binding" == *'__tmux-action edit >/dev/null'* && "$edit_binding" != *myran-yazi* ]] ||
+  fail 'prefix e no longer delegates editor focus to Myran'
+
+# The browser starts in the Session's Workspace root with inherited server authority.
+tmux -L "$SOCKET" set-option -t smoke @workspace_root "$TEST_ROOT"
+invoke_binding prefix y
+for _attempt in {1..100}; do
+  [[ -s "$TEST_ROOT/yazi-launch" ]] && break
+  sleep 0.05
+done
+[[ -s "$TEST_ROOT/yazi-launch" ]] || fail 'Yazi binding did not launch'
+identity="$(tmux -L "$SOCKET" show-environment -g MYRAN_TMUX_SERVER_ID)"
+printf '%s\0' "$TEST_ROOT" "$TEST_ROOT" "${identity#MYRAN_TMUX_SERVER_ID=}" >"$TEST_ROOT/yazi-expected"
+cmp "$TEST_ROOT/yazi-expected" "$TEST_ROOT/yazi-launch" || fail 'Yazi lost Workspace context'
+tmux -L "$SOCKET" kill-window -t smoke:files
 
 # Plain application input must not be intercepted.
 root_bindings="$(tmux -L "$SOCKET" list-keys -T root)"

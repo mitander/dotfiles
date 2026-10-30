@@ -1,0 +1,5 @@
+# Yazi 26.5.6 uses escaped %s arguments, not the older "$@" opener syntax.
+[opener]
+edit = [
+  { run = "myran-yazi --open %s", desc = "Myran", for = "unix", block = true },
+]

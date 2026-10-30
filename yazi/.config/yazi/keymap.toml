@@ -1,0 +1,6 @@
+[mgr]
+prepend_keymap = [
+  { on = "<Enter>", run = "shell 'myran-yazi --open %s' --block", desc = "Open in Workspace editor" },
+  { on = "o", run = "shell 'open %s'", desc = "Open with system application", for = "macos" },
+  { on = "o", run = "shell 'xdg-open %s1'", desc = "Open with system application", for = "linux" },
+]

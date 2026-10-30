@@ -44,6 +44,7 @@ in {
       tmux
       tree
       tokei
+      yazi
       python3
       zoxide
 
@@ -112,6 +113,9 @@ in {
     "lazygit/config.yml".source = live "lazygit/.config/lazygit/config.yml";
     "lsd/config.yaml".source = live "lsd/.config/lsd/config.yaml";
     "nvim".source = live "nvim/.config/nvim";
+    "yazi/yazi.toml".source = live "yazi/.config/yazi/yazi.toml";
+    "yazi/keymap.toml".source = live "yazi/.config/yazi/keymap.toml";
+    "yazi/theme.toml".source = live "yazi/.config/yazi/theme.toml";
     "git/work.gitconfig".source = live "git/work.gitconfig";
     "git/personal.gitconfig".source = live "git/personal.gitconfig";
     "stylua/.stylua.toml".source = live "stylua/.config/stylua/.stylua.toml";
@@ -132,6 +136,7 @@ in {
     ".copilot/AGENTS.md".source = agentLive "pi/AGENTS.md";
     ".local/bin/agents-skills-link".source = live "scripts/agents-skills-link.sh";
     ".local/bin/dotfiles".source = live "scripts/dotfiles";
+    ".local/bin/myran-yazi".source = live "scripts/myran-yazi";
     ".local/bin/dotfiles-format".source = live "scripts/format.sh";
     ".local/bin/ltui".source = live "tracker-tui/launch";
     ".tmux.conf".source = live "tmux/.tmux.conf";
