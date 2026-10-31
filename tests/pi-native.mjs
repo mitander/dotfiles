@@ -60,7 +60,15 @@ const extension = await jiti.import(
     { default: true },
 );
 let resolver;
+let markdownTransformer;
+const fileLinkHandlers = new Map();
 extension({
+    on(event, handler) {
+        fileLinkHandlers.set(event, handler);
+    },
+    registerMarkdownTransformer(value) {
+        markdownTransformer = value;
+    },
     registerToolRenderer(value) {
         resolver = value;
     },
@@ -78,7 +86,7 @@ const renderers = resolver("bash", () => base);
 assert.equal(renderers.renderResult, base.renderResult);
 assert.equal(renderers.renderShell, base.renderShell);
 assert.equal(
-    resolver("read", () => base),
+    resolver("grep", () => base),
     base,
 );
 assert.equal(
@@ -86,6 +94,7 @@ assert.equal(
     undefined,
 );
 
+const commandTarget = "file:///workspace/project/.build/client-wait.json";
 const args = Object.freeze({
     command: 'tail -16 .build/client-wait.json; exit "$result"',
     timeout: 25,
@@ -108,17 +117,14 @@ let component = renderers.renderCall(args, theme, context);
 for (const width of [12, 32, 80, 180]) {
     const lines = component.render(width);
     assert.ok(lines.every((line) => tui.visibleWidth(line) <= width));
-    assert.ok(lines.join("\n").includes("file:///workspace/project/.build/client-wait.json"));
+    assert.ok(lines.join("\n").includes(commandTarget));
 }
 const row = component.render(180)[0];
 const plain = stripVTControlCharacters(row);
 const file = ".build/client-wait.json";
 const column = plain.indexOf(file);
 assert.ok(column > 0);
-assert.equal(
-    tui.getOsc8LinkAtColumn(row, column),
-    "file:///workspace/project/.build/client-wait.json",
-);
+assert.equal(tui.getOsc8LinkAtColumn(row, column), commandTarget);
 assert.equal(tui.getOsc8LinkAtColumn(row, column + file.length), undefined);
 assert.equal(plain.trimEnd(), '$ tail -16 .build/client-wait.json; exit "$result" (timeout 25s)');
 assert.equal(context.args, args);
@@ -128,7 +134,10 @@ context.lastComponent = component;
 context.cwd = "/different/project";
 component = renderers.renderCall(args, theme, context);
 assert.ok(
-    component.render(180).join("\n").includes("file:///different/project/.build/client-wait.json"),
+    component
+        .render(180)
+        .join("\n")
+        .includes(commandTarget.replace("/workspace/project/", "/different/project/")),
 );
 tui.setCapabilityOverrides({ hyperlinks: false });
 component = renderers.renderCall(args, theme, context);
@@ -144,6 +153,167 @@ for (const width of [10, 16, 80]) {
 assert.equal(context.args, unicodeArgs);
 console.log(
     "PASS: installed Pi renderer composition, unmodified inputs, link boundaries, Unicode wrapping, cwd cache, capability fallback",
+);
+
+for (const [name, factory] of [
+    ["read", pi.createReadToolDefinition],
+    ["edit", pi.createEditToolDefinition],
+    ["write", pi.createWriteToolDefinition],
+]) {
+    const definition = factory(root);
+    const base = {
+        renderCall: definition.renderCall,
+        renderResult: definition.renderResult,
+        renderShell: definition.renderShell,
+    };
+    assert.equal(
+        resolver(name, () => base),
+        base,
+    );
+}
+console.log("PASS: native read/edit/write renderers remain unchanged");
+
+assert.equal(typeof markdownTransformer, "function");
+const transformContext = { messageType: "assistant", isStreaming: false, availableWidth: 100 };
+const sourceMarkdown = "Preview: [**showcase**](assets/screenshots/showcase.png).";
+assert.equal(markdownTransformer(sourceMarkdown, transformContext), sourceMarkdown);
+await fileLinkHandlers.get("session_start")({}, { cwd: "/workspace/project" });
+const normalized = markdownTransformer(sourceMarkdown, transformContext);
+assert.equal(
+    normalized,
+    "Preview: [**showcase**](<file:///workspace/project/assets/screenshots/showcase.png>).",
+);
+const assistantMessage = Object.freeze({
+    role: "assistant",
+    content: Object.freeze([Object.freeze({ type: "text", text: sourceMarkdown })]),
+});
+const markdownComponent = new pi.AssistantMessageComponent(
+    assistantMessage,
+    false,
+    pi.getMarkdownTheme(),
+    "Thinking...",
+    1,
+    [markdownTransformer],
+);
+for (const width of [16, 40, 100]) {
+    const lines = markdownComponent.render(width);
+    assert.ok(lines.every((line) => tui.visibleWidth(line) <= width));
+    const row = lines.find((line) => stripVTControlCharacters(line).includes("showcase"));
+    assert.ok(row);
+    assert.equal(
+        tui.getOsc8LinkAtColumn(row, stripVTControlCharacters(row).indexOf("showcase")),
+        "file:///workspace/project/assets/screenshots/showcase.png",
+    );
+}
+const { linkMarkdown } = await jiti.import(
+    join(root, "pi/.pi/agent/extensions/shell-file-links/markdown.ts"),
+);
+const lexer = new tui.Marked();
+const rewrite = (source) =>
+    linkMarkdown(source, "/workspace/project", "/home/example", (text) => lexer.lexer(text));
+for (const [source, expected] of [
+    ["[file](./file%20name.rs#L42)", "[file](<file:///workspace/project/./file%20name.rs#L42>)"],
+    ["[file](/assets/x.png)", "[file](<file:///assets/x.png>)"],
+    ["[file](~/notes.md)", "[file](<file:///home/example/notes.md>)"],
+    ["[file](link/../x.rs)", "[file](<file:///workspace/project/link/../x.rs>)"],
+    ['[x](file.rs "title")', '[x](<file:///workspace/project/file.rs> "title")'],
+    [
+        '[x][ref]\n\n[ref]: ./file.rs "title"',
+        '[x](<file:///workspace/project/./file.rs> "title")\n\n[ref]: ./file.rs "title"',
+    ],
+    [
+        "> [x](a)\n> [y](b)",
+        "> [x](<file:///workspace/project/a>)\n> [y](<file:///workspace/project/b>)",
+    ],
+    [
+        "- [x](a)\n  continuation [y](b)",
+        "- [x](<file:///workspace/project/a>)\n  continuation [y](<file:///workspace/project/b>)",
+    ],
+    ["| A |\n|---|\n| [x](a) |", "| A |\n|---|\n| [x](<file:///workspace/project/a>) |"],
+]) {
+    assert.equal(rewrite(source), expected);
+    assert.equal(rewrite(expected), expected);
+}
+for (const source of [
+    "`[x](file.rs)`",
+    "```md\n[x](file.rs)\n```",
+    "> ```md\n> [x](file.rs)\n> ```",
+    "- code:\n\n      [x](file.rs)",
+    '<a href="file.rs">file</a>',
+    "![image](image.png)",
+    "![[x](a)](image.png)",
+    "[web](https://example.com/path) [mail](mailto:a@example.com)",
+    "[file](file:///tmp/x.rs) [remote](//example.com/a)",
+    "[anchor](#section) [query](file.rs?raw=1)",
+    "[bad](bad%00file.rs) [bad](bad%FFfile.rs)",
+    "[streaming](unfinished",
+]) {
+    assert.equal(rewrite(source), source);
+}
+for (const source of [
+    "[a\\[b\\]](file.rs)",
+    "[a\\]](file.rs)",
+    "[a\\[](file.rs)",
+    "[\\]](file.rs)",
+    "[a\\]][ref]\n\n[ref]: file.rs",
+    "[a\\*b](file.rs)",
+    "[**bold** `code` &amp; text](file.rs)",
+    "- [ ] [task](a)\n  - [nested](b)\n\n    [paragraph](c)",
+    "> quoted `code`\n>\n> [file](a)",
+    "[line\nbreak](file.rs)",
+]) {
+    const visible = (text) =>
+        new tui.Markdown(text, 0, 0, pi.getMarkdownTheme())
+            .render(200)
+            .map(stripVTControlCharacters);
+    assert.deepEqual(visible(rewrite(source)), visible(source));
+}
+assert.equal(rewrite("[x](file.rs)".repeat(7000)), "[x](file.rs)".repeat(7000));
+const sourceUrl = "file:///workspace/project/source.py";
+for (const extension of ["py", "rb", "sql", "html", "txt", "md", "png", "sqlite"]) {
+    const source = `source.${extension}`;
+    const target = `file:///workspace/project/${source}`;
+    assert.equal(markdownTransformer(`[file](${source})`, transformContext), `[file](<${target}>)`);
+    const explicit = `[file](${target})`;
+    assert.equal(markdownTransformer(explicit, transformContext), explicit);
+}
+const customLink = "[explicit custom link](myran://open?path=/tmp/source.py)";
+assert.equal(markdownTransformer(customLink, transformContext), customLink);
+const frozenSource = Object.freeze({
+    role: "assistant",
+    content: Object.freeze([Object.freeze({ type: "text", text: `[Python](${sourceUrl})` })]),
+});
+for (const isStreaming of [true, false]) {
+    const view = new pi.AssistantMessageComponent(
+        frozenSource,
+        false,
+        pi.getMarkdownTheme(),
+        "Thinking...",
+        1,
+        [markdownTransformer],
+    );
+    view.updateContent(frozenSource, isStreaming);
+    const row = view.render(80).find((line) => stripVTControlCharacters(line).includes("Python"));
+    assert.ok(row);
+    assert.equal(
+        tui.getOsc8LinkAtColumn(row, stripVTControlCharacters(row).indexOf("Python")),
+        sourceUrl,
+    );
+}
+assert.equal(frozenSource.content[0].text, `[Python](${sourceUrl})`);
+tui.setCapabilityOverrides({ hyperlinks: false });
+assert.equal(markdownTransformer(sourceMarkdown, transformContext), sourceMarkdown);
+tui.setCapabilityOverrides({ hyperlinks: true });
+await fileLinkHandlers.get("session_start")({}, { cwd: "/different/project" });
+assert.match(
+    markdownTransformer(sourceMarkdown, transformContext),
+    /file:\/\/\/different\/project/,
+);
+await fileLinkHandlers.get("session_shutdown")({});
+assert.equal(markdownTransformer(sourceMarkdown, transformContext), sourceMarkdown);
+assert.equal(assistantMessage.content[0].text, sourceMarkdown);
+console.log(
+    "PASS: installed Pi Markdown rendering, native file URLs, nested syntax, protected content and session cwd",
 );
 
 const flumeUi = await jiti.import(join(root, "pi/.pi/agent/extensions/flume-ui/index.ts"), {

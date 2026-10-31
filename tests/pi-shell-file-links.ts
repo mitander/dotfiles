@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { linkShellCommand } from "../pi/.pi/agent/extensions/shell-file-links/links.ts";
+import { localFileUrl } from "../pi/.pi/agent/extensions/shell-file-links/markdown.ts";
 
 const cwd = "/workspace/project";
 const home = "/home/example";
@@ -15,6 +16,38 @@ function render(command: string) {
     assert.equal(text.replace(/\x1b\]8;;[^\x1b]*\x1b\\/g, ""), command);
     return { text, links };
 }
+
+test("Markdown file URLs preserve path identity and encode filename data once", () => {
+    assert.equal(
+        localFileUrl("./世界%20%23%25.rs#L42", cwd, home),
+        "file:///workspace/project/./%E4%B8%96%E7%95%8C%20%23%25.rs#L42",
+    );
+    assert.equal(
+        localFileUrl("link/../file.rs", cwd, home),
+        "file:///workspace/project/link/../file.rs",
+    );
+    assert.equal(localFileUrl("/assets/x.png", cwd, home), "file:///assets/x.png");
+    assert.equal(localFileUrl("~/notes.md", cwd, home), "file:///home/example/notes.md");
+    for (const href of [
+        "",
+        "#anchor",
+        "https://example.com",
+        "file:///tmp/x",
+        "myran://open",
+        "//host/x",
+        "a?query",
+        "a%00b",
+        "a%FFb",
+        "%",
+        "~someone/x",
+        "bad\nname",
+    ]) {
+        assert.equal(localFileUrl(href, cwd, home), undefined);
+    }
+    assert.equal(localFileUrl("file.rs", "relative", home), undefined);
+    assert.equal(localFileUrl("file.rs", cwd, "relative"), undefined);
+    assert.equal(localFileUrl("x".repeat(4097), cwd, home), undefined);
+});
 
 test("shell separators stay outside literal file links", () => {
     const command =

@@ -1,7 +1,8 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { getCapabilities, hyperlink } from "@earendil-works/pi-tui";
+import { getCapabilities, hyperlink, Marked } from "@earendil-works/pi-tui";
 import { homedir } from "node:os";
 import { linkShellCommand } from "./links.ts";
+import { linkMarkdown } from "./markdown.ts";
 
 interface CachedCommand {
     command: string;
@@ -12,6 +13,18 @@ interface CachedCommand {
 export default function shellFileLinks(pi: ExtensionAPI): void {
     const cache = new WeakMap<object, CachedCommand>();
     const home = homedir();
+    const markdown = new Marked();
+    let cwd: string | undefined;
+    pi.on("session_start", (_event, context) => {
+        cwd = context.cwd;
+    });
+    pi.on("session_shutdown", () => {
+        cwd = undefined;
+    });
+    pi.registerMarkdownTransformer((source) => {
+        if (!cwd || !getCapabilities().hyperlinks) return source;
+        return linkMarkdown(source, cwd, home, (text) => markdown.lexer(text));
+    });
     pi.registerToolRenderer((toolName, next) => {
         const renderers = next();
         if (toolName !== "bash" || !renderers?.renderCall) return renderers;
