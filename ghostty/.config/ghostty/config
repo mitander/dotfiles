@@ -3,9 +3,10 @@ title = " "
 macos-window-shadow = true
 macos-titlebar-proxy-icon = hidden
 window-save-state = never
-window-padding-x = 3
+window-padding-x = 6
 window-padding-y = 0
 window-padding-balance = true
+window-padding-color = background
 
 # Shell and input
 shell-integration = detect
@@ -25,8 +26,8 @@ font-style = "Medium"
 font-style-bold = "Bold"
 font-style-italic = "Medium Italic"
 font-style-bold-italic = "Bold Italic"
-adjust-cell-height = 14%
-adjust-cell-width = 4%
+adjust-cell-height = 13%
+adjust-cell-width = 7%
 font-thicken = true
 alpha-blending = linear-corrected
 theme = flume

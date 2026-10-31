@@ -30,6 +30,13 @@ load_theme() {
 source-file "$SOURCE_ROOT/extras/tmux/colors.conf"
 source-file "$theme"
 EOF
+
+  [[ "$(tmux_test show-option -gv display-time)" == 4000 ]] || fail 'message duration'
+  [[ "$(tmux_test show-option -gv message-style)" == 'bg=#393552,fg=#c9c5d9,align=centre,width=60%' ]] ||
+    fail 'neutral centered messages'
+  [[ "$(tmux_test show-option -gv message-format)" == *' #{message} ' ]] || fail 'message padding'
+  [[ "$(tmux_test display-message -p '#{E:status-left}')" == '#[bold]#[fg=#232136]#[bg=#6aa6bc]'* ]] ||
+    fail 'filled workspace badge'
 }
 
 assert_ordinary_border() {
