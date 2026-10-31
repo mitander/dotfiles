@@ -1,6 +1,12 @@
 return {
     "j-hui/fidget.nvim",
     lazy = false,
+    init = function()
+        -- Typed :messages follows notifications. :execute 'messages' stays native.
+        vim.cmd([[
+            cnoreabbrev <expr> messages getcmdtype() == ':' && getcmdline() ==# 'messages' ? 'Fidget history' : 'messages'
+        ]])
+    end,
     opts = function()
         return {
             notification = {

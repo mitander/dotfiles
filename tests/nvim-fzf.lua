@@ -12,7 +12,16 @@ vim.env.TMUX, vim.env.TMUX_PANE = nil, nil
 dofile(root .. "/nvim/.config/nvim/init.lua")
 vim.opt.runtimepath:append(plugins .. "/fzf-lua")
 local spec = dofile(root .. "/nvim/.config/nvim/lua/mitander/plugins/fzf.lua")
-spec.config(nil, spec.opts)
+local fzf_lua = require("fzf-lua")
+local register_ui_select = fzf_lua.register_ui_select
+local ui_options
+fzf_lua.register_ui_select = function(opts)
+    ui_options = vim.deepcopy(opts)
+    return register_ui_select(opts)
+end
+local configured, config_error = pcall(spec.config, nil, spec.opts)
+fzf_lua.register_ui_select = register_ui_select
+assert(configured, config_error)
 local picker = require("fzf-lua.make_entry")
 local options = require("fzf-lua.config").globals.grep
 local directory = vim.fn.tempname()
@@ -28,6 +37,14 @@ local ok, failure = xpcall(function()
     local config = require("fzf-lua.config")
     local actions = require("fzf-lua.actions")
     local globals = config.globals
+    assert(ui_options, "personal configuration must register vim.ui.select")
+    for key, value in pairs({ height = 0.30, width = 0.70, row = 0.40 }) do
+        assert(ui_options.winopts[key] == value, "ui.select must use winopts." .. key)
+        assert(
+            ui_options.winopts["win_" .. key] == nil,
+            "ui.select must not use deprecated winopts.win_" .. key
+        )
+    end
     for _, name in ipairs({
         "files",
         "grep",

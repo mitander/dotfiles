@@ -39,6 +39,20 @@ export PATH="$PATH:/opt/homebrew/bin"
   exit 1
 }
 
+# Personal configuration must preserve Flume-owned colors and native tool settings.
+"$FISH" --no-config -c 'set -gx FZF_DEFAULT_OPTS_FILE /provided/fzf.opts
+    set -gx LG_CONFIG_FILE /provided/lazygit.yml
+    set -gx LS_COLORS "di=34:ow=0;35"
+    set -g fish_color_error 123456
+    set -g fish_color_autosuggestion abcdef
+    source "$DOTFILES_TEST_CONFIG"
+    test "$FZF_DEFAULT_OPTS_FILE" = /provided/fzf.opts; or exit 1
+    test "$LG_CONFIG_FILE" = /provided/lazygit.yml; or exit 1
+    test "$LS_COLORS" = "di=34:ow=0;35"; or exit 1
+    test "$fish_color_error" = 123456; or exit 1
+    test "$fish_color_autosuggestion" = abcdef; or exit 1
+    not functions -q lazygit; or exit 1'
+
 # Interactive shells initialize each UI integration once.
 "$FISH" --no-config -i -c 'source "$DOTFILES_TEST_CONFIG"; functions -q fzf' >"$TEST_ROOT/output" 2>"$TEST_ROOT/error"
 for tool in fzf atuin zoxide; do

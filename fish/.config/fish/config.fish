@@ -121,12 +121,6 @@ end
 alias tls "tmux ls"
 
 # Git
-set -gx LG_CONFIG_FILE "$DOTFILES_DIR/lazygit/.config/lazygit/config.yml,$HOME/.config/lazygit/flume.yml"
-
-function lazygit
-    command lazygit --use-config-file "$LG_CONFIG_FILE" $argv
-end
-
 function gg
     if test -n "$TMUX"
         myran role open git $argv
@@ -177,10 +171,6 @@ end
 function fish_mode_prompt
     # The prompt already shows the editing context. Hide the extra mode indicator.
 end
-
-# ANSI roles follow the terminal's active theme palette.
-set -g fish_color_error red
-set -g fish_color_autosuggestion brblack
 
 # Prompt
 function fish_prompt
@@ -244,9 +234,6 @@ function __workspace_navigation_postexec --on-event fish_postexec
 end
 
 # File discovery
-# fzf reads the active theme on each invocation. Keep personal options separate.
-set -gx FZF_DEFAULT_OPTS_FILE "$DOTFILES_DIR/themes/flume/extras/current/fzf.opts"
-
 if command -q rg
     set -gx FZF_DEFAULT_COMMAND "rg --files --hidden -g '!{.git,vendor,.vscode,.gitlab,*cache*}/*'"
 end

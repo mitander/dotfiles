@@ -20,6 +20,23 @@ end
 local project = vim.fn.tempname()
 
 local function check()
+    local history_requests = 0
+    vim.api.nvim_create_user_command("Fidget", function(opts)
+        assert(opts.args == "history")
+        history_requests = history_requests + 1
+    end, { nargs = "*" })
+    spec("fidget").init()
+    local function type_command(command)
+        local keys = vim.api.nvim_replace_termcodes(":" .. command .. "<CR>", true, false, true)
+        vim.api.nvim_feedkeys(keys, "xt", false)
+    end
+    type_command("messages")
+    assert(history_requests == 1, "typed :messages should open notification history")
+    type_command("let g:message_literal = 'messages'")
+    assert(vim.g.message_literal == "messages", "abbreviation must not rewrite command arguments")
+    type_command("execute 'messages'")
+    assert(history_requests == 1, "explicit native message history must bypass the abbreviation")
+
     local tmux = spec("tmux")
     local clipboard_before = vim.o.clipboard
     local provider_before = vim.g.clipboard

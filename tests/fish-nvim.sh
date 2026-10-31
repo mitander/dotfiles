@@ -36,7 +36,7 @@ TEST_ROOT="$(cd "$TEST_ROOT" && pwd -P)"
 export TEST_WORKSPACE_ROOT="$PWD" TEST_PROJECT_ROOT=''
 
 # Extract only the caller functions, never source live init/integrations.
-for name in nvim vim tn tm lazygit gg; do
+for name in nvim vim tn tm gg; do
   awk "/^function $name\$/,/^end\$/" "$ROOT/fish/.config/fish/config.fish" >>"$TEST_ROOT/callers.fish"
 done
 export HOME="$TEST_ROOT/home" DOTFILES_DIR="$TEST_ROOT" PATH="$TEST_ROOT/bin:$PATH"
@@ -94,6 +94,6 @@ printf '#!/bin/sh\nprintf "<%%s>\\n" "%s" "$@"\n' myran >"$TEST_ROOT/bin/myran"
 [[ "$(call tn 'a b')" == $'<myran>\n<workspace>\n<open>\n<a b>' ]]
 [[ "$(call tm)" == $'<myran>\n<workspace>\n<switch>' ]]
 [[ "$(call gg)" == $'<myran>\n<role>\n<open>\n<git>' ]]
-[[ "$(TMUX='' call gg)" == "$(printf '<lazygit>\n<--use-config-file>\n<%s/lazygit/.config/lazygit/config.yml,%s/.config/lazygit/flume.yml>' "$TEST_ROOT" "$HOME")" ]]
-[[ "$(TMUX='' call gg --debug)" == "$(printf '<lazygit>\n<--use-config-file>\n<%s/lazygit/.config/lazygit/config.yml,%s/.config/lazygit/flume.yml>\n<--debug>' "$TEST_ROOT" "$HOME")" ]]
+[[ "$(TMUX='' call gg)" == '<lazygit>' ]]
+[[ "$(TMUX='' call gg --debug)" == $'<lazygit>\n<--debug>' ]]
 printf 'PASS: Fish Myran callers, Workspace-aware editor routing, literal paths, native branches\n'

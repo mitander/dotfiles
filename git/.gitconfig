@@ -50,7 +50,7 @@
 	line-numbers-right-format = "{np:^4} "
 
 [include]
-	path = ~/dotfiles/themes/flume/extras/current/delta.gitconfig
+	path = ~/.local/share/nvim/flume/current/delta.gitconfig
 
 # Credentials and integrations
 [credential]

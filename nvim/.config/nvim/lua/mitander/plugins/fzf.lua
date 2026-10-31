@@ -285,9 +285,9 @@ return {
         if vim.ui then
             fzf_lua.register_ui_select({
                 winopts = {
-                    win_height = 0.30,
-                    win_width = 0.70,
-                    win_row = 0.40,
+                    height = 0.30,
+                    width = 0.70,
+                    row = 0.40,
                 },
             })
         end

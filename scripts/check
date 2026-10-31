@@ -39,6 +39,7 @@ yazi)
   bash tests/yazi-native.sh
   ;;
 fzf)
+  nvim --clean --headless -l tests/nvim-devicons.lua
   nvim --clean --headless -l tests/nvim-fzf.lua
   ;;
 nvim-startup)
