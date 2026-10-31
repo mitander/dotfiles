@@ -2,9 +2,36 @@ local function picker()
     return require("fzf-lua")
 end
 
+local function reveal_in_finder(selected, opts)
+    if #selected == 0 then
+        return
+    end
+    local command = { "open", "-R" }
+    for _, entry in ipairs(selected) do
+        local file = require("fzf-lua.path").entry_to_file(entry, opts)
+        local path = file.bufname or file.path
+        if path and path ~= "" and not file.terminal then
+            command[#command + 1] = vim.fn.fnamemodify(path, ":p")
+        end
+    end
+    if #command == 2 then
+        return
+    end
+    vim.system(command, { text = true }, function(result)
+        if result.code ~= 0 then
+            vim.schedule(function()
+                vim.notify(
+                    "Finder reveal failed: " .. vim.trim(result.stderr or ""),
+                    vim.log.levels.ERROR
+                )
+            end)
+        end
+    end)
+end
+
 local function project_files()
     local cwd = vim.fn.getcwd()
-    local opts = { no_resume = true, previewer = false, cwd = cwd }
+    local opts = { no_resume = true, cwd = cwd }
     if vim.fn.executable("git") ~= 1 then
         picker().files(opts)
         return
@@ -30,7 +57,6 @@ local fd_exists = vim.fn.executable("fd") == 1
 local function all_files()
     picker().files({
         no_resume = true,
-        previewer = false,
         cmd = fd_exists
                 and "fd --no-ignore --color=never --type f --hidden --follow --exclude .git"
             or "rg --files --no-ignore --hidden -g '!.git'",
@@ -178,23 +204,26 @@ return {
                 scrollbar = "float",
             },
         },
+        actions = {
+            files = {
+                true,
+                ["ctrl-o"] = vim.fn.has("macunix") == 1 and reveal_in_finder or nil,
+            },
+            buffers = {
+                true,
+                ["ctrl-o"] = vim.fn.has("macunix") == 1 and reveal_in_finder or nil,
+            },
+        },
         previewers = {
             bat = { theme = "base16" },
             builtin = {
-                ueberzug_scaler = "cover",
-                extensions = {
-                    ["gif"] = { "chafa" },
-                    ["png"] = { "chafa" },
-                    ["jpg"] = { "chafa" },
-                    ["jpeg"] = { "chafa" },
-                    ["svg"] = { "chafa" },
-                },
+                snacks_image = { enabled = true, render_inline = false },
             },
         },
         files = {
             prompt = "Files: ",
             formatter = "path.filename_first",
-            previewer = false,
+            previewer = "builtin",
             cmd = file_cmd,
             -- Keep discovery in-process to avoid an empty picker when the Nix
             -- Neovim worker fails to load config ("config is nil").
@@ -231,7 +260,7 @@ return {
             files = {
                 prompt = "Files: ",
                 formatter = "path.filename_first",
-                previewer = false,
+                previewer = "builtin",
                 cmd = "git ls-files --exclude-standard",
                 multiprocess = false,
                 winopts = vim.deepcopy(file_picker_winopts),

@@ -54,37 +54,6 @@ Other applications may also need a restart. Reloading tmux requires the installe
 tmux servers carrying retired workspace hooks need a restart to discard them. Reload no longer
 removes those hooks. Save work first, since restarting a server ends its sessions.
 
-## Open files in Myran
-
-The macOS desktop bridge lives in this checkout. Install or update it explicitly with
-`./scripts/install-myran-editor`. It registers the handler without selecting default applications.
-Its file-opening helper remains live-linked to `scripts/myran-open-files`.
-
-The bridge chooses the most recently active attached client on the default tmux server, not the
-terminal that supplied a click. It captures that pane and the existing hidden Myran server identity
-together, rejects identity changes, and forwards the retained capability to `myran open`. A missing
-identity is an error, not permission to initialize or adopt another server.
-
-For a terminal browsing trial, run `dotfiles apply` and press prefix `y` inside a managed Workspace.
-Yazi opens in an ordinary window. Prefix `e` still opens the Myran editor. In Yazi, Enter sends the
-selection to that Workspace's editor, even after browsing outside its Project. Folders open in Oil.
-Use `l` or Right to browse inside a folder without leaving Yazi. Lowercase `o` uses the system
-application, including Finder on macOS folders. On Linux this opens the first selected item,
-matching Yazi's stock `xdg-open` command. `myran-yazi` can also launch from a Workspace terminal.
-
-Yazi uses the terminal's ANSI palette, so its colors follow the active Flume theme. Flat separators
-and selection highlights match the tmux styling without a separate theme plugin. Restart Yazi after
-changing its keymap or theme.
-
-The launcher captures the Workspace root and retains its terminal/server identity. Its opener makes
-selected paths absolute before returning to that root for `myran open`. Stale authority rejects
-instead of choosing another attached client. The opener targets the pinned Yazi 26.5.6 `%s` syntax.
-Launch plain `yazi` outside Myran only with a different editor configuration.
-
-This trial does not remove Oil, NvimTree, Myran's file picker or clickable file links. Installed
-acceptance still needs two Workspaces, outside-Project files, editor reuse/focus and system-app
-opens on both macOS and Linux. A source check alone does not establish those interactions.
-
 ## Checks
 
 With Python 3.11+ and Node.js 22.6+ on `PATH`, run `dotfiles check` when changing scripts or
@@ -103,7 +72,7 @@ Checks that need installed applications run separately:
 ./scripts/check myran-editor  # macOS file-opening app
 ./scripts/check yazi          # pinned Yazi with recording editor/system openers
 ./scripts/check pi            # strict TS, footer and file links against installed Pi
-./scripts/check fzf           # installed picker filtering and shell arguments
+./scripts/check fzf           # installed picker filtering, image comparisons and shell arguments
 ./scripts/check nvim-startup  # installed plugin activation and large-buffer limits
 ./scripts/check luals         # Neovim configuration diagnostics
 ./scripts/check files         # installed Oil and NvimTree navigation

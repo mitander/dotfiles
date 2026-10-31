@@ -180,6 +180,13 @@ local function check()
         return files ~= nil
     end))
     assert(files.cwd == project)
+    assert(files.previewer ~= false, "Ctrl-P must not disable file previews")
+    assert(
+        fzf.opts.files.previewer == "builtin",
+        "file previews must use the Snacks-capable previewer"
+    )
+    key(fzf, "<leader>P")()
+    assert(files.previewer ~= false, "all-files picker must not disable previews")
 
     local git_dir, git_work_tree = vim.env.GIT_DIR, vim.env.GIT_WORK_TREE
     vim.env.GIT_DIR = project .. "/metadata"

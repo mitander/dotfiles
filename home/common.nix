@@ -48,6 +48,9 @@ in {
       python3
       zoxide
 
+      # Image conversion for Neovim's Snacks image viewer
+      imagemagick
+
       # Development tools
       clang-tools
       curl
