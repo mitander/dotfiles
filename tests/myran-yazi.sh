@@ -10,21 +10,22 @@ export PATH="$TEST_ROOT/bin:$PATH" MYRAN_YAZI_SCRIPT="$ROOT/scripts/myran-yazi"
 export TMUX='/private/tmp/test socket,123,0' TMUX_PANE=%7 MYRAN_TMUX_SERVER_ID=retained
 export TEST_WORKSPACE="$TEST_ROOT/project"
 
-cat >"$TEST_ROOT/bin/tmux" <<'SH'
-#!/usr/bin/env bash
+# Runtime-generated mocks are created after Nix's source shebang patching.
+printf '#!%s\n' "$(command -v bash)" >"$TEST_ROOT/bin/tmux"
+cat >>"$TEST_ROOT/bin/tmux" <<'SH'
 set -eu
 [[ $# == 5 && $1 == show-options && $2 == -qv && $3 == -t && $4 == %7 && $5 == @workspace_root ]]
 printf '%s\n' "$TEST_WORKSPACE"
 SH
-cat >"$TEST_ROOT/bin/yazi" <<'SH'
-#!/usr/bin/env bash
+printf '#!%s\n' "$(command -v bash)" >"$TEST_ROOT/bin/yazi"
+cat >>"$TEST_ROOT/bin/yazi" <<'SH'
 set -eu
 printf '%s\0' "$PWD" "$MYRAN_YAZI_ROOT" >"$TEST_ROOT/launched"
 cd "$TEST_ROOT/elsewhere"
 exec "$MYRAN_YAZI_SCRIPT" --open 'sp ace-λ;$(touch INJECTED)*.rs' '-leading.rs' "$TEST_ROOT/outside.rs"
 SH
-cat >"$TEST_ROOT/bin/myran" <<'SH'
-#!/usr/bin/env bash
+printf '#!%s\n' "$(command -v bash)" >"$TEST_ROOT/bin/myran"
+cat >>"$TEST_ROOT/bin/myran" <<'SH'
 set -eu
 printf '%s\0' "$PWD" "$TMUX" "$TMUX_PANE" "$MYRAN_TMUX_SERVER_ID" "$@" >"$TEST_ROOT/opened"
 exit "${TEST_MYRAN_STATUS:-0}"

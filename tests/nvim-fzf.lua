@@ -63,6 +63,15 @@ local ok, failure = xpcall(function()
         assert(opts.keymap.fzf.f4 == "toggle-preview")
     end
     assert(globals.git.status.previewer == "git_diff", "Git status must retain diff previews")
+    assert(
+        globals["git.status"]._actions().enter == actions.file_edit_or_qf,
+        "Git status must inherit normal file opening"
+    )
+    assert(spec.opts.git.status.actions == nil, "Git status must not override file opening")
+    assert(
+        globals.previewers.builtin.snacks_image.enabled,
+        "File previews must retain image support"
+    )
     assert(globals.actions.files.enter == actions.file_edit_or_qf)
     if vim.fn.has("macunix") == 1 then
         for _, name in ipairs({ "files", "grep", "buffers", "git.status" }) do

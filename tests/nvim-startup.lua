@@ -56,6 +56,11 @@ vim.api.nvim_create_autocmd('VimEnter', {
         vim.api.nvim_exec_autocmds('UIEnter', {})
         vim.defer_fn(function()
             local ok, result = xpcall(function()
+                local _, icon_color = require('nvim-web-devicons').get_icon_color('sample.go', 'go')
+                assert(
+                    icon_color == require('flume').colors.icon_cyan,
+                    'real startup must apply the themed icon provider configuration'
+                )
                 local result = {
                     entered_ms = entered_ms,
                     blink_loaded = package.loaded['blink.cmp'] ~= nil,

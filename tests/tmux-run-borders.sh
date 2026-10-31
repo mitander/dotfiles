@@ -8,7 +8,8 @@ TEST_ROOT="$(mktemp -d)"
 theme="$SOURCE_ROOT/tmux/.tmux/workspace-status.conf"
 
 tmux_test() {
-  command tmux -L "$SOCKET" "$@"
+  # CI may use the C locale without an enclosing UTF-8 tmux client.
+  command tmux -u -L "$SOCKET" "$@"
 }
 
 cleanup() {
