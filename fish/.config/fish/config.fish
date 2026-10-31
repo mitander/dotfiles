@@ -313,3 +313,18 @@ end
 
 status is-interactive; and command -q atuin; and atuin init fish --disable-up-arrow | source
 status is-interactive; and command -q zoxide; and zoxide init fish | source
+
+# Apply after integrations so insert-mode completion keys stay consistent.
+if status is-interactive
+    for key in tab ctrl-i
+        bind -M insert $key '
+            if commandline --search-field >/dev/null
+                commandline -f complete
+            else
+                commandline -f complete-and-search
+            end
+        '
+    end
+    bind -M insert ctrl-n down-or-search
+    bind -M insert ctrl-p up-or-search
+end

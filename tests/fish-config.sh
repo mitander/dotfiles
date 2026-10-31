@@ -59,6 +59,22 @@ for tool in fzf atuin zoxide; do
   [[ "$(grep -cx "$tool" "$DOTFILES_TEST_CALLS")" == 1 ]]
 done
 
+# Completion bindings survive reloads without changing Enter, Escape or Ctrl-J/K.
+"$FISH" --no-config -i -c 'source "$DOTFILES_TEST_CONFIG"
+    source "$DOTFILES_TEST_CONFIG"
+    for key in tab ctrl-i
+        bind -M insert $key | string match -q "*complete-and-search*"; or exit 1
+        bind --user -M insert $key | string unescape | string match -q "*commandline --search-field*"; or exit 1
+    end
+    test (bind --user -M insert ctrl-n) = "bind -M insert ctrl-n down-or-search"; or exit 1
+    test (bind -M insert ctrl-p) = "bind -M insert ctrl-p up-or-search"; or exit 1
+    for key in enter ctrl-j
+        bind -M insert $key | string match -q "* $key execute"; or exit 1
+    end
+    bind -M insert ctrl-k | string match -q "* ctrl-k kill-line"; or exit 1
+    bind -M insert escape | string unescape | string match -q "*commandline -f cancel*"; or exit 1
+' >"$TEST_ROOT/output" 2>"$TEST_ROOT/error"
+
 # File discovery must respect Git ignores, including through shell aliases.
 git -C "$TEST_ROOT/project" init -q
 printf 'target/\n' >"$TEST_ROOT/project/.gitignore"
@@ -112,4 +128,4 @@ printf 'source\n' >"$newline_dir/nested.rs"
     eval $FZF_CTRL_T_COMMAND | "$argv[2]" --print0 --filter=nested.rs' -- "$newline_dir" "$FZF_BINARY" >"$TEST_ROOT/selection"
 printf '%s\0' "$newline_dir/nested.rs" >"$TEST_ROOT/expected"
 cmp "$TEST_ROOT/expected" "$TEST_ROOT/selection"
-printf 'PASS: Fish UI initialization, PATH priority, ignored files, Ctrl-T literal/NUL paths\n'
+printf 'PASS: Fish UI initialization, completion bindings, PATH priority, ignored files, Ctrl-T literal/NUL paths\n'
