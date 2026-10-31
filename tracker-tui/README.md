@@ -27,16 +27,19 @@ running an older installed snapshot. Ltui defaults `TRACKER_SCOPE` to `dev` when
 
 ## Themes
 
-The launcher points `FLUME_TRACKER_THEME_DIR` at the local Flume checkout's `extras/palette` and
-`FLUME_SCHEMA_FILE` at `extras/current/schema`. Both remain overridable. The application adapter
-reads Flume's semantic JSON exports directly and maps them to Textual colors. No pinned palette
-source, generated Textual directory or Neovim subprocess is involved.
+The launcher defaults `FLUME_TRACKER_THEME_DIR` to the local Flume checkout's `extras/palette` and
+`FLUME_SCHEMA_FILE` to `extras/current/schema`. Flume's `:FlumeSync` forwards that legacy schema
+path to its data directory. Both variables are overridable. For a direct schema path, use
+`<flume-data>/current/schema`, with the directory reported by `require("flume").get_sync_dir()` in
+Neovim. The adapter reads Flume's JSON exports directly.
 
 After editing palette colors, use Flume's normal compile/sync command and restart the application.
 Switching among already loaded palettes stays live. Bronson reads the same palette exports through
 its `~/.config/bronson/flume` link, without an external Python bridge.
 
 ## Checks
+
+After setup, run from the dotfiles root:
 
 ```sh
 ./scripts/check trackers
