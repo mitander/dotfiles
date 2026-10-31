@@ -59,9 +59,21 @@ local function check()
     assert(not limits.is_large(first) and limits.is_large(boundary) == false)
     vim.api.nvim_buf_get_lines = original_get_lines
 
-    local markdown = dofile(config .. "/lua/mitander/plugins/markdown.lua")[1]
-    assert(not markdown.opts.ignore(first))
-    assert(markdown.opts.ignore(large))
+    local markdown = require("mitander.markdown")
+    local large_markdown = buffer(102401)
+    vim.bo[first].filetype = "markdown"
+    vim.bo[large_markdown].filetype = "markdown"
+    local get_parser = vim.treesitter.get_parser
+    local parser_calls = 0
+    vim.treesitter.get_parser = function()
+        parser_calls = parser_calls + 1
+        error("parser unavailable in source fixture")
+    end
+    markdown.refresh(first)
+    assert(parser_calls == 1)
+    markdown.refresh(large_markdown)
+    assert(parser_calls == 1, "callout styling must skip large buffers before parsing")
+    vim.treesitter.get_parser = get_parser
 
     -- Exercise the actual built-in ftplugin entrypoints. A late FileType return is not enough.
     local calls = {}

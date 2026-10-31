@@ -80,6 +80,7 @@ vim.opt.shell = "/bin/sh"
 
 -- Command-line shortcuts
 vim.g.mapleader = " "
+require("mitander.markdown").setup()
 vim.g.maplocalleader = " "
 
 vim.keymap.set("n", "q", "<nop>")
