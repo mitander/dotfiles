@@ -64,21 +64,15 @@ local function check()
         assert(opts.bufnr == bufnr)
         return hints[#hints] or false
     end
-    local client = {
-        supports_method = function(_, method)
-            assert(method == "textDocument/inlayHint")
-            return true
-        end,
-    }
-    rust_opts.server.on_attach(client, bufnr)
-    assert(hints[1] == true, "Rust hints should start enabled")
+    rust_opts.server.on_attach({}, bufnr)
+    assert(#hints == 0, "Rust attachment must leave hints disabled by default")
     vim.api.nvim_exec_autocmds("LspAttach", { group = "LspSetup", buffer = bufnr })
     local hint_mapping = vim.fn.maparg(" i", "n", false, true)
     assert(hint_mapping.desc == "Toggle inlay hints")
     hint_mapping.callback()
-    assert(hints[2] == false, "shared hint toggle must still disable Rust hints")
+    assert(hints[1] == true, "shared hint toggle must enable Rust hints")
     hint_mapping.callback()
-    assert(hints[3] == true)
+    assert(hints[2] == false, "shared hint toggle must disable Rust hints")
 
     local commands = {}
     vim.api.nvim_create_user_command("RustLsp", function(opts)
@@ -96,12 +90,6 @@ local function check()
         mapping.callback()
         assert(vim.deep_equal(commands[#commands], { command = case.command, bang = case.bang }))
     end
-    hints = {}
-    client.supports_method = function()
-        return false
-    end
-    rust_opts.server.on_attach(client, bufnr)
-    assert(#hints == 0, "unsupported inlay hints must not be enabled")
 end
 
 local ok, failure = xpcall(check, debug.traceback)

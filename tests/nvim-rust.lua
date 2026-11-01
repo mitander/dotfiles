@@ -67,12 +67,16 @@ local function check()
         vim.wait(30000, function()
             local clients = vim.lsp.get_clients({ bufnr = bufnr })
             client = clients[1]
-            return #clients == 1
-                and client.initialized
-                and vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
+            return #clients == 1 and client.initialized
         end, 50),
-        "one initialized Rust client with enabled hints must attach"
+        "one initialized Rust client must attach"
     )
+    assert(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), "Rust hints must start disabled")
+    local toggle_hints = vim.fn.maparg(" i", "n", false, true).callback
+    toggle_hints()
+    assert(vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), "hint toggle must enable hints")
+    toggle_hints()
+    assert(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), "hint toggle must disable hints")
     assert(client.name == "rust-analyzer")
     assert(not vim.lsp.is_enabled("rust_analyzer"), "generic Rust startup must remain disabled")
     assert(client.config.cmd[1] == analyzer, "Rust must use the same analyzer as the shell")
