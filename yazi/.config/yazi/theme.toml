@@ -1,26 +1,26 @@
 # Use the terminal's active Flume palette, not a second set of fixed colors.
 # Flat separators match the tmux status line instead of Yazi's stock rounded pills.
 [mgr]
-cwd = { fg = "cyan" }
+cwd = { fg = "magenta" }
 border_style = { fg = "darkgray" }
 
 [tabs]
-active = { fg = "black", bg = "magenta", bold = false }
-inactive = { fg = "darkgray", bg = "reset" }
+active = { fg = "magenta", bg = "reset", bold = false, reversed = true }
+inactive = { fg = "reset", bg = "reset" }
 sep_inner = { open = " ", close = " " }
 sep_outer = { open = " ", close = " " }
 
 [mode]
 normal_main = { fg = "cyan", bg = "reset", bold = false }
-normal_alt = { fg = "darkgray", bg = "reset" }
+normal_alt = { fg = "reset", bg = "reset" }
 select_main = { fg = "yellow", bg = "reset", bold = false }
-select_alt = { fg = "darkgray", bg = "reset" }
+select_alt = { fg = "reset", bg = "reset" }
 unset_main = { fg = "red", bg = "reset", bold = false }
-unset_alt = { fg = "darkgray", bg = "reset" }
+unset_alt = { fg = "reset", bg = "reset" }
 
 [indicator]
-parent = { fg = "reset", bg = "black", reversed = false }
-current = { fg = "black", bg = "magenta", reversed = false }
+parent = { fg = "reset", bg = "reset", reversed = false }
+current = { fg = "magenta", bg = "reset", reversed = true }
 preview = { underline = false }
 padding = { open = " ", close = " " }
 
@@ -31,9 +31,9 @@ sep_right = { open = " ", close = " " }
 perm_sep = { fg = "darkgray" }
 
 [which]
-mask = { bg = "black" }
+mask = { bg = "reset" }
 cand = { fg = "cyan" }
-rest = { fg = "darkgray" }
+rest = { fg = "reset" }
 desc = { fg = "reset" }
 separator = "  "
 separator_style = { fg = "darkgray" }
@@ -59,7 +59,7 @@ title = { fg = "cyan" }
 
 [cmp]
 border = { fg = "darkgray" }
-active = { fg = "black", bg = "magenta", reversed = false }
+active = { fg = "magenta", bg = "reset", reversed = true }
 
 [tasks]
 border = { fg = "darkgray" }
@@ -69,8 +69,8 @@ hovered = { fg = "magenta", bold = false }
 [help]
 on = { fg = "cyan" }
 run = { fg = "magenta" }
-hovered = { fg = "black", bg = "magenta", bold = false, reversed = false }
-footer = { fg = "darkgray", bg = "reset" }
+hovered = { fg = "magenta", bg = "reset", bold = false, reversed = true }
+footer = { fg = "reset", bg = "reset" }
 
 [icon]
 prepend_globs = [{ url = "*/", text = "", fg = "cyan" }]

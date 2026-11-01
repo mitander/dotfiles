@@ -36,5 +36,19 @@ dotfiles eval         # evaluate all supported systems
 dotfiles generations  # list Home Manager history
 ```
 
+To check the Tmux color composition against all four Flume palettes:
+
+```sh
+FLUME_RUNTIME=~/c/p/flume.nvim bash tests/tmux-run-borders.sh
+```
+
+This uses a private server and attached terminal client. It checks rendered normal messages, vi
+command-mode prompts, inactive labels, unfilled scroll positions, and filled active-tab/zoom badges.
+The ordinary gate checks the tracked fallback composition without requiring a Flume checkout.
+`FLUME_RUNTIME=~/c/p/flume.nvim ./scripts/check yazi` also checks the real file picker's selection
+slots against all four terminal palettes. Yazi uses reversed terminal magenta and the canvas rather
+than ANSI black as filled-label text. Its named-slot configuration follows the terminal palette, not
+a separate RGB theme.
+
 Config edits are live-linked. Use `apply` for package or managed-link changes, not ordinary config
 edits. Restart Neovim after Lua changes. Before activation, use `./scripts/dotfiles`.

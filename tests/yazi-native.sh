@@ -30,9 +30,14 @@ assert_flat_chrome() {
   screen=$(tmux -L "$SOCKET" capture-pane -p -t trial:files)
   [[ $screen != *''* && $screen != *''* ]] || fail 'Stock rounded chrome is still visible'
   screen=$(tmux -L "$SOCKET" capture-pane -p -e -t trial:files)
-  [[ $screen == *$'\e[48;5;5m'* ]] || fail 'Selection does not use the terminal magenta palette'
   if [[ -n ${YAZI_TEST_CAPTURE:-} ]]; then
     printf '%s\n' "$screen" >"$YAZI_TEST_CAPTURE"
+  fi
+  [[ $screen =~ $'\e'\[([0-9]+\;)*7(\;[0-9]+)*m ]] || fail 'Selection does not reverse terminal magenta onto the canvas'
+  [[ $screen == *'38;5;5'* ]] || fail 'Selection does not use the terminal magenta palette'
+  if [[ -n ${FLUME_RUNTIME:-} ]]; then
+    printf '%s\n' "$screen" >"$TEST_ROOT/colors.ansi"
+    python3 "$ROOT/tests/yazi-colors.py" "$ROOT" "$FLUME_RUNTIME" "$TEST_ROOT/colors.ansi" "$name"
   fi
 }
 

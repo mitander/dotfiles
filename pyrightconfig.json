@@ -4,7 +4,9 @@
     "scripts/loc-tree.py",
     "tests/loc-tree.py",
     "tests/install-myran.py",
-    "tests/tracker-editable.py"
+    "tests/tracker-editable.py",
+    "tests/tmux-colors.py",
+    "tests/yazi-colors.py"
   ],
   "pythonVersion": "3.11",
   "typeCheckingMode": "standard"

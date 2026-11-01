@@ -32,20 +32,30 @@ source-file "$theme"
 EOF
 
   [[ "$(tmux_test show-option -gv display-time)" == 4000 ]] || fail 'message duration'
-  assert_palette_chrome '#232136' '#c9c5d9' '#6aa6bc' '#b99add'
+  assert_palette_chrome '#232136' '#c9c5d9' '#6aa6bc' '#b99add' '#262938' '#a6a2bb' '#232136' '#d8b574'
   [[ "$(tmux_test show-option -gv message-format)" == *' #{message} ' ]] || fail 'message padding'
 }
 
 assert_palette_chrome() {
-  local background="$1" text="$2" accent="$3" context="$4"
-  [[ "$(tmux_test show-option -gv message-style)" == "bg=$background,fg=$text,align=centre,width=60%" ]] ||
-    fail 'neutral centered messages on the palette canvas'
-  [[ "$(tmux_test show-option -gv message-command-style)" == "bg=$background,fg=$accent,align=centre,width=60%" ]] ||
+  local background="$1" text="$2" accent="$3" context="$4" surface="$5" muted="$6" on_accent="$7" warning="$8"
+  [[ "$(tmux_test show-option -gv message-style)" == "bg=$surface,fg=$text,align=centre,width=60%" ]] ||
+    fail 'neutral centered messages on the palette surface'
+  [[ "$(tmux_test show-option -gv message-command-style)" == "bg=$surface,fg=$accent,align=centre,width=60%" ]] ||
     fail 'command prompt uses the action accent'
   [[ "$(tmux_test display-message -p '#{E:status-left}')" == "#[bold]#[fg=$context]#[bg=$background]"* ]] ||
     fail 'workspace identity uses unfilled context ink'
-  [[ "$(tmux_test show-option -gv window-status-format)" == *"#[fg=$text]#[bg=$background]"* ]] ||
-    fail 'inactive tabs use readable text, not placeholder ink'
+  [[ "$(tmux_test show-option -gv window-status-format)" == *"#[fg=$muted]#[bg=$background]"* ]] ||
+    fail 'inactive tabs use readable secondary text, not placeholder ink'
+  [[ "$(tmux_test show-option -gv window-status-current-format)" == *"#[fg=$on_accent]#[bg=$context]"* ]] ||
+    fail 'active tab uses filled-accent text'
+  [[ "$(tmux_test show-option -gv @flume_copy_position)" == "#[fg=$muted]#[bg=$background]"* ]] ||
+    fail 'scroll position uses quiet unfilled text'
+  [[ "$(tmux_test show-option -gv 'status-format[0]')" == *"#[norange bg=$background] " ]] ||
+    fail 'status row reserves a canvas-colored rightmost scrollbar gutter'
+  [[ "$(tmux_test show-option -gv pane-scrollbars-position)" == right ]] ||
+    fail 'scrollbar stays in the rightmost gutter'
+  [[ "$(tmux_test show-option -gv status-right)" == *"#[fg=$on_accent] #[bg=$warning]"* ]] ||
+    fail 'zoom badge uses filled-accent text'
   [[ "$(tmux_test show-option -gv pane-active-border-style)" == *",$accent,$background},bg=$background" ]] ||
     fail 'active split border uses the focus accent'
 }
@@ -188,15 +198,17 @@ import sys
 
 with open(sys.argv[1]) as source:
     colors = json.load(source)["colors"]
-print(*(colors[role] for role in ["bg", "fg", "accent", "magenta"]))
+print(*(colors[role] for role in ["bg", "fg", "accent", "magenta", "surface", "muted", "on_accent", "yellow"]))
 PY
     )"
-    read -r background text accent context <<<"$expected"
+    read -r background text accent context surface muted on_accent warning <<<"$expected"
     tmux_test source-file - <<EOF
 source-file "$FLUME_RUNTIME/extras/tmux/colors-$schema.conf"
 source-file "$theme"
 EOF
-    assert_palette_chrome "$background" "$text" "$accent" "$context"
+    assert_palette_chrome "$background" "$text" "$accent" "$context" "$surface" "$muted" "$on_accent" "$warning"
+    python3 "$SOURCE_ROOT/tests/tmux-colors.py" "$SOCKET" "$FLUME_RUNTIME/extras/palette/flume-$schema.json"
+    nvim --headless --clean -l "$SOURCE_ROOT/tests/tmux-scrollbar.lua" "$SOCKET" "$FLUME_RUNTIME/extras/palette/flume-$schema.json"
   done
   load_theme
 fi
