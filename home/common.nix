@@ -132,8 +132,8 @@ in {
     ".pi/agent/extensions/context-watch".source = agentLive "pi/extensions/context-watch";
     ".pi/agent/extensions/myran".source = agentLive "pi/extensions/myran";
     ".pi/agent/extensions/herdr-agent-state.ts".source = agentLive "pi/extensions/herdr-agent-state.ts";
-    ".pi/agent/extensions/flume-ui/index.ts".source = live "pi/.pi/agent/extensions/flume-ui/index.ts";
-    ".pi/agent/extensions/shell-file-links".source = live "pi/.pi/agent/extensions/shell-file-links";
+    ".pi/agent/extensions/flume-ui/index.ts".source = agentLive "pi/extensions/flume-ui/index.ts";
+    ".pi/agent/extensions/shell-file-links".source = agentLive "pi/extensions/shell-file-links";
     ".claude/CLAUDE.md".source = agentLive "pi/AGENTS.md";
     ".codex/AGENTS.md".source = agentLive "pi/AGENTS.md";
     ".copilot/AGENTS.md".source = agentLive "pi/AGENTS.md";
