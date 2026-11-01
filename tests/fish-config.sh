@@ -53,6 +53,32 @@ export PATH="$PATH:/opt/homebrew/bin"
     test "$fish_color_autosuggestion" = abcdef; or exit 1
     not functions -q lazygit; or exit 1'
 
+# Only explicit successful reload/apply refresh installed Flume fragments in this shell.
+mkdir -p "$XDG_CONFIG_HOME/fish/conf.d"
+printf 'set -g fish_color_error abcdef\n' >"$XDG_CONFIG_HOME/fish/conf.d/flume.fish"
+printf 'set -gx FLUME_TEST_TOOLS refreshed\n' >"$XDG_CONFIG_HOME/fish/conf.d/flume-tools.fish"
+printf 'exit 99\n' >"$XDG_CONFIG_HOME/fish/conf.d/unrelated.fish"
+printf '#!/bin/sh\nexit "${DOTFILES_TEST_STATUS:-0}"\n' >"$TEST_ROOT/bin/dotfiles"
+chmod +x "$TEST_ROOT/bin/dotfiles"
+"$FISH" --no-config -c 'source "$DOTFILES_TEST_CONFIG"
+    set -g fish_color_error 123456
+    dotfiles
+    test "$fish_color_error" = 123456; or exit 1
+    dotfiles help
+    test "$fish_color_error" = 123456; or exit 1
+    dotfiles reload
+    test "$fish_color_error" = abcdef; or exit 1
+    test "$FLUME_TEST_TOOLS" = refreshed; or exit 1
+    set -g fish_color_error 654321
+    set -gx DOTFILES_TEST_STATUS 42
+    dotfiles reload
+    test $status -eq 42; or exit 1
+    test "$fish_color_error" = 654321; or exit 1
+    set -e DOTFILES_TEST_STATUS
+    dotfiles apply
+    test "$fish_color_error" = abcdef; or exit 1'
+rm "$XDG_CONFIG_HOME/fish/conf.d/"*.fish
+
 # Interactive shells initialize each UI integration once.
 "$FISH" --no-config -i -c 'source "$DOTFILES_TEST_CONFIG"; functions -q fzf' >"$TEST_ROOT/output" 2>"$TEST_ROOT/error"
 for tool in fzf atuin zoxide; do

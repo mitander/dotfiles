@@ -48,15 +48,17 @@ run() {
   "$DOTFILES_DIR/scripts/dotfiles" "$@" >"$TEST_ROOT/output" 2>"$TEST_ROOT/error"
 }
 
-# Default, reload, help and checks must not invoke Nix, even with activation opt-in inherited.
+# Default/help only guide. Reload/check must not invoke Nix, even with opt-in inherited.
 export DOTFILES_ALLOW_ACTIVATE=1
-for command in '' reload; do
+for command in '' help; do
   if [[ -n "$command" ]]; then run "$command"; else run; fi
-  printf 'tmux <source-file> <%s/.tmux.conf>\n' "$HOME" >"$TEST_ROOT/expected"
-  cmp "$TEST_ROOT/expected" "$CALLS"
+  [[ ! -s "$CALLS" ]]
+  grep -q 'Most edits do not need Nix' "$TEST_ROOT/output"
+  grep -q 'FlumeSync' "$TEST_ROOT/output"
 done
-run help
-[[ ! -s "$CALLS" ]]
+run reload
+printf 'tmux <source-file> <%s/.tmux.conf>\n' "$HOME" >"$TEST_ROOT/expected"
+cmp "$TEST_ROOT/expected" "$CALLS"
 run check
 [[ "$(<"$CALLS")" == check ]]
 for command in switch nonsense; do

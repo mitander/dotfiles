@@ -8,12 +8,19 @@ usage() {
   cat <<'EOF'
 Usage: dotfiles [command]
 
-With no command, reload live configuration without building or activating Nix.
+With no command, show this guide. Most edits do not need Nix.
+
+Everyday changes:
+  Fish/tmux config       dotfiles reload
+  Neovim config          Restart Neovim
+  Flume palettes/source  :FlumeSync in Neovim (source refresh needs dev = true)
+  ltui/bronson source    Restart that app
+  Nix packages/links     dotfiles apply
 
 Commands:
-  reload       Reload tmux and the calling Fish shell
+  reload       Reread tmux and the calling Fish shell config, without Nix
   build        Build the Home Manager generation without activating it
-  apply        Activate Home Manager, then reload
+  apply        Install/activate Nix packages and managed links, then reload
   doctor       Evaluate the selected profile and check its live-link location
   eval         Evaluate every supported system without building
   generations  List Home Manager generations
@@ -53,10 +60,12 @@ reload() {
   if [[ -n "${TMUX:-}" ]] && command -v tmux >/dev/null 2>&1; then
     tmux source-file "$HOME/.tmux.conf"
   fi
-  printf 'Reloaded live configuration. Restart Neovim to load Lua changes.\n'
+  printf 'Reloaded tmux configuration where attached.\n'
+  printf 'In Fish, dotfiles reload also rereads this shell configuration and installed Flume fragments.\n'
+  printf 'Neovim, ltui and bronson: restart after source/config edits. Flume: use :FlumeSync.\n'
 }
 
-command_name="${1:-reload}"
+command_name="${1:-help}"
 if [[ $# -gt 1 ]]; then
   usage >&2
   exit 2

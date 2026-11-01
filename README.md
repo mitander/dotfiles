@@ -27,9 +27,10 @@ shared theme integrations.
 ## Commands
 
 ```sh
-dotfiles              # reload tmux and the calling Fish shell
+dotfiles              # show which refresh command to use
+dotfiles reload       # reread tmux, this Fish shell and installed Flume fragments
 dotfiles build        # build package/link changes without activating
-dotfiles apply        # activate Home Manager, then reload
+dotfiles apply        # install/activate Nix packages and managed links, then reload
 dotfiles check        # formatting, types and isolated tests
 dotfiles doctor       # check the selected profile and checkout
 dotfiles eval         # evaluate all supported systems
@@ -50,5 +51,24 @@ slots against all four terminal palettes. Yazi uses reversed terminal magenta an
 than ANSI black as filled-label text. Its named-slot configuration follows the terminal palette, not
 a separate RGB theme.
 
-Config edits are live-linked. Use `apply` for package or managed-link changes, not ordinary config
-edits. Restart Neovim after Lua changes. Before activation, use `./scripts/dotfiles`.
+## Refresh after editing
+
+| Changed                                  | Action                                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Fish or tmux configuration               | `dotfiles reload`                                                                                |
+| Neovim configuration                     | Restart Neovim                                                                                   |
+| Flume palette or source                  | `:FlumeSync` in Neovim. This setup enables `dev = true`, so source and exports refresh together. |
+| ltui or bronson source                   | Quit and reopen that app. Both run from editable checkouts.                                      |
+| Nix packages or managed links in `home/` | `dotfiles apply`                                                                                 |
+
+Config files are live-linked, but running applications must reread them. `reload` uses no Nix. In
+Fish it refreshes only the calling shell, including installed Flume color/tool fragments. Other
+existing shells keep their loaded settings. Ghostty's reload shortcut only reloads Ghostty.
+
+Flume sync requests Ghostty and tmux reloads and notifies Pi when configured. Reopen other running
+apps if their colors are stale. Existing Fish shells can use `dotfiles reload`. Normal Flume users
+without dev mode sync bundled palettes without source regeneration.
+
+Python dependency changes need environment setup, not Nix activation. For ltui, run
+`./scripts/setup-trackers`. Ordinary Python source edits only need an app restart. Before
+activation, use `./scripts/dotfiles` if the command is not installed yet.

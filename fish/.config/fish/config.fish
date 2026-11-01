@@ -84,10 +84,16 @@ function dotfiles
     command dotfiles $argv
     set -l dotfiles_status $status
 
-    if test $dotfiles_status = 0; and test (count $argv) -eq 0
-        source ~/.config/fish/config.fish
-    else if test $dotfiles_status = 0; and contains -- $argv[1] reload apply
-        source ~/.config/fish/config.fish
+    if test $dotfiles_status = 0; and test (count $argv) -eq 1; and contains -- $argv[1] reload apply
+        set -l config_home "$HOME/.config"
+        set -q XDG_CONFIG_HOME; and set config_home "$XDG_CONFIG_HOME"
+        # Match startup order without rerunning unrelated conf.d initialization.
+        for fragment in flume.fish flume-tools.fish
+            if test -f "$config_home/fish/conf.d/$fragment"
+                source "$config_home/fish/conf.d/$fragment"
+            end
+        end
+        source "$config_home/fish/config.fish"
     end
     return $dotfiles_status
 end
