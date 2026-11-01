@@ -4,9 +4,6 @@ local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 local config_dir = root .. "/nvim/.config/nvim"
 local temporary = vim.fn.tempname()
 local server = vim.env.LUA_LANGUAGE_SERVER or vim.fn.exepath("lua-language-server")
-if server == "" then
-    server = vim.fn.stdpath("data") .. "/mason/bin/lua-language-server"
-end
 assert(
     vim.fn.executable(server) == 1,
     "install LuaLS separately or set LUA_LANGUAGE_SERVER to its executable"

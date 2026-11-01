@@ -64,6 +64,12 @@ in {
       uv
       zig
 
+      # Language servers. Rust stays with rustup; ZLS follows the project Zig toolchain.
+      gopls
+      lua-language-server
+      typescript-language-server
+      vscode-langservers-extracted
+
       # Formatters and diagnostics
       alejandra
       toolingPkgs.prettier

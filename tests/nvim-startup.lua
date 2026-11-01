@@ -3,19 +3,17 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 local config = root .. "/nvim/.config/nvim"
 local data = vim.fn.stdpath("data")
+local plugins = vim.env.NVIM_LAZY_DIR or data .. "/lazy"
 local temporary = vim.fn.tempname()
 
 local function check()
-    assert(vim.fn.isdirectory(data .. "/lazy/lazy.nvim") == 1, "install plugins separately first")
+    assert(vim.fn.isdirectory(plugins .. "/lazy.nvim") == 1, "install plugins separately first")
     vim.fn.mkdir(temporary .. "/config", "p")
     vim.fn.mkdir(temporary .. "/data/nvim", "p")
     vim.fn.mkdir(temporary .. "/files", "p")
     assert(vim.uv.fs_symlink(config, temporary .. "/config/nvim"))
-    assert(vim.uv.fs_symlink(data .. "/lazy", temporary .. "/data/nvim/lazy"))
+    assert(vim.uv.fs_symlink(plugins, temporary .. "/data/nvim/lazy"))
     assert(vim.uv.fs_symlink(data .. "/site", temporary .. "/data/nvim/site"))
-    if vim.fn.isdirectory(data .. "/mason") == 1 then
-        assert(vim.uv.fs_symlink(data .. "/mason", temporary .. "/data/nvim/mason"))
-    end
 
     local env = vim.fn.environ()
     for _, name in ipairs({ "TMUX", "TMUX_PANE", "NVIM", "NVIM_APPNAME", "NVIM_LOG_FILE" }) do
@@ -27,6 +25,7 @@ local function check()
     env.XDG_CACHE_HOME = temporary .. "/cache"
     env.FLUME_DATA_DIR = temporary .. "/flume"
     env.DOTFILES_DIR = root
+    env.TEST_EXPECTED_PATH = env.PATH
 
     local driver = temporary .. "/driver.lua"
     vim.fn.writefile(
@@ -35,7 +34,10 @@ local function check()
 local started = vim.uv.hrtime()
 local starts = {}
 vim.lsp.start = function(server)
-    starts[#starts + 1] = server.capabilities.textDocument.completion.completionItem.snippetSupport
+    starts[#starts + 1] = {
+        name = server.name,
+        snippets = server.capabilities.textDocument.completion.completionItem.snippetSupport,
+    }
 end
 local lazy_path = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 vim.opt.rtp:prepend(lazy_path)
@@ -45,7 +47,7 @@ lazy.setup = function(opts)
     opts.install.missing = false
     opts.spec = {
         { import = opts.spec },
-        { 'saghen/blink.cmp', opts = { fuzzy = { prebuilt_binaries = { download = false } } } },
+        { 'saghen/blink.cmp', opts = { fuzzy = { implementation = 'lua', prebuilt_binaries = { download = false } } } },
     }
     return setup(opts)
 end
@@ -56,6 +58,8 @@ vim.api.nvim_create_autocmd('VimEnter', {
         vim.api.nvim_exec_autocmds('UIEnter', {})
         vim.defer_fn(function()
             local ok, result = xpcall(function()
+                assert(vim.env.PATH == vim.env.TEST_EXPECTED_PATH, 'editor startup must not override tool PATH')
+                assert(not require('lazy.core.config').plugins['mason.nvim'], 'Mason must not be registered')
                 local _, icon_color = require('nvim-web-devicons').get_icon_color('sample.go', 'go')
                 assert(
                     icon_color == require('flume').colors.icon_cyan,
@@ -66,6 +70,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
                     blink_loaded = package.loaded['blink.cmp'] ~= nil,
                     treesitter_active = vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()] ~= nil,
                     starts = starts,
+                    generic_rust_enabled = vim.lsp.is_enabled('rust_analyzer'),
                 }
                 if vim.bo.filetype == 'lua' and not require('mitander.buffer_limits').is_large(0) then
                     local spec = dofile(vim.env.DOTFILES_DIR .. '/nvim/.config/nvim/lua/mitander/plugins/blink.lua')
@@ -93,8 +98,27 @@ vim.api.nvim_create_autocmd('VimEnter', {
                 end
                 return result
             end, debug.traceback)
-            vim.fn.writefile({ vim.json.encode(ok and result or { error = result }) }, vim.env.TEST_RESULT)
-            vim.cmd('qa!')
+            local function finish(success, response)
+                vim.fn.writefile({ vim.json.encode(success and response or { error = response }) }, vim.env.TEST_RESULT)
+                vim.cmd('qa!')
+            end
+            if ok and vim.fn.expand('%:t') == 'small.lua' then
+                vim.v.errmsg = ''
+                vim.api.nvim_input(':mes')
+                vim.defer_fn(function()
+                    local completed, response = xpcall(function()
+                        assert(vim.fn.getcmdline() == 'mes', 'command-line input was not processed')
+                        assert(vim.v.errmsg == '', vim.v.errmsg)
+                        local items = require('blink.cmp').get_items()
+                        assert(#items > 0, 'command-line completion must return real suggestions: ' .. vim.inspect(require('blink.cmp').get_context()))
+                        result.cmdline_items = #items
+                        return result
+                    end, debug.traceback)
+                    finish(completed, response)
+                end, 200)
+            else
+                finish(ok, result)
+            end
         end, 100)
     end,
 })
@@ -125,6 +149,8 @@ vim.api.nvim_create_autocmd('VimEnter', {
             lsp = true,
             treesitter = false,
         },
+        { name = "small.rs", text = "fn main() {}", lsp = true, treesitter = true },
+        { name = "small.ts", text = "const answer: number = 42;", lsp = true, treesitter = true },
     }) do
         local file = temporary .. "/files/" .. case.name
         vim.fn.writefile(vim.split(case.text, "\n"), file)
@@ -148,8 +174,17 @@ vim.api.nvim_create_autocmd('VimEnter', {
         assert(result.treesitter_active == case.treesitter, case.name .. ": Treesitter cutoff")
         if case.lsp then
             assert(#result.starts > 0, case.name .. ": first supported file did not activate LSP")
-            for _, snippets in ipairs(result.starts) do
-                assert(snippets, case.name .. ": completion capabilities lost")
+            for _, start in ipairs(result.starts) do
+                assert(start.snippets, case.name .. ": completion capabilities lost")
+            end
+            if case.name == "small.rs" then
+                assert(
+                    not result.generic_rust_enabled,
+                    "generic Rust LSP startup must stay disabled"
+                )
+                for _, start in ipairs(result.starts) do
+                    assert(start.name == "rust-analyzer", "Rustaceanvim must own Rust startup")
+                end
             end
         else
             assert(#result.starts == 0, case.name .. ": unrelated file activated LSP")

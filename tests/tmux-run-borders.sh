@@ -32,11 +32,22 @@ source-file "$theme"
 EOF
 
   [[ "$(tmux_test show-option -gv display-time)" == 4000 ]] || fail 'message duration'
-  [[ "$(tmux_test show-option -gv message-style)" == 'bg=#393552,fg=#c9c5d9,align=centre,width=60%' ]] ||
-    fail 'neutral centered messages'
+  assert_palette_chrome '#232136' '#c9c5d9' '#6aa6bc' '#b99add'
   [[ "$(tmux_test show-option -gv message-format)" == *' #{message} ' ]] || fail 'message padding'
-  [[ "$(tmux_test display-message -p '#{E:status-left}')" == '#[bold]#[fg=#232136]#[bg=#6aa6bc]'* ]] ||
-    fail 'filled workspace badge'
+}
+
+assert_palette_chrome() {
+  local background="$1" text="$2" accent="$3" context="$4"
+  [[ "$(tmux_test show-option -gv message-style)" == "bg=$background,fg=$text,align=centre,width=60%" ]] ||
+    fail 'neutral centered messages on the palette canvas'
+  [[ "$(tmux_test show-option -gv message-command-style)" == "bg=$background,fg=$accent,align=centre,width=60%" ]] ||
+    fail 'command prompt uses the action accent'
+  [[ "$(tmux_test display-message -p '#{E:status-left}')" == "#[bold]#[fg=$context]#[bg=$background]"* ]] ||
+    fail 'workspace identity uses unfilled context ink'
+  [[ "$(tmux_test show-option -gv window-status-format)" == *"#[fg=$text]#[bg=$background]"* ]] ||
+    fail 'inactive tabs use readable text, not placeholder ink'
+  [[ "$(tmux_test show-option -gv pane-active-border-style)" == *",$accent,$background},bg=$background" ]] ||
+    fail 'active split border uses the focus accent'
 }
 
 assert_ordinary_border() {
@@ -165,6 +176,30 @@ test_copy_positions() {
 tmux_test -f /dev/null new-session -d -x 160 -y 50 -s proof 'bash --noprofile --norc'
 ordinary="$(tmux_test display-message -p -t proof '#{pane_id}')"
 load_theme
+
+# Optional native palette lane uses canonical JSON as an independent expectation
+# for the generated tmux fragment. No user configuration or active set is loaded.
+if [[ -n "${FLUME_RUNTIME:-}" ]]; then
+  for schema in dusk opal mira mesa; do
+    expected="$(
+      python3 - "$FLUME_RUNTIME/extras/palette/flume-$schema.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1]) as source:
+    colors = json.load(source)["colors"]
+print(*(colors[role] for role in ["bg", "fg", "accent", "magenta"]))
+PY
+    )"
+    read -r background text accent context <<<"$expected"
+    tmux_test source-file - <<EOF
+source-file "$FLUME_RUNTIME/extras/tmux/colors-$schema.conf"
+source-file "$theme"
+EOF
+    assert_palette_chrome "$background" "$text" "$accent" "$context"
+  done
+  load_theme
+fi
 
 runner="$(tmux_test new-window -d -P -F '#{pane_id}' -t proof: -n run 'sleep 300')"
 run_window="$(tmux_test display-message -p -t "$runner" '#{window_id}')"

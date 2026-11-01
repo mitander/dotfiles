@@ -50,7 +50,6 @@ end
 
 local ok, failure = xpcall(function()
     vim.env.DPRINT_CONFIG_DIR = root .. "/dprint/.config/dprint"
-    vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
     vim.opt.runtimepath:append(vim.fn.stdpath("data") .. "/lazy/conform.nvim")
 
     local opts = dofile(config_dir .. "/lua/mitander/plugins/conform.lua").opts

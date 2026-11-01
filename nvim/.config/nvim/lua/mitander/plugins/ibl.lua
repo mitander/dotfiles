@@ -18,7 +18,6 @@ return {
             filetypes = {
                 "help",
                 "lazy",
-                "mason",
                 "notify",
                 "oil",
                 "qf",

@@ -85,10 +85,9 @@ return {
             gleam = {},
             jsonls = {},
             clangd = {},
-            rust_analyzer = {},
             pyright = {},
             ruff = {},
-            tsc = {},
+            ts_ls = {},
             eslint = {},
             zls = {
                 cmd = { zls_bin },
@@ -154,7 +153,14 @@ return {
             pattern = "*",
             group = group,
             callback = function(args)
-                local map_opts = { buffer = args.buf, remap = false }
+                local function map(mode, lhs, rhs, desc)
+                    vim.keymap.set(
+                        mode,
+                        lhs,
+                        rhs,
+                        { buffer = args.buf, remap = false, desc = desc }
+                    )
+                end
 
                 local function qf_references()
                     vim.lsp.buf.references(nil, { loclist = false })
@@ -175,38 +181,38 @@ return {
                     end
                 end
 
-                vim.keymap.set("i", "<c-s>", vim.lsp.buf.signature_help, map_opts)
-                vim.keymap.set("n", "ga", vim.lsp.buf.code_action, map_opts)
-                vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, map_opts)
-                vim.keymap.set("n", "gr", fzf_lsp("lsp_references", qf_references), map_opts)
-                vim.keymap.set("n", "gR", qf_references, map_opts)
-                vim.keymap.set("n", "gd", vim.lsp.buf.definition, map_opts)
-                vim.keymap.set(
+                map("i", "<c-s>", vim.lsp.buf.signature_help, "Signature help")
+                map("n", "ga", vim.lsp.buf.code_action, "Code action")
+                map("n", "<leader>ca", vim.lsp.buf.code_action, "Code action")
+                map("n", "gr", fzf_lsp("lsp_references", qf_references), "Find references")
+                map("n", "gR", qf_references, "References in quickfix")
+                map("n", "gd", vim.lsp.buf.definition, "Go to definition")
+                map(
                     "n",
                     "gi",
                     fzf_lsp("lsp_implementations", qf_implementations),
-                    map_opts
+                    "Find implementations"
                 )
-                vim.keymap.set("n", "gI", qf_implementations, map_opts)
-                vim.keymap.set("n", "go", vim.diagnostic.open_float, map_opts)
-                vim.keymap.set("n", "<leader>d", vim.diagnostic.setloclist, map_opts)
-                vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, map_opts)
-                vim.keymap.set("n", "<leader>s", vim.lsp.buf.signature_help, map_opts)
-                vim.keymap.set("n", "K", function()
+                map("n", "gI", qf_implementations, "Implementations in quickfix")
+                map("n", "go", vim.diagnostic.open_float, "Line diagnostics")
+                map("n", "<leader>d", vim.diagnostic.setloclist, "Buffer diagnostics")
+                map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+                map("n", "<leader>s", vim.lsp.buf.signature_help, "Signature help")
+                map("n", "K", function()
                     vim.lsp.buf.hover({ border = "single" })
-                end, map_opts)
-                vim.keymap.set("n", "[d", function()
+                end, "Hover documentation")
+                map("n", "[d", function()
                     vim.diagnostic.jump({ count = -1 })
-                end, map_opts)
-                vim.keymap.set("n", "]d", function()
+                end, "Previous diagnostic")
+                map("n", "]d", function()
                     vim.diagnostic.jump({ count = 1 })
-                end, map_opts)
-                vim.keymap.set("n", "<leader>i", function()
+                end, "Next diagnostic")
+                map("n", "<leader>i", function()
                     vim.lsp.inlay_hint.enable(
                         not vim.lsp.inlay_hint.is_enabled({ bufnr = args.buf }),
                         { bufnr = args.buf }
                     )
-                end, map_opts)
+                end, "Toggle inlay hints")
             end,
         })
 
