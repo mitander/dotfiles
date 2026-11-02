@@ -65,6 +65,3 @@ keybind = cmd+physical:nine=text:\x01\x39
 # Vim keybindings
 # Select the entire buffer with ggVG.
 keybind = cmd+a=text:\x1bggVG
-
-# Scroll
-mouse-scroll-multiplier = precision:0.3,discrete:1
