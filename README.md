@@ -20,6 +20,16 @@ cd ~/dotfiles
 ./scripts/setup-trackers  # Python 3.11+
 ```
 
+### Ghostty
+
+Nix installs Ghostty on both platforms: the source build on Linux and the official app bundle
+(`ghostty-bin`) on macOS. Upgrade it with `nix flake update nixpkgs`, then `dotfiles apply`. Remove
+any copy installed by apt, Homebrew or a downloaded `.dmg` first.
+
+On Linux, the first `dotfiles apply` prints a `non-nixos-gpu-setup` command. Run it once with
+`sudo`. It links Nix's Mesa drivers into `/run/opengl-driver` on every boot. Home Manager prints it
+again when the drivers change. Log out and back in once so the desktop finds Ghostty's launcher.
+
 Keep the checkouts at these paths. In Neovim, run `:FlumeSync` and `:FlumeInstallExtras` to set up
 shared theme integrations.
 

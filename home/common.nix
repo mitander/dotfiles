@@ -23,6 +23,12 @@
     '';
 
   live = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/${path}";
+
+  # Nixpkgs builds Ghostty only for Linux. macOS uses the official app bundle.
+  ghostty =
+    if pkgs.stdenv.hostPlatform.isDarwin
+    then pkgs.ghostty-bin
+    else pkgs.ghostty;
 in {
   home = {
     # Do not change during routine upgrades.
@@ -84,12 +90,18 @@ in {
         # Fonts
         jetbrainsMono
         maple-mono.truetype
+
+        # Terminal
+        ghostty
       ]
       ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [socat];
   };
 
   # Platform integration
   fonts.fontconfig.enable = pkgs.stdenv.hostPlatform.isLinux;
+
+  # Desktop entries and GPU drivers for Nix-built GUI apps such as Ghostty on non-NixOS Linux.
+  targets.genericLinux.enable = pkgs.stdenv.hostPlatform.isLinux;
 
   programs.home-manager.enable = true;
 
@@ -123,6 +135,15 @@ in {
     }
     // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
       "ghostty/linux".source = live "ghostty/.config/ghostty/linux";
+
+      # The desktop launcher starts Ghostty through D-Bus, which needs this unit.
+      # systemd does not search the Nix profile for user units.
+      "systemd/user/app-com.mitchellh.ghostty.service".source = "${ghostty}/share/systemd/user/app-com.mitchellh.ghostty.service";
+      # Activation must not restart the running instance and close every terminal window.
+      "systemd/user/app-com.mitchellh.ghostty.service.d/overrides.conf".text = ''
+        [Unit]
+        X-SwitchMethod=keep-old
+      '';
     };
 
   # Command and tmux links

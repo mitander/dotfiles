@@ -8,6 +8,9 @@ window-padding-y = 0,4
 window-padding-balance = equal
 window-padding-color = background
 
+# Updates come from flake.lock. The app's own updater cannot replace a Nix store bundle.
+auto-update = off
+
 # Shell and input
 shell-integration = detect
 confirm-close-surface = false
