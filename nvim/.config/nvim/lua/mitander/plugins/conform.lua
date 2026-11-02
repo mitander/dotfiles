@@ -10,14 +10,6 @@ local function pinned_dprint(dirname)
     return command and vim.fn.executable(command) == 1 and command or nil
 end
 
--- Rust/Python repositories with a local dprint binary own their native tool pins.
-local function native_or_pinned(formatters)
-    return function(bufnr)
-        local dirname = vim.fs.dirname(vim.api.nvim_buf_get_name(bufnr))
-        return pinned_dprint(dirname) and { "dprint" } or formatters
-    end
-end
-
 return {
     "stevearc/conform.nvim",
     event = { "BufWritePre" },
@@ -37,9 +29,9 @@ return {
         notify_no_formatters = false,
         formatters_by_ft = {
             lua = { "stylua" },
-            python = native_or_pinned({ "ruff_organize_imports", "ruff_format" }),
+            python = { "ruff_organize_imports", "ruff_format" },
             zig = { "zigfmt" },
-            rust = native_or_pinned({ "rustfmt" }),
+            rust = { "rustfmt" },
             go = { "gofmt", "goimports" },
             gleam = { "gleam" },
             javascript = { "dprint" },

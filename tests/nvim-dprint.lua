@@ -118,6 +118,49 @@ local ok, failure = xpcall(function()
     )
     print("PASS: project config overrides the global preset")
 
+    -- A repository-wide formatter must not intercept native current-buffer formatting.
+    vim.fn.mkdir(project .. "/.dev-tools/bin", "p")
+    local pinned = project .. "/.dev-tools/bin/dprint"
+    vim.fn.writefile({ "#!/bin/sh", "exit 99" }, pinned)
+    vim.fn.setfperm(pinned, "rwxr-xr-x")
+    for _, sample in ipairs({ samples[2], samples[3] }) do
+        local extension, filetype, source = sample[1], sample[2], sample[3]
+        local filename = project .. "/example." .. extension
+        local original = vim.split(source, "\n", { plain = true })
+        vim.fn.writefile(original, filename)
+        new_buffer(filename, filetype, original)
+        assert(not format_buffer(), "native formatter must bypass project dprint")
+        assert(table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n") ~= source)
+        assert(vim.deep_equal(vim.fn.readfile(filename), original), "only the buffer may change")
+    end
+    print("PASS: Rust and Python buffers bypass project dprint without writing source files")
+
+    -- Editor stdin formatting and the Cargo gate must honor the same project policy.
+    vim.fn.writefile({
+        "[package]",
+        'name = "native_format_fixture"',
+        'version = "0.1.0"',
+        'edition = "2024"',
+        "[lib]",
+        'path = "equivalence.rs"',
+    }, project .. "/Cargo.toml")
+    vim.fn.writefile({ 'edition = "2024"', "max_width = 60" }, project .. "/rustfmt.toml")
+    local rust_path = project .. "/equivalence.rs"
+    local rust_source = { "pub async fn example(){let values=[1,2,3,4,5,6,7,8,9,10];}" }
+    vim.fn.writefile(rust_source, rust_path)
+    new_buffer(rust_path, "rust", rust_source)
+    assert(not format_buffer())
+    local rust_buffer = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    assert(vim.deep_equal(vim.fn.readfile(rust_path), rust_source))
+    local cargo = vim.system({ "cargo", "fmt", "--all" }, {
+        cwd = project,
+        env = { RUSTUP_AUTO_INSTALL = "0" },
+        text = true,
+    }):wait(10000)
+    assert(cargo.code == 0, cargo.stderr)
+    assert(vim.deep_equal(vim.fn.readfile(rust_path), rust_buffer))
+    print("PASS: editor Rust formatting matches cargo fmt with project configuration")
+
     -- A failing native formatter must not replace the buffer.
     local bin = temporary .. "/bin"
     vim.fn.mkdir(bin)

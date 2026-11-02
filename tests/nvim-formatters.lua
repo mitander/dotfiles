@@ -2,22 +2,20 @@
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 local config_dir = root .. "/nvim/.config/nvim"
 local project = vim.fn.tempname()
-local buffer
 
 local function check()
     local opts = dofile(config_dir .. "/lua/mitander/plugins/conform.lua").opts
     vim.fn.mkdir(project .. "/docs", "p")
     vim.fn.mkdir(project .. "/.dev-tools/bin", "p")
 
-    buffer = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_name(buffer, project .. "/docs/example.rs")
-
-    local function expect_native_routes(rust, python)
-        assert(vim.deep_equal(opts.formatters_by_ft.rust(buffer), rust))
-        assert(vim.deep_equal(opts.formatters_by_ft.python(buffer), python))
+    local function expect_native_routes()
+        assert(vim.deep_equal(opts.formatters_by_ft.rust, { "rustfmt" }))
+        assert(
+            vim.deep_equal(opts.formatters_by_ft.python, { "ruff_organize_imports", "ruff_format" })
+        )
     end
 
-    expect_native_routes({ "rustfmt" }, { "ruff_organize_imports", "ruff_format" })
+    expect_native_routes()
 
     local formatter = opts.formatters.dprint
     local context = { dirname = project .. "/docs" }
@@ -52,11 +50,15 @@ local function check()
     vim.fn.setfperm(pinned, "rwxr-xr-x")
     assert(formatter.command(nil, context) == pinned, "project-pinned dprint must take precedence")
     assert(fallback_calls == 1)
-    expect_native_routes({ "dprint" }, { "dprint" })
+
+    -- A project's dprint installation must never reroute native buffer formatters.
+    expect_native_routes()
 
     -- A nearer config cannot accidentally borrow the parent's pinned executable.
     vim.fn.writefile({ "{}" }, project .. "/docs/.dprint.jsonc")
-    expect_native_routes({ "rustfmt" }, { "ruff_organize_imports", "ruff_format" })
+    assert(formatter.command(nil, context) == "node_modules/.bin/dprint")
+    assert(fallback_calls == 2)
+    expect_native_routes()
     vim.fn.delete(project .. "/docs/.dprint.jsonc")
 
     -- Config discovery uses the buffer directory, not the editor's cwd.
