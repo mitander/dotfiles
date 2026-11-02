@@ -23,9 +23,6 @@
     '';
 
   live = path: config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/${path}";
-
-  # Private agent configuration lives in ~/.agents.
-  agentLive = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/${path}";
 in {
   home = {
     # Do not change during routine upgrades.
@@ -95,15 +92,6 @@ in {
   programs.home-manager.enable = true;
 
   # Checkout validation
-  home.activation.checkAgentConfigCheckout = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-    agents_expected_checkout="$HOME/.agents"
-    if [[ ! -d "$agents_expected_checkout/skills" || ! -d "$agents_expected_checkout/.git" ]]; then
-      echo "Expected live-linked agent-config checkout is missing: $agents_expected_checkout" >&2
-      echo "Run: mkdir -p ~/.agents && gh repo clone mitander/agent-config ~/.agents" >&2
-      exit 1
-    fi
-  '';
-
   home.activation.checkDotfilesCheckout = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     dotfiles_expected_checkout=${lib.escapeShellArg dotfilesDirectory}
     if [[ ! -d "$dotfiles_expected_checkout" || ! -f "$dotfiles_expected_checkout/flake.nix" ]]; then
@@ -135,20 +123,9 @@ in {
       "ghostty/linux".source = live "ghostty/.config/ghostty/linux";
     };
 
-  # Agent, command and tmux links
+  # Command and tmux links
   home.file = {
     ".gitconfig".source = live "git/.gitconfig";
-    ".pi/agent/AGENTS.md".source = agentLive "pi/AGENTS.md";
-    ".pi/agent/settings.json".source = agentLive "pi/settings.json";
-    ".pi/agent/extensions/context-watch".source = agentLive "pi/extensions/context-watch";
-    ".pi/agent/extensions/myran".source = agentLive "pi/extensions/myran";
-    ".pi/agent/extensions/herdr-agent-state.ts".source = agentLive "pi/extensions/herdr-agent-state.ts";
-    ".pi/agent/extensions/flume-ui/index.ts".source = agentLive "pi/extensions/flume-ui/index.ts";
-    ".pi/agent/extensions/shell-file-links".source = agentLive "pi/extensions/shell-file-links";
-    ".claude/CLAUDE.md".source = agentLive "pi/AGENTS.md";
-    ".codex/AGENTS.md".source = agentLive "pi/AGENTS.md";
-    ".copilot/AGENTS.md".source = agentLive "pi/AGENTS.md";
-    ".local/bin/agents-skills-link".source = live "scripts/agents-skills-link.sh";
     ".local/bin/dotfiles".source = live "scripts/dotfiles";
     ".local/bin/myran-yazi".source = live "scripts/myran-yazi";
     ".local/bin/dotfiles-format".source = live "scripts/format.sh";

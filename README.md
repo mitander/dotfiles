@@ -11,7 +11,6 @@ With Nix and Git installed:
 mkdir -p ~/c/p
 git clone https://github.com/mitander/flume.nvim.git ~/c/p/flume.nvim
 git clone --branch flume-personal https://github.com/mitander/ltui.git ~/c/p/ltui
-git clone https://github.com/mitander/agent-config.git ~/.agents
 git clone https://github.com/mitander/dotfiles.git ~/dotfiles
 
 cd ~/dotfiles
