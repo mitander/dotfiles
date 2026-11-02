@@ -28,62 +28,64 @@ in {
     # Do not change during routine upgrades.
     stateVersion = "26.05";
 
-    packages = with pkgs; [
-      # Shell and navigation
-      inputs.atuin-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.atuin
-      bat
-      direnv
-      fd
-      fish
-      fzf
-      lsd
-      ripgrep
-      tmux
-      tree
-      tokei
-      yazi
-      python3
-      zoxide
+    packages = with pkgs;
+      [
+        # Shell and navigation
+        inputs.atuin-nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.atuin
+        bat
+        direnv
+        fd
+        fish
+        fzf
+        lsd
+        ripgrep
+        tmux
+        tree
+        tokei
+        yazi
+        python3
+        zoxide
 
-      # Image conversion for Neovim's Snacks image viewer
-      imagemagick
+        # Image conversion for Neovim's Snacks image viewer
+        imagemagick
 
-      # Development tools
-      clang-tools
-      curl
-      delta
-      gh
-      git
-      jq
-      lazygit
-      neovim
-      unzip
-      uv
-      zig
+        # Development tools
+        clang-tools
+        curl
+        delta
+        gh
+        git
+        jq
+        lazygit
+        neovim
+        unzip
+        uv
+        zig
 
-      # Language servers. Rust stays with rustup; ZLS follows the project Zig toolchain.
-      gopls
-      lua-language-server
-      typescript-language-server
-      vscode-langservers-extracted
+        # Language servers. Rust stays with rustup; ZLS follows the project Zig toolchain.
+        gopls
+        lua-language-server
+        typescript-language-server
+        vscode-langservers-extracted
 
-      # Formatters and diagnostics
-      alejandra
-      toolingPkgs.dprint
-      toolingPkgs.prettier
-      toolingPkgs.prettierd
-      toolingPkgs.pyright
-      toolingPkgs.ruff
-      toolingPkgs.shellcheck
-      toolingPkgs.shfmt
-      toolingPkgs.taplo
-      toolingPkgs.typescript
-      stylua
+        # Formatters and diagnostics
+        alejandra
+        toolingPkgs.dprint
+        toolingPkgs.prettier
+        toolingPkgs.prettierd
+        toolingPkgs.pyright
+        toolingPkgs.ruff
+        toolingPkgs.shellcheck
+        toolingPkgs.shfmt
+        toolingPkgs.taplo
+        toolingPkgs.typescript
+        stylua
 
-      # Fonts
-      jetbrainsMono
-      maple-mono.truetype
-    ];
+        # Fonts
+        jetbrainsMono
+        maple-mono.truetype
+      ]
+      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [socat];
   };
 
   # Platform integration
