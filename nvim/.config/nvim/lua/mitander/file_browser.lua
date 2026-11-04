@@ -17,6 +17,48 @@ local function is_edit_window(win)
         and not vim.w[win].oil_sidebar
 end
 
+function M.setup()
+    vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "BufFilePost" }, {
+        group = vim.api.nvim_create_augroup("mitander_oil_follow", { clear = true }),
+        callback = function()
+            local source = vim.api.nvim_get_current_win()
+            local buffer = vim.api.nvim_get_current_buf()
+            local path = vim.api.nvim_buf_get_name(buffer)
+            local sidebar = find_sidebar()
+            if
+                not sidebar
+                or not is_edit_window(source)
+                or vim.bo[buffer].buftype ~= ""
+                or path == ""
+                or path:find("://", 1, true)
+                or vim.fn.isdirectory(path) == 1
+            then
+                return
+            end
+
+            -- Defer until buffer/window transitions settle, then discard stale events.
+            vim.schedule(function()
+                if
+                    vim.api.nvim_get_current_win() ~= source
+                    or vim.api.nvim_get_current_buf() ~= buffer
+                    or find_sidebar() ~= sidebar
+                    or vim.api.nvim_buf_get_name(buffer) ~= path
+                    or vim.bo[buffer].buftype ~= ""
+                    or vim.bo[vim.api.nvim_win_get_buf(sidebar)].modified
+                then
+                    return
+                end
+                vim.w[sidebar].oil_target_win = source
+                vim.api.nvim_win_call(sidebar, function()
+                    -- Use Oil's own file reveal, including its remembered cursor position.
+                    vim.api.nvim_win_set_buf(sidebar, buffer)
+                    require("oil").open()
+                end)
+            end)
+        end,
+    })
+end
+
 function M.close()
     if vim.w.oil_sidebar and #vim.api.nvim_tabpage_list_wins(0) > 1 then
         vim.api.nvim_win_close(0, false)

@@ -46,8 +46,8 @@ assert_palette_chrome() {
     fail 'workspace identity uses unfilled context ink'
   [[ "$(tmux_test show-option -gv window-status-format)" == *"#[fg=$muted]#[bg=$background]"* ]] ||
     fail 'inactive tabs use readable secondary text, not placeholder ink'
-  [[ "$(tmux_test show-option -gv window-status-current-format)" == *"#[fg=$on_accent]#[bg=$context]"* ]] ||
-    fail 'active tab uses filled-accent text'
+  [[ "$(tmux_test show-option -gv window-status-current-format)" == *"#[fg=$accent]#[bg=$surface]"* ]] ||
+    fail 'active tab uses action ink on a quiet surface'
   [[ "$(tmux_test show-option -gv @flume_copy_position)" == "#[fg=$muted]#[bg=$background]"* ]] ||
     fail 'scroll position uses quiet unfilled text'
   [[ "$(tmux_test show-option -gv 'status-format[0]')" == *"#[norange bg=$background] " ]] ||

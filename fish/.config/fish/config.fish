@@ -136,8 +136,8 @@ function gg
 end
 
 function gs
-    git status $argv
-    git diff --stat
+    git add -N .
+    git diff --summary --stat
 
     for file in (git ls-files --others --exclude-standard)
         git diff --no-index --stat /dev/null "$file"; or true
@@ -178,16 +178,25 @@ function fish_mode_prompt
     # The prompt already shows the editing context. Hide the extra mode indicator.
 end
 
+# Prompt metadata shares the pager's readable secondary UI ink. Without a theme,
+# keep the terminal foreground instead of guessing that ANSI bright black is readable.
+function __dotfiles_prompt_metadata_color
+    set_color normal
+    if set -q fish_pager_color_description[1]
+        set_color $fish_pager_color_description
+    end
+end
+
 # Prompt
 function fish_prompt
     set -l last_status $status
 
-    set_color --bold white
+    __dotfiles_prompt_metadata_color
     echo -n "[$hostname] "
     set_color --bold blue
     echo -n (prompt_pwd)
 
-    set_color --bold green
+    set_color normal
     set -l branch_output (fish_git_prompt)
     set branch_output (string replace -r '\(' '[' -- $branch_output)
     set branch_output (string replace -r '\)' ']' -- $branch_output)
@@ -204,7 +213,7 @@ function fish_prompt
 end
 
 function fish_right_prompt
-    set_color brblack
+    __dotfiles_prompt_metadata_color
     echo -n $(date +%H:%M:%S)
     set_color normal
 end

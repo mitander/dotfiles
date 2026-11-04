@@ -53,12 +53,12 @@ FLUME_RUNTIME=~/c/p/flume.nvim bash tests/tmux-run-borders.sh
 ```
 
 This uses a private server and attached terminal client. It checks rendered normal messages, vi
-command-mode prompts, inactive labels, unfilled scroll positions, and filled active-tab/zoom badges.
-The ordinary gate checks the tracked fallback composition without requiring a Flume checkout.
-`FLUME_RUNTIME=~/c/p/flume.nvim ./scripts/check yazi` also checks the real file picker's selection
-slots against all four terminal palettes. Yazi uses reversed terminal magenta and the canvas rather
-than ANSI black as filled-label text. Its named-slot configuration follows the terminal palette, not
-a separate RGB theme.
+command-mode prompts, inactive labels, unfilled scroll positions, quiet active tabs with teal focus
+text, and filled zoom badges. The ordinary gate checks the tracked fallback composition without
+requiring a Flume checkout. `FLUME_RUNTIME=~/c/p/flume.nvim ./scripts/check yazi` also checks the
+real file picker's selection slots against all four terminal palettes. Yazi uses reversed terminal
+magenta and the canvas rather than ANSI black as filled-label text. Its named-slot configuration
+follows the terminal palette, not a separate RGB theme.
 
 ## Refresh after editing
 

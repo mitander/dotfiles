@@ -32,7 +32,7 @@ def read_frame(master: int) -> str:
     return b"".join(chunks).decode("utf-8", errors="replace")
 
 
-def assert_ink(output: str, token: str, foreground: str, background: str) -> None:
+def assert_ink(output: str, token: str, foreground: str | None, background: str | None) -> None:
     # Native tmux emits RGB SGR on the RGB-capable client. Ignore cursor movement,
     # not color changes. Check every emitted character of the probe, not options.
     text = ""
@@ -91,7 +91,24 @@ def assert_ink(output: str, token: str, foreground: str, background: str) -> Non
         raise ValueError(f"{token}: expected {expected}, observed {actual}")
 
 
+def contrast(first: str, second: str) -> float:
+    def luminance(color: str) -> float:
+        encoded = [int(color[index : index + 2], 16) / 255 for index in (1, 3, 5)]
+        linear = [
+            value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+            for value in encoded
+        ]
+        return sum(
+            value * weight for value, weight in zip(linear, (0.2126, 0.7152, 0.0722), strict=True)
+        )
+
+    lower, upper = sorted((luminance(first), luminance(second)))
+    return (upper + 0.05) / (lower + 0.05)
+
+
 def check(socket: str, colors: dict[str, str]) -> None:
+    if contrast(colors["accent"], colors["surface"]) < 4.5:
+        raise ValueError("active-tab text must remain readable on its quiet surface")
     session = f"colors-{os.getpid()}"
     tmux(socket, "new-session", "-d", "-s", session, "sleep 300")
     tmux(socket, "set-option", "-t", session, "status-keys", "vi")
@@ -126,7 +143,7 @@ def check(socket: str, colors: dict[str, str]) -> None:
         tmux(socket, "refresh-client")
         output += read_frame(master)
         assert_ink(output, "INACTIVE", colors["muted"], colors["bg"])
-        assert_ink(output, "ACTIVE", colors["on_accent"], colors["magenta"])
+        assert_ink(output, "ACTIVE", colors["accent"], colors["surface"])
 
         tmux(socket, "display-message", "-d", "60000", "FLUME_NOTICE")
         assert_ink(read_frame(master), "FLUME_NOTICE", colors["fg"], colors["surface"])

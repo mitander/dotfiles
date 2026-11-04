@@ -154,4 +154,5 @@ printf 'source\n' >"$newline_dir/nested.rs"
     eval $FZF_CTRL_T_COMMAND | "$argv[2]" --print0 --filter=nested.rs' -- "$newline_dir" "$FZF_BINARY" >"$TEST_ROOT/selection"
 printf '%s\0' "$newline_dir/nested.rs" >"$TEST_ROOT/expected"
 cmp "$TEST_ROOT/expected" "$TEST_ROOT/selection"
+python3 "$ROOT/tests/fish-prompt.py" "$FISH" "$DOTFILES_TEST_CONFIG"
 printf 'PASS: Fish UI initialization, completion bindings, PATH priority, ignored files, Ctrl-T literal/NUL paths\n'

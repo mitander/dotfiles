@@ -6,6 +6,7 @@
     "tests/install-myran.py",
     "tests/tracker-editable.py",
     "tests/tmux-colors.py",
+    "tests/fish-prompt.py",
     "tests/yazi-colors.py"
   ],
   "pythonVersion": "3.11",

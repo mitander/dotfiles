@@ -14,6 +14,10 @@ return {
                 desc = "Toggle Oil sidebar",
             },
         },
+        config = function(_, opts)
+            require("oil").setup(opts)
+            require("mitander.file_browser").setup()
+        end,
         opts = {
             win_options = {
                 number = false,
@@ -71,6 +75,7 @@ return {
             hijack_netrw = false,
             hijack_directories = { enable = false },
             view = { width = 34 },
+            update_focused_file = { enable = true },
             git = { enable = false },
             filesystem_watchers = { enable = false },
             on_attach = function(buffer)

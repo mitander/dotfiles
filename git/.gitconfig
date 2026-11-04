@@ -1,3 +1,7 @@
+# Refuse guessed identities when machine-local settings are missing.
+[user]
+	useConfigOnly = true
+
 [core]
 	editor = nvim
 

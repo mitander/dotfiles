@@ -75,6 +75,12 @@ return {
         "zig",
         "zir",
     },
+    init = function()
+        -- nvim-lspconfig omits its legacy commands when Neovim provides :lsp.
+        vim.api.nvim_create_user_command("LspLog", function()
+            vim.cmd.tabnew(vim.lsp.log.get_filename())
+        end, { desc = "Open the LSP client log" })
+    end,
     opts = {
         capabilities = vim.lsp.protocol.make_client_capabilities(),
         flags = {

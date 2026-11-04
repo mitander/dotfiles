@@ -53,7 +53,7 @@ if arg[1] then
     assert(vim.uv.fs_symlink(directory .. "/child", directory .. "/linked-child"))
     local ok, err = xpcall(function()
         local oil = require("oil")
-        oil.setup(spec.opts)
+        spec.config(nil, spec.opts)
 
         -- Myran's ordinary directory delivery uses :edit, not an Oil-specific command.
         vim.api.nvim_cmd(
@@ -151,6 +151,64 @@ if arg[1] then
         )
         assert(vim.api.nvim_get_current_win() == sidebar and #vim.api.nvim_list_wins() == 2)
 
+        -- Editing another file follows across directories without taking focus.
+        local function assert_followed(name)
+            assert(
+                vim.wait(3000, function()
+                    local entry
+                    vim.api.nvim_win_call(sidebar, function()
+                        entry = oil.get_cursor_entry()
+                    end)
+                    return entry and entry.name == name
+                end),
+                "sidebar did not follow " .. name
+            )
+            assert(vim.api.nvim_get_current_win() == target, "following stole editing focus")
+        end
+        vim.api.nvim_set_current_win(target)
+        vim.cmd.edit(vim.fn.fnameescape(directory .. "/child/nested.txt"))
+        assert_followed("nested.txt")
+        vim.cmd.buffer(file_buffer)
+        assert_followed("file.txt")
+        vim.cmd.edit(vim.fn.fnameescape(directory .. "/.hidden"))
+        assert_followed(".hidden")
+        -- A rapid buffer switch must discard the queued reveal of the previous file.
+        vim.cmd.edit(vim.fn.fnameescape(directory .. "/child/nested.txt"))
+        vim.cmd.buffer(file_buffer)
+        assert_followed("file.txt")
+
+        -- Switching editing windows follows the newly focused window too.
+        local original_target = target
+        vim.cmd.vsplit()
+        target = vim.api.nvim_get_current_win()
+        vim.cmd.edit(vim.fn.fnameescape(directory .. "/child/nested.txt"))
+        assert_followed("nested.txt")
+        local split = target
+        target = original_target
+        vim.api.nvim_set_current_win(target)
+        assert_followed("file.txt")
+        vim.api.nvim_win_close(split, false)
+
+        -- Special buffers and unsaved Oil edits must not redirect the sidebar.
+        vim.cmd.enew()
+        vim.bo.buftype = "nofile"
+        vim.wait(100)
+        assert(
+            vim.uv.fs_realpath(oil.get_current_dir(vim.api.nvim_win_get_buf(sidebar)))
+                == vim.uv.fs_realpath(directory)
+        )
+        vim.cmd.buffer(file_buffer)
+        local sidebar_buffer = vim.api.nvim_win_get_buf(sidebar)
+        vim.api.nvim_buf_set_lines(sidebar_buffer, -1, -1, false, { "unsaved-entry" })
+        vim.cmd.edit(vim.fn.fnameescape(directory .. "/child/nested.txt"))
+        vim.wait(100)
+        assert(vim.api.nvim_win_get_buf(sidebar) == sidebar_buffer)
+        assert(vim.bo[sidebar_buffer].modified, "following discarded Oil edits")
+        vim.api.nvim_buf_set_lines(sidebar_buffer, -2, -1, false, {})
+        vim.bo[sidebar_buffer].modified = false
+        vim.cmd.buffer(file_buffer)
+        assert_followed("file.txt")
+
         -- If the original target closes, reuse another window before creating one.
         vim.api.nvim_set_current_win(target)
         vim.cmd.vnew()
@@ -246,6 +304,36 @@ if arg[1] then
             end),
             "tree folder did not expand inline"
         )
+        -- An already-open tree follows buffers without changing the editing focus or root.
+        vim.api.nvim_set_current_win(vim.fn.bufwinid(file_buffer))
+        local edit_win = vim.api.nvim_get_current_win()
+        vim.cmd.edit(vim.fn.fnameescape(directory .. "/child/nested.txt"))
+        assert(
+            vim.wait(3000, function()
+                local node
+                vim.api.nvim_win_call(vim.fn.bufwinid(tree_buffer), function()
+                    node = tree.get_node_under_cursor()
+                end)
+                return node and node.name == "nested.txt"
+            end),
+            "open tree must follow the active file"
+        )
+        assert(vim.api.nvim_get_current_win() == edit_win, "tree following stole focus")
+        assert(
+            vim.uv.fs_realpath(require("nvim-tree.core").get_cwd()) == vim.uv.fs_realpath(directory),
+            "following must preserve the project root"
+        )
+        vim.cmd.buffer(file_buffer)
+        assert(
+            vim.wait(3000, function()
+                local node
+                vim.api.nvim_win_call(vim.fn.bufwinid(tree_buffer), function()
+                    node = tree.get_node_under_cursor()
+                end)
+                return node and node.name == "file.txt"
+            end),
+            "tree must follow back to the original file"
+        )
         mappings["<C-n>"]()
         wait_for_entry("file.txt")
         assert(vim.w.oil_sidebar and not tree.is_visible(), "opening Oil must close the tree")
@@ -260,6 +348,18 @@ if arg[1] then
         -- Standard Oil still works without a sidebar.
         vim.cmd.Oil()
         wait_for_entry("file.txt")
+        local ordinary_oil_win = vim.api.nvim_get_current_win()
+        local ordinary_oil_buffer = vim.api.nvim_get_current_buf()
+        vim.cmd.vnew()
+        vim.cmd.edit(vim.fn.fnameescape(directory .. "/child/nested.txt"))
+        vim.wait(100)
+        assert(vim.api.nvim_win_get_buf(ordinary_oil_win) == ordinary_oil_buffer)
+        assert(
+            vim.uv.fs_realpath(oil.get_current_dir(ordinary_oil_buffer))
+                == vim.uv.fs_realpath(directory),
+            "ordinary Oil browsing must not follow editing windows"
+        )
+        vim.api.nvim_win_close(0, false)
         spec.opts.keymaps["q"].callback()
         assert(
             vim.wait(1000, function()
