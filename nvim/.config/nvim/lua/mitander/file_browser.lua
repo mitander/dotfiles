@@ -18,6 +18,45 @@ local function is_edit_window(win)
 end
 
 function M.setup()
+    vim.api.nvim_create_autocmd("WinClosed", {
+        group = vim.api.nvim_create_augroup("mitander_browser_quit", { clear = true }),
+        callback = function(event)
+            local tab = vim.api.nvim_win_get_tabpage(tonumber(event.match))
+            -- WinClosed runs before the window disappears. Recheck after transitions settle.
+            vim.schedule(function()
+                if not vim.api.nvim_tabpage_is_valid(tab) then
+                    return
+                end
+                local remaining
+                for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+                    if vim.api.nvim_win_get_config(win).relative == "" then
+                        if remaining then
+                            return
+                        end
+                        remaining = win
+                    end
+                end
+                if not remaining then
+                    return
+                end
+                local buffer = vim.api.nvim_win_get_buf(remaining)
+                local filetype = vim.bo[buffer].filetype
+                if
+                    filetype ~= "NvimTree"
+                    and not (filetype == "oil" and vim.w[remaining].oil_sidebar)
+                then
+                    return
+                end
+                -- Plain :quit preserves modified-buffer safeguards and closes only this tab.
+                local ok, err = pcall(vim.api.nvim_win_call, remaining, function()
+                    vim.cmd.quit()
+                end)
+                if not ok then
+                    vim.notify(err, vim.log.levels.WARN)
+                end
+            end)
+        end,
+    })
     vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "BufFilePost" }, {
         group = vim.api.nvim_create_augroup("mitander_oil_follow", { clear = true }),
         callback = function()
