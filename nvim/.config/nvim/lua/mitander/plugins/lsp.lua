@@ -47,7 +47,7 @@ end
 return {
     "neovim/nvim-lspconfig",
 
-    -- Match the pinned server filetypes without loading LSP/completion for plain text or Markdown.
+    -- Match the pinned server filetypes without loading LSP/completion for plain text.
     ft = {
         "astro",
         "c",
@@ -64,6 +64,8 @@ return {
         "json",
         "jsonc",
         "lua",
+        "markdown",
+        "markdown.mdx",
         "objc",
         "objcpp",
         "python",
@@ -90,6 +92,7 @@ return {
             gopls = {},
             gleam = {},
             jsonls = {},
+            marksman = {},
             clangd = {},
             pyright = {},
             ruff = {},

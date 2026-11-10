@@ -11,6 +11,7 @@ local function check()
     vim.fn.mkdir(temporary .. "/config", "p")
     vim.fn.mkdir(temporary .. "/data/nvim", "p")
     vim.fn.mkdir(temporary .. "/files", "p")
+    vim.fn.writefile({}, temporary .. "/files/.marksman.toml")
     assert(vim.uv.fs_symlink(config, temporary .. "/config/nvim"))
     assert(vim.uv.fs_symlink(plugins, temporary .. "/data/nvim/lazy"))
     assert(vim.uv.fs_symlink(data .. "/site", temporary .. "/data/nvim/site"))
@@ -130,11 +131,11 @@ vim.api.nvim_create_autocmd('VimEnter', {
 
     for _, case in ipairs({
         { name = "plain.txt", text = "plain text", lsp = false, treesitter = false },
-        { name = "small.md", text = "# Heading\n\nSome text", lsp = false, treesitter = true },
+        { name = "small.md", text = "# Heading\n\nSome text", lsp = true, treesitter = true },
         {
             name = "large.md",
             text = string.rep("# Heading\n\nSome text\n", 6000),
-            lsp = false,
+            lsp = true,
             treesitter = false,
         },
         {
@@ -176,6 +177,9 @@ vim.api.nvim_create_autocmd('VimEnter', {
             assert(#result.starts > 0, case.name .. ": first supported file did not activate LSP")
             for _, start in ipairs(result.starts) do
                 assert(start.snippets, case.name .. ": completion capabilities lost")
+                if case.name:match("%.md$") then
+                    assert(start.name == "marksman", "Marksman must own Markdown startup")
+                end
             end
             if case.name == "small.rs" then
                 assert(

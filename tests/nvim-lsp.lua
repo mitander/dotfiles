@@ -38,6 +38,10 @@ local function check()
         "TypeScript must use the installed ts_ls configuration"
     )
     assert(not configured.tsc and not enabled.tsc)
+    assert(vim.tbl_contains(lsp.ft, "markdown"), "Markdown must trigger LSP loading")
+    assert(vim.tbl_contains(lsp.ft, "markdown.mdx"), "MDX must trigger LSP loading")
+    assert(not vim.tbl_contains(lsp.ft, "text"), "plain text must not trigger LSP loading")
+    assert(configured.marksman and enabled.marksman, "Markdown must use Marksman")
     assert(configured.lua_ls.capabilities.textDocument.completion.completionItem.snippetSupport)
     assert(
         not configured.rust_analyzer and not enabled.rust_analyzer,
