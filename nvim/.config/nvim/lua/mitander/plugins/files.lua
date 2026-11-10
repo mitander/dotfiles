@@ -6,13 +6,6 @@ return {
         dependencies = { "nvim-tree/nvim-web-devicons" },
         keys = {
             { "-", "<cmd>Oil<cr>", desc = "Edit parent directory" },
-            {
-                "<C-n>",
-                function()
-                    require("mitander.file_browser").toggle()
-                end,
-                desc = "Toggle Oil sidebar",
-            },
         },
         config = function(_, opts)
             require("oil").setup(opts)
@@ -39,12 +32,6 @@ return {
                     end,
                     desc = "Close Oil",
                 },
-                ["<C-n>"] = {
-                    callback = function()
-                        require("mitander.file_browser").toggle()
-                    end,
-                    desc = "Toggle Oil sidebar",
-                },
                 ["<C-h>"] = false,
                 ["<C-l>"] = false,
                 ["<C-p>"] = false,
@@ -62,7 +49,7 @@ return {
         dependencies = { "nvim-tree/nvim-web-devicons" },
         keys = {
             {
-                "<leader>n",
+                "<C-n>",
                 function()
                     require("mitander.file_browser").toggle_tree()
                 end,
@@ -81,6 +68,20 @@ return {
             on_attach = function(buffer)
                 local api = require("nvim-tree.api")
                 api.map.on_attach.default(buffer)
+                vim.keymap.set("n", "l", function()
+                    local node = api.tree.get_node_under_cursor()
+                    if node and not (node.nodes and node.open) then
+                        api.node.open.edit(node)
+                    end
+                end, { buffer = buffer, desc = "Expand directory or open file" })
+                vim.keymap.set("n", "h", function()
+                    local node = api.tree.get_node_under_cursor()
+                    if node and node.nodes and node.open then
+                        api.node.open.edit(node)
+                    else
+                        api.node.navigate.parent(node)
+                    end
+                end, { buffer = buffer, desc = "Collapse directory or go to parent" })
                 vim.keymap.set("n", "q", api.tree.close, { buffer = buffer, desc = "Close tree" })
             end,
         },

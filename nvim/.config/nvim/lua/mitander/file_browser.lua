@@ -43,6 +43,7 @@ function M.setup()
                 local filetype = vim.bo[buffer].filetype
                 if
                     filetype ~= "NvimTree"
+                    and filetype ~= "Outline"
                     and not (filetype == "oil" and vim.w[remaining].oil_sidebar)
                 then
                     return

@@ -8,6 +8,10 @@ local mappings = {}
 for _, mapping in ipairs(spec.keys) do
     mappings[mapping[1]] = mapping[2]
 end
+assert(mappings["-"] == "<cmd>Oil<cr>", "keep Oil on the parent-directory shortcut")
+assert(mappings["<C-n>"] == nil, "Oil must not own the primary sidebar shortcut")
+assert(spec.opts.keymaps["<C-n>"] == nil, "Oil must not shadow the global tree shortcut")
+assert(#tree_spec.keys == 1 and tree_spec.keys[1][1] == "<C-n>", "Ctrl-n must own the project tree")
 local toggle_tree = tree_spec.keys[1][2]
 
 local status_opts = dofile(root .. "/nvim/.config/nvim/lua/mitander/plugins/lualine.lua").opts()
@@ -53,6 +57,8 @@ if arg[1] then
     assert(vim.uv.fs_symlink(directory .. "/child", directory .. "/linked-child"))
     local ok, err = xpcall(function()
         local oil = require("oil")
+        -- Retain coverage for the sidebar helper, which no longer has a user-facing shortcut.
+        local toggle_oil = require("mitander.file_browser").toggle
         spec.config(nil, spec.opts)
 
         -- Myran's ordinary directory delivery uses :edit, not an Oil-specific command.
@@ -222,33 +228,22 @@ if arg[1] then
             end),
             "closed target must fall back to another editing window"
         )
-        vim.api.nvim_win_close(replacement, false)
+        -- Explicitly closing the sidebar keeps the editing window alive.
         vim.api.nvim_set_current_win(sidebar)
-        select("file.txt")
-        assert(
-            vim.wait(3000, function()
-                return vim.api.nvim_get_current_win() ~= sidebar and #vim.api.nvim_list_wins() == 2
-            end),
-            "a lone sidebar must create an editing window"
-        )
-        assert(vim.api.nvim_get_current_buf() == file_buffer and not vim.w.oil_sidebar)
-
-        -- Closing the last remaining sidebar restores a regular editing window.
-        vim.api.nvim_win_close(vim.api.nvim_get_current_win(), false)
         spec.opts.keymaps["q"].callback()
-        assert(#vim.api.nvim_tabpage_list_wins(0) == 1 and not vim.w.oil_sidebar)
-        assert(not vim.wo.winfixwidth and vim.bo.filetype ~= "oil")
-        mappings["<C-n>"]()
+        assert(#vim.api.nvim_tabpage_list_wins(0) == 1)
+        assert(vim.api.nvim_get_current_buf() == file_buffer and not vim.w.oil_sidebar)
+        toggle_oil()
         vim.cmd.wincmd("p")
 
         -- Sidebar ownership is tab-local. Toggling and q never quit Neovim.
         vim.cmd.tabnew()
-        mappings["<C-n>"]()
+        toggle_oil()
         assert(#vim.api.nvim_tabpage_list_wins(0) == 2)
         spec.opts.keymaps["q"].callback()
         assert(#vim.api.nvim_tabpage_list_wins(0) == 1)
         vim.cmd.tabclose()
-        mappings["<C-n>"]()
+        toggle_oil()
         assert(
             #vim.api.nvim_tabpage_list_wins(0) == 1,
             "toggle from editing window must close sidebar"
@@ -264,7 +259,7 @@ if arg[1] then
         vim.cmd.cd(vim.fn.fnameescape(directory))
 
         -- Switching views leaves exactly one sidebar, with the current file revealed.
-        mappings["<C-n>"]()
+        toggle_oil()
         assert(vim.w.oil_sidebar)
         toggle_tree()
         assert(
@@ -304,6 +299,54 @@ if arg[1] then
             end),
             "tree folder did not expand inline"
         )
+        local navigation = {}
+        for _, mapping in ipairs(vim.api.nvim_buf_get_keymap(tree_buffer, "n")) do
+            navigation[mapping.lhs] = mapping.callback
+        end
+        assert(navigation.h and navigation.l, "tree must provide h/l navigation")
+        assert(spec.opts.keymaps.h == nil and spec.opts.keymaps.l == nil, "leave Oil motions alone")
+        navigation.h()
+        assert(not tree.get_node_under_cursor().open, "h must collapse an expanded directory")
+        navigation.l()
+        assert(tree.get_node_under_cursor().open, "l must expand a collapsed directory")
+        navigation.l()
+        assert(tree.get_node_under_cursor().open, "l must not collapse an expanded directory")
+
+        local function tree_cursor(name)
+            for line = 1, vim.api.nvim_buf_line_count(tree_buffer) do
+                vim.api.nvim_win_set_cursor(0, { line, 0 })
+                local node = tree.get_node_under_cursor()
+                if node and node.name == name then
+                    return
+                end
+            end
+            error("missing tree entry: " .. name)
+        end
+        tree_cursor("nested.txt")
+        navigation.h()
+        local parent = tree.get_node_under_cursor()
+        assert(parent.name == "child" and parent.open, "h on a file must navigate to its parent")
+        navigation.h()
+        navigation.h()
+        assert(
+            vim.api.nvim_win_get_cursor(0)[1] == 1,
+            "h on a collapsed top-level directory must go to the root header"
+        )
+        assert(
+            vim.uv.fs_realpath(require("nvim-tree.core").get_cwd()) == vim.uv.fs_realpath(directory),
+            "h must not change the tree root"
+        )
+        tree_cursor("child")
+        navigation.l()
+        tree_cursor("file.txt")
+        navigation.l()
+        assert(
+            vim.wait(3000, function()
+                return vim.api.nvim_get_current_buf() == file_buffer
+            end),
+            "l on a file must open it"
+        )
+
         -- An already-open tree follows buffers without changing the editing focus or root.
         vim.api.nvim_set_current_win(vim.fn.bufwinid(file_buffer))
         local edit_win = vim.api.nvim_get_current_win()
@@ -334,7 +377,7 @@ if arg[1] then
             end),
             "tree must follow back to the original file"
         )
-        mappings["<C-n>"]()
+        toggle_oil()
         wait_for_entry("file.txt")
         assert(vim.w.oil_sidebar and not tree.is_visible(), "opening Oil must close the tree")
         assert(#vim.api.nvim_tabpage_list_wins(0) == 2)
@@ -378,6 +421,50 @@ if arg[1] then
     end, debug.traceback)
     vim.fn.delete(directory, "rf")
     assert(ok, err)
+
+    for _, scenario in ipairs({
+        "oil-exit",
+        "tree-exit",
+        "outline-exit",
+        "outline-tab",
+        "outline-hidden-dirty",
+        "outline-split",
+        "outline-stale",
+        "oil-tab",
+        "oil-background-tab",
+        "tree-tab",
+        "oil-dirty",
+        "oil-hidden-dirty",
+        "tree-hidden-dirty",
+        "oil-standalone",
+        "oil-split",
+        "oil-float",
+        "oil-stale",
+    }) do
+        local result = vim.system({
+            vim.v.progpath,
+            "--clean",
+            "--headless",
+            "-l",
+            root .. "/tests/nvim-files-quit.lua",
+            root,
+            arg[1],
+            arg[2],
+            scenario,
+        }, { text = true }):wait(10000)
+        assert(result.code == 0, scenario .. ": " .. result.stdout .. result.stderr)
+        if
+            scenario ~= "oil-exit"
+            and scenario ~= "tree-exit"
+            and scenario ~= "outline-exit"
+            and scenario ~= "oil-float"
+        then
+            assert(
+                (result.stdout .. result.stderr):find("SURVIVED: " .. scenario, 1, true),
+                "unexpected exit: " .. scenario
+            )
+        end
+    end
 end
 
 print(
